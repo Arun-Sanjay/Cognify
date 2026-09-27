@@ -1,0 +1,38 @@
+# Environment
+.env
+backend/.env
+frontend/.env
+
+# Python
+backend/.venv
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+
+# Uploaded files + generated audio
+backend/uploads/
+
+# Local databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Local-only video source backups (palindrome originals, not shipped)
+frontend/public/*.original.*
+
+# Node
+node_modules/
+frontend/dist/
+frontend/dev-dist/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / Claude
+.claude/
+.idea/
+.vscode/
+
