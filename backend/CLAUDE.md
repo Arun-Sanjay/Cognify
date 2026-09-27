@@ -46,7 +46,7 @@ Routes are thin: validate → call a service → return. When adding a feature: 
 
 `app.models.__init__` re-exports every model and the lifespan imports it so everything is registered. Enums store **values** (`"student"`) via `values_callable`.
 
-Schema history starts at `000000000001_initial_schema` (hand-written: enables `vector`, creates an HNSW index on Postgres, stays SQLite-safe). For changes: edit the model → `alembic revision --autogenerate -m "..."` → **inspect** (autogenerate misses enum-value additions and Postgres-only DDL) → `alembic upgrade head`. The Docker image runs `alembic upgrade head` on every boot.
+Schema history starts at `000000000001_initial_schema` (hand-written: enables `vector`, creates an HNSW index on Postgres, stays SQLite-safe). `000000000002_enable_rls` turns on row-level security for every table. **Any migration that creates a table must also `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on Postgres.** Supabase serves `public` over REST to anyone with the anon key; the backend connects as the table owner, so it bypasses RLS. For changes: edit the model → `alembic revision --autogenerate -m "..."` → **inspect** (autogenerate misses enum-value additions and Postgres-only DDL) → `alembic upgrade head`. The Docker image runs `alembic upgrade head` on every boot.
 
 ## Auth
 

@@ -41,7 +41,7 @@ Health: `curl http://127.0.0.1:8000/health`. There are no seeded accounts — si
 ## Database
 
 - **Local:** SQLite at `backend/cognify.db` (RAG falls back to a Python cosine loop — no pgvector needed).
-- **Prod:** Supabase project **`cognify`** (ref `bqsjstfhldtppgqjdgij`, org "MainEl", region `ap-south-1`). Schema is applied (`alembic upgrade head`), pgvector enabled, HNSW index on `document_chunks.embedding`. Connection string (Session pooler, `aws-0-ap-south-1.pooler.supabase.com:5432`) is commented in `backend/.env`; the DB password lives **outside the repo** in `../.cognify-prod-db`.
+- **Prod:** Supabase project **`cognify`** (ref `bqsjstfhldtppgqjdgij`, org "MainEl", region `ap-south-1`). Schema is applied (`alembic upgrade head`), pgvector enabled, HNSW index on `document_chunks.embedding`, **RLS enabled on every table** (new tables must enable it too). Connection string (Session pooler, `aws-0-ap-south-1.pooler.supabase.com:5432`) is commented in `backend/.env`; the DB password lives **outside the repo** in `../.cognify-prod-db`.
 - Schema = one baseline migration (`000000000001_initial_schema`). New tables → edit models, then `alembic revision --autogenerate`, then **inspect** (autogenerate misses enum-value additions and Postgres-only DDL).
 
 ## Cost rule (hard constraint)
