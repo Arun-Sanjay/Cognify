@@ -1,0 +1,91 @@
+{
+  "topic_id": "T11",
+  "topic": "File Systems",
+  "hinglish": [
+    {
+      "video_id": "0LtuQhNFFe0",
+      "title": "L-7.1: File System in Operating System | Windows, Linux, Unix, Android etc.",
+      "channel": "Gate Smashers",
+      "duration_sec": 595,
+      "views": 1288256,
+      "likes": 27449,
+      "comments": 567,
+      "upload_date": "20200521",
+      "captions": ["en(manual)", "hi(auto)"],
+      "covers": ["file concept & structure", "file system layers/overview", "OS file-system examples (Windows/Linux/Unix)"],
+      "why": "Highest-viewed video in the entire Hindi File System series (1.29M views, 27.4K likes) and the natural entry point Gate Smashers' own playlist (L-7.1) uses before allocation methods and inode — sets up file concept/attributes cleanly before the numerical-heavy parts.",
+      "comment_highlights": ["The best teacher I have ever seen on youtube.", "Amazing, I read about File systems on diff tech websites... this one is the best."]
+    },
+    {
+      "video_id": "S6lLRz7SQUw",
+      "title": "L-7.6: Indexed File Allocation in Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 643,
+      "views": 459912,
+      "likes": 13182,
+      "comments": 261,
+      "upload_date": "20200603",
+      "captions": ["en(manual)", "hi(auto)"],
+      "covers": ["allocation methods (indexed, with contiguous/linked contrast)", "GATE-style numerical on indexed allocation"],
+      "why": "Indexed allocation is the allocation method GATE numericals target most (block-pointer counting, index-block overhead); this lecture has the clearest worked example in the series and strong approval (13.2K likes / 460K views, comment thread shows students completing the full OS playlist from it).",
+      "comment_highlights": ["You are like \"Jitu bhaiya\" for CS students, Thanks", "Completed the whole operating system series, Thanks for explaining every concept so beautifully."]
+    },
+    {
+      "video_id": "BJ13GsC0_os",
+      "title": "L-7.7: Unix Inode Structure with Numerical Example | OS",
+      "channel": "Gate Smashers",
+      "duration_sec": 626,
+      "views": 315171,
+      "likes": 7221,
+      "comments": 113,
+      "upload_date": "20201219",
+      "captions": ["en(manual)", "en(auto)"],
+      "captions_note": "manual+auto en both present",
+      "covers": ["UNIX inode structure", "direct/indirect/double-indirect blocks", "max file size numerical"],
+      "why": "The only high-quality Hindi video found with a full worked max-file-size numerical on UNIX inode direct/single/double/triple-indirect pointers — exactly the syllabus's named numerical topic — and comments show it is the final/near-final video of the well-regarded playlist (315K views, 7.2K likes).",
+      "comment_highlights": ["Finally completed the entire OS Playlist... took me 2 weeks along with note making (125 pages).", "If someone is confused about the space taken by Inode & address pointers not counted!!!! Answer: because question was asked about..."]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "gK6L3v1b8AM",
+      "title": "Allocation Methods | File Allocation Methods | Contiguous | linked | indexed | chain | os | files",
+      "channel": "Sudhakar Atchala",
+      "duration_sec": 660,
+      "views": 393389,
+      "likes": 7254,
+      "comments": 286,
+      "upload_date": "20191006",
+      "captions": ["en(auto)"],
+      "covers": ["allocation methods: contiguous, linked, indexed", "pros/cons comparison"],
+      "why": "Best-performing English-medium video on this exact subtopic (393K views, 7.25K likes) with a top comment stating 'I went through all English channels of OS on YouTube... here I found the best,' and it has usable auto captions (many competing English-labelled channels for this topic turned out Hindi-medium or caption-less on inspection).",
+      "comment_highlights": ["I went through all English channels of os in YouTube.....and....here...I found the best", "Had not attended single class of file system. Now concept is full-toooo clear."]
+    },
+    {
+      "video_id": "gSks2GpUx3Q",
+      "title": "File Concept Part 1 | Definition of a File | File Attributes | operating system | File System",
+      "channel": "Sudhakar Atchala",
+      "duration_sec": 363,
+      "views": 185230,
+      "likes": 2700,
+      "comments": 74,
+      "upload_date": "20191007",
+      "captions": ["en(auto)"],
+      "covers": ["file concept", "file attributes/operations"],
+      "why": "Same well-reviewed English series as the allocation-methods pick, covers the syllabus's 'file concept & operations' item directly; comments explicitly praise the thoroughness ('Every nuke and corner of the subject addressed... object-oriented explanation') and it is one of only two videos in this playlist confirmed to carry captions.",
+      "comment_highlights": ["Every nuke and corner of the subject addressed. Really an object-oriented explanation.", "Sir even in college no one say like you sir good explanation."]
+    }
+  ],
+  "runners_up": [
+    { "video_id": "hDBFSQRHPAU", "title": "Free Space Management | Free Disk Space Management", "channel": "Sudhakar Atchala", "views": 247294, "reason_rejected": "Same series/quality as the two English picks and covers free-space management directly, but subtitles are disabled entirely on this video (youtube_transcript_api confirms no caption track) — fails the hard captions requirement." },
+    { "video_id": "eK_mEHG20PA", "title": "Directory Structure | tree structured directory | acyclic graph directory", "channel": "Sudhakar Atchala", "views": 327144, "reason_rejected": "Would be the natural English pick for directory structures (327K views) but subtitles are disabled — no caption track available." },
+    { "video_id": "LWPMnCNd1q8", "title": "L67: File Allocation Methods | Contiguous, Dynamic Storage, Linked and Indexed Allocation", "channel": "Easy Engineering Classes", "views": 307037, "reason_rejected": "Titled/labelled in English and has auto captions, but the channel's own comment sections (Hindi-script jokes, a viewer asking 'Sir please give English subtitles' on the companion free-space video, other titles like 'UNIX Architecture | Explanation in Hindi') indicate the actual spoken delivery is Hindi/Hinglish, not English." },
+    { "video_id": "ywWPul7VAwM", "title": "L69: File Directories | Single-Level, Two Level, Tree Structural and Acyclic Graph Directories", "channel": "Easy Engineering Classes", "views": 342819, "reason_rejected": "Same channel/language concern as LWPMnCNd1q8 (Hindi-medium delivery despite English title); also a top comment complains the lecture just reads from the book." },
+    { "video_id": "pDMonZ4TbwA", "title": "L68: Free Space Management | Bit-Vector and Link Approach", "channel": "Easy Engineering Classes", "views": 153673, "reason_rejected": "Same Hindi-medium concern; also very low engagement (only 12 comments pulled) and lowest view count of the three EEC candidates." },
+    { "video_id": "J6wVO4pvUCw", "title": "L-7.3: Allocation Methods in operating system in hindi | Contiguous vs NonContiguous", "channel": "Gate Smashers", "views": 674161, "reason_rejected": "Strong overview video (674K views) but overlaps heavily with the picked L-7.1/L-7.6/L-7.7 trio; excluded to stay within the 'up to 3 videos' cap in favour of the numerically richer indexed-allocation and inode lectures." },
+    { "video_id": "XHx-ms5Ldi4", "title": "L-7.4: Contiguous Allocation in Operating system", "channel": "Gate Smashers", "views": 616345, "reason_rejected": "Good dedicated contiguous-allocation lecture (616K views) but not selected to respect the 3-video cap; contiguous allocation is the least numerically tricky of the three methods." },
+    { "video_id": "irGdM3iIS54", "title": "L-7.5: Linked List allocation in file allocation with example", "channel": "Gate Smashers", "views": 508975, "reason_rejected": "Solid linked-allocation example (509K views) but dropped for the same cap reason as L-7.3/L-7.4." },
+    { "video_id": "tMVj22EWg6A", "title": "Inode Structure", "channel": "Udacity", "views": 231042, "reason_rejected": "Genuinely English (Georgia Tech MOOC) and has captions, but is a short, general conceptual clip pulled from a heavily fragmented advanced-OS course, without a GATE-style worked max-file-size numerical — weaker fit than the Hinglish inode pick." }
+  ],
+  "coverage_gaps": "Hinglish: none of the 3 Gate Smashers picks has a dedicated free-space-management (bit-vector/linked-list) or directory-structure (single/two-level/tree/acyclic-graph) video — students should separately watch Gate Smashers L-7.2 (file attributes) plus a free-space-management video if needed. English: directory structures and free-space management are not covered at all by the two available picks — the only English videos found on those exact subtopics (Sudhakar Atchala's Directory Structure and Free Space Management) have no captions and had to be rejected, and no comparable-quality captioned/genuinely-English alternative was found; UNIX inode with a GATE-style max-file-size numerical also has no strong English match (Udacity's Inode Structure is conceptual only, listed as a weaker runner-up)."
+}

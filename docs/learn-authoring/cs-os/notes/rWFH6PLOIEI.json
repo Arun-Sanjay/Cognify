@@ -1,0 +1,275 @@
+{
+  "headline": "Deadlock: when everyone waits for an event that will never happen",
+  "summary": "A **deadlock** is a state where two or more processes each wait for an event that only another waiting process can trigger, so none of them can move. This lecture builds the idea from everyday examples, then connects it to semaphores and resource-allocation graphs and ends with the **four conditions** that must all hold at the same time.",
+  "read_minutes": 6,
+  "key_takeaways": [
+    "Deadlock = a set of processes each **waiting for an event only another process in the set can cause**.",
+    "Classic trap: P1 holds R1 and wants R2, while P2 holds R2 and wants R1.",
+    "Four conditions must hold **simultaneously**: mutual exclusion, no pre-emption, hold & wait, circular wait.",
+    "Break **any one** condition and deadlock cannot occur. This is the basis of deadlock *prevention*.",
+    "In a resource-allocation graph, an arrow **resource → process** means *allocated* and an arrow **process → resource** means *requested*."
+  ],
+  "gate_focus": [
+    "Direct MCQs on the four **necessary** conditions and on which one a given scheme breaks.",
+    "Reading a resource-allocation graph: does a cycle mean deadlock? It does for **single-instance** resources, but for multi-instance resources a cycle is necessary and **not** sufficient.",
+    "Semaphore code where two processes call `P()` on two semaphores in opposite order is a favourite deadlock pattern."
+  ],
+  "slides": [
+    {
+      "id": "s1",
+      "title": "What is a deadlock?",
+      "timestamp": 0,
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Deadlock",
+          "md": "If two or more processes are waiting for some event that **never happens**, those processes are *involved in a deadlock*, and that state is called the **deadlock state**."
+        },
+        {
+          "type": "compare",
+          "left": {
+            "title": "🏦 Bank account",
+            "items": [
+              "You: *open my account first, then I'll deposit*.",
+              "Bank: *deposit the minimum amount first, then we'll open it*.",
+              "Each waits for the other to act first, so nothing happens."
+            ]
+          },
+          "right": {
+            "title": "🚗 Two cars on one lane",
+            "items": [
+              "Car A and car B face each other on a single lane.",
+              "Each driver believes they're on the right side and won't reverse.",
+              "Both are stuck because the event (someone backs up) never happens."
+            ]
+          }
+        },
+        {
+          "type": "callout",
+          "tone": "insight",
+          "md": "Every deadlock has the same shape: **each party holds something and waits for something another party holds.**"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "title": "Deadlock with semaphores",
+      "timestamp": 128,
+      "blocks": [
+        {
+          "type": "text",
+          "md": "Two processes need two semaphores **S1** and **S2** but acquire them in *opposite order*:"
+        },
+        {
+          "type": "code",
+          "language": "c",
+          "code": "/* P1 */            /* P2 */\nP(S1);             P(S2);\n   // pre-empted →    // pre-empted →\nP(S2);  // blocks  P(S1);  // blocks\n...                ..."
+        },
+        {
+          "type": "steps",
+          "title": "How it locks up",
+          "items": [
+            "P1 does `P(S1)` (down on S1) and is then pre-empted, or goes to sleep.",
+            "P2 does `P(S2)` and then tries `P(S1)`, but S1 is taken, so **P2 blocks**.",
+            "P1 resumes and tries `P(S2)`, but S2 is taken, so **P1 blocks**.",
+            "Both are blocked and nobody is left to call `V()`, so this is a **deadlock**."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "gate",
+          "md": "GATE often gives two code snippets that wait on semaphores in **reverse order**. Spot that pattern and you've found the deadlock."
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "title": "Resources: allocated vs requested",
+      "timestamp": 211,
+      "image": "f_0034.jpg",
+      "image_caption": "Board: definition on the left and the two-process resource-allocation graph on the right.",
+      "blocks": [
+        {
+          "type": "diagram",
+          "mermaid": "flowchart LR\n  R1[\"R1\"] -- allocated --> P1((\"P1\"))\n  P1 -- requests --> R2[\"R2\"]\n  R2 -- allocated --> P2((\"P2\"))\n  P2 -- requests --> R1",
+          "caption": "P1 holds R1 and wants R2, while P2 holds R2 and wants R1."
+        },
+        {
+          "type": "table",
+          "headers": ["Edge", "Meaning"],
+          "rows": [
+            ["Resource → Process", "The resource is **allocated** to (held by) the process"],
+            ["Process → Resource", "The process is **requesting** the resource"]
+          ]
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "P1 will run only after it gets R2, but P2 holds R2.",
+            "P2 will run only after it gets R1, but P1 holds R1.",
+            "Neither can proceed, so this is the deadlock situation."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "title": "The four necessary conditions",
+      "timestamp": 341,
+      "image": "f_0060.jpg",
+      "image_caption": "Board: the four necessary conditions next to the RAG, with the cycle marked.",
+      "blocks": [
+        {
+          "type": "text",
+          "md": "Deadlock can occur **only if all four** conditions hold at the same time:"
+        },
+        {
+          "type": "table",
+          "headers": ["#", "Condition", "In one line"],
+          "rows": [
+            ["1", "**Mutual exclusion**", "A resource can be used by only one process at a time"],
+            ["2", "**No pre-emption**", "A held resource can't be forcibly taken away"],
+            ["3", "**Hold & wait**", "A process holds some resources while waiting for more"],
+            ["4", "**Circular wait**", "A closed chain of processes, each waiting on the next"]
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "tip",
+          "title": "Memory hook",
+          "md": "**M**utual exclusion, **N**o pre-emption, **H**old & wait, **C**ircular wait. *\"My New Hard Case\"*."
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "title": "Mutual exclusion",
+      "timestamp": 393,
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Mutual exclusion",
+          "md": "Resources are used in a **mutually exclusive** way, one process at a time. **Interleaving isn't allowed.**"
+        },
+        {
+          "type": "example",
+          "title": "Printer",
+          "question": "P1 is printing a document when P2 also wants to print. Can pages from both jobs come out mixed together?",
+          "solution": "No. The printer is non-shareable, so P2 must wait until P1's job finishes. A resource that must be used exclusively like this satisfies the mutual-exclusion condition."
+        }
+      ]
+    },
+    {
+      "id": "s6",
+      "title": "No pre-emption",
+      "timestamp": 461,
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "No pre-emption",
+          "md": "A process that holds a resource keeps it **until it finishes with it**. The OS can't force it to release the resource for another process."
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "Here we assume **equal priority**: no higher-priority process arrives to snatch the resource.",
+            "If the OS *could* take R1 back from P1 and give it to P2, the deadlock above would dissolve."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s7",
+      "title": "Hold & wait",
+      "timestamp": 530,
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Hold & wait",
+          "md": "A process **holds** at least one resource and **waits** for additional resources that other processes hold."
+        },
+        {
+          "type": "bullets",
+          "items": [
+            "P1 holds R1 and waits for R2, while P2 holds R2 and waits for R1.",
+            "The process doesn't release what it already has while it asks for more."
+          ]
+        },
+        {
+          "type": "callout",
+          "tone": "tip",
+          "md": "Breaking this condition means a process must request **all** its resources up front, or release everything before asking again. You'll see this under *deadlock prevention*."
+        }
+      ]
+    },
+    {
+      "id": "s8",
+      "title": "Circular wait",
+      "timestamp": 581,
+      "image": "f_0071.jpg",
+      "image_caption": "Board: P1 → R3 → P3 → R2 → P2 → R1 → P1, a closed loop of waits.",
+      "blocks": [
+        {
+          "type": "definition",
+          "term": "Circular wait",
+          "md": "There's a set {P1, …, Pn} where each process waits for a resource held by the **next** process, and the last one waits on the first. This forms a **cycle**."
+        },
+        {
+          "type": "diagram",
+          "mermaid": "flowchart LR\n  R1[\"R1\"] -- held by --> P1((\"P1\"))\n  P1 -- waits for --> R3[\"R3\"]\n  R3 -- held by --> P3((\"P3\"))\n  P3 -- waits for --> R2[\"R2\"]\n  R2 -- held by --> P2((\"P2\"))\n  P2 -- waits for --> R1",
+          "caption": "The lecture's three-process example."
+        }
+      ]
+    },
+    {
+      "id": "s9",
+      "title": "Putting it together",
+      "timestamp": 693,
+      "blocks": [
+        {
+          "type": "text",
+          "md": "Only when **all four** conditions are present together can we say a deadlock is occurring. If any one of them is missing, deadlock is impossible."
+        },
+        {
+          "type": "callout",
+          "tone": "warning",
+          "title": "Precise wording for GATE",
+          "md": "The lecture calls the four conditions *necessary and sufficient*. The standard statement is that they are **necessary** conditions. With **single-instance** resources, a cycle in the RAG *does* guarantee deadlock. With **multiple instances** of a resource type, a cycle is necessary but **not sufficient**, so there may be no deadlock."
+        }
+      ]
+    }
+  ],
+  "practice": [
+    {
+      "type": "mcq",
+      "question": "Which of the following is **not** one of the necessary conditions for deadlock?",
+      "options": ["Mutual exclusion", "Hold and wait", "Pre-emption", "Circular wait"],
+      "answer": "C",
+      "explanation": "The condition is **no** pre-emption. Allowing pre-emption actually *breaks* deadlock."
+    },
+    {
+      "type": "mcq",
+      "question": "Processes P1 and P2 share binary semaphores S and Q (both initially 1).\nP1: `P(S); P(Q); …; V(Q); V(S);`\nP2: `P(Q); P(S); …; V(S); V(Q);`\nWhat can happen?",
+      "options": [
+        "Deadlock can never occur",
+        "Deadlock is possible",
+        "Starvation of P1 only, never deadlock",
+        "Both always complete regardless of interleaving"
+      ],
+      "answer": "B",
+      "explanation": "If P1 gets S and then P2 gets Q, each blocks on the other's semaphore, which is a circular wait. The opposite acquisition order is the classic deadlock pattern."
+    },
+    {
+      "type": "msq",
+      "question": "In a resource-allocation graph where **every resource type has exactly one instance**, which statements are true?",
+      "options": [
+        "A cycle implies a deadlock",
+        "No cycle implies no deadlock",
+        "A cycle may exist without a deadlock",
+        "Deadlock is possible without a cycle"
+      ],
+      "answer": "A, B",
+      "explanation": "With single instances, a cycle is both necessary and sufficient for deadlock. With multiple instances, a cycle is only necessary."
+    }
+  ]
+}

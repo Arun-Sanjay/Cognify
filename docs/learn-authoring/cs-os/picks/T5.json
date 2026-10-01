@@ -1,0 +1,152 @@
+{
+  "topic_id": "T5",
+  "topic": "Concurrency & Synchronization",
+  "hinglish": [
+    {
+      "video_id": "NgvbKb0mF10",
+      "title": "Operating System 03 | Process Synchronization & Semaphores | CS & IT | GATE 2025 Crash Course",
+      "channel": "GATE Wallah CSE & DA",
+      "duration_sec": 6992,
+      "views": 88864,
+      "likes": 1102,
+      "comments": 31,
+      "upload_date": "20241212",
+      "captions": ["hi(auto)"],
+      "covers": [
+        "race condition",
+        "critical section problem & requirements (mutual exclusion, progress, bounded waiting)",
+        "software solutions: turn variable, flag variable, Peterson's solution (framed as a combination/improvisation of the two)",
+        "semaphores: counting & binary, wait/signal (P/V) operations",
+        "GATE-style semaphore value / numerical questions (worked live, e.g. minimum-value trace at 1:25:00)",
+        "mutex (binary semaphore used for mutual exclusion, discussed in reader-writer context)",
+        "classical problems of synchronization (labelled explicitly at 1:35:09 — producer-consumer, readers-writers, dining philosophers)"
+      ],
+      "why": "A single 116-minute GATE-crash-course lecture that, unusually for this topic, is NOT split into short fragments — it chains flag/turn variables into Peterson's solution, semaphores, GATE-style value numericals, and the classical problems in one continuous session. Comment timestamps (37:55, 50:14, 1:25:00, 1:35:09) independently confirm this breadth. One viewer calls it 'the best video of OS, I don't know why its underrated'; engagement (1,102 likes / 31 comments on ~89K views) is modest next to Gate Smashers' shorts, which is expected for a single long lecture vs. many short high-replay clips, but sentiment is uniformly positive with zero accuracy complaints found.",
+      "comment_highlights": ["Just found the best video of os, I don't know why its underrated", "50:14 Peterson's Solution... combination of improvisations of both the previous ones", "1:35:09 Classical Problems of Synchronisation with next level motivation"]
+    },
+    {
+      "video_id": "9hzoO4hBXFw",
+      "title": "L-3.6: Test and Set Instruction in OS | Process Synchronization",
+      "channel": "Gate Smashers",
+      "duration_sec": 549,
+      "views": 647379,
+      "likes": 10972,
+      "comments": 199,
+      "upload_date": "20210223",
+      "captions": ["en(manual)", "hi(auto)"],
+      "covers": ["hardware synchronization tool: Test-And-Set instruction", "how TSL enforces mutual exclusion at the hardware level"],
+      "why": "Added specifically to cover hardware-based synchronization (test-and-set), which the GATE Wallah lecture does not clearly demonstrate. Gate Smashers' dedicated 9-minute video is extremely well received (647K views, 10.9K likes, 1.7% like ratio) with comments calling it clearer than full college lecture recordings and citing zero factual errors.",
+      "comment_highlights": ["Coming here to refer this video after watching my faculty's lecture recordings 5 times... this teacher is way better", "Finally my phobia about test and set lock from this video is over"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "sEVfeXqWY-s",
+      "title": "Process Synchronisation | Critical Section Problem | OS | Lec-54",
+      "channel": "Education 4u (Bhanu Priya)",
+      "duration_sec": 812,
+      "views": 317667,
+      "likes": 4065,
+      "comments": 80,
+      "upload_date": "20180521",
+      "captions": ["en(auto)"],
+      "covers": ["independent vs cooperating processes", "critical section problem formal definition", "mutual exclusion, progress, bounded waiting requirements"],
+      "why": "Chosen after Neso Academy's equivalent 'The Critical-Section Problem' video (465K views) FAILED the mandatory caption check (subtitles confirmed disabled via youtube_transcript_api — TranscriptsDisabled error). This video explicitly covers the same three requirements with clear worked description, 1.28% like ratio, and consistent comment praise for clarity with no accuracy complaints.",
+      "comment_highlights": ["Thanks ma'am for this informative video this clear my all concepts about critical section problem", "Thk u mam I am a pg cs student and 80% topics are covered by ur all great videos"]
+    },
+    {
+      "video_id": "XDIOC2EY5JE",
+      "title": "Semaphores",
+      "channel": "Neso Academy",
+      "duration_sec": 1370,
+      "views": 703684,
+      "likes": 11760,
+      "comments": 207,
+      "upload_date": "20210708",
+      "captions": ["en(auto)"],
+      "covers": ["counting semaphore", "binary semaphore", "wait (P) and signal (V) operations", "using semaphores for mutual exclusion and synchronization"],
+      "why": "Highest-viewed single video across Neso's entire synchronization playlist (703K views, 11.8K likes, 1.67% like ratio) with unusually strong sentiment for a 23-minute lecture — multiple comments call it better than a full paid or university course, with zero accuracy complaints in the top 40 comments reviewed.",
+      "comment_highlights": ["This perfect mini-course is better than my college's 10 hours course", "NESO academy really be pulling through. Thank you so much sir!", "Best explanation of semaphores on the entire Internet"]
+    },
+    {
+      "video_id": "FYUi-u7UWgw",
+      "title": "The Dining Philosophers Problem",
+      "channel": "Neso Academy",
+      "duration_sec": 1216,
+      "views": 500993,
+      "likes": 9066,
+      "comments": 201,
+      "upload_date": "20210713",
+      "captions": ["en(auto)"],
+      "covers": ["dining philosophers problem setup", "deadlock/starvation risk in naive solution", "semaphore-based solution"],
+      "why": "Best-performing English classical-problem video (500K views, 9K likes, 1.8% like ratio) among Neso's three classic-problem uploads (vs 418K for Bounded Buffer/producer-consumer and 379K for Readers-Writers); comments consistently praise the clarity of the semaphore solution with no reported errors.",
+      "comment_highlights": ["Its really very tough to explain such complicated problems so clearly and also the explanation is so perfect", "I owe my CE degree to this channel. THANK YOU!"]
+    }
+  ],
+  "runners_up": [
+    {
+      "video_id": "UtEORPakw5Y",
+      "title": "The Critical-Section Problem",
+      "channel": "Neso Academy",
+      "views": 465916,
+      "reason_rejected": "Better topical match than the Education4u pick (formal ME/progress/bounded-waiting definitions) and higher engagement, but REJECTED — subtitles confirmed disabled via youtube_transcript_api (TranscriptsDisabled), fails the mandatory caption requirement."
+    },
+    {
+      "video_id": "5oZYS5dTrmk",
+      "title": "Test and Set Lock",
+      "channel": "Neso Academy",
+      "views": 348086,
+      "reason_rejected": "Would have covered English-language hardware synchronization (a gap in the final English picks), but subtitles are disabled (TranscriptsDisabled), fails the caption requirement."
+    },
+    {
+      "video_id": "gYCiTtgGR5Q",
+      "title": "Peterson's Solution",
+      "channel": "Neso Academy",
+      "views": 618905,
+      "reason_rejected": "Excellent video (2nd-highest views in Neso's whole synchronization series, comments call it 'hands down the best explanation of Peterson's Solution'), captions confirmed — but cut to respect the 3-video cap; prioritized critical-section-requirements + semaphores + one classical problem instead. Strongly recommended as the 4th watch for English learners."
+    },
+    {
+      "video_id": "p2XDhW5INOo",
+      "title": "The Readers Writers Problem",
+      "channel": "Neso Academy",
+      "views": 378803,
+      "reason_rejected": "Solid classical-problem video but lower views than Dining Philosophers pick; cut to respect the 3-video cap."
+    },
+    {
+      "video_id": "Qx3P2wazwI0",
+      "title": "The Bounded Buffer Problem",
+      "channel": "Neso Academy",
+      "views": 418035,
+      "reason_rejected": "Covers producer-consumer specifically but lower views than Dining Philosophers pick; cut to respect the 3-video cap."
+    },
+    {
+      "video_id": "ufdQ0GR855M",
+      "title": "Monitors",
+      "channel": "Neso Academy",
+      "views": 299334,
+      "reason_rejected": "Lowest-viewed video in Neso's synchronization series; monitors is a lower-GATE-frequency subtopic so it lost out to higher-yield picks within the 3-video cap."
+    },
+    {
+      "video_id": "iMD1Z3f9ioI",
+      "title": "L-3.2: Producer Consumer Problem",
+      "channel": "Gate Smashers",
+      "views": 1719369,
+      "reason_rejected": "Part of Gate Smashers' excellent 13-part L-3.x series (race condition through dining philosophers), but its classical-problems content is already covered inside the GATE Wallah comprehensive pick; adding it would be redundant given the 3-video cap for Hinglish."
+    },
+    {
+      "video_id": "K71pRtq7aB4",
+      "title": "Operating System 03 : Process Synchronization & Semaphores | GATE 2026 Crash Course",
+      "channel": "GATE Wallah CSE & DA",
+      "views": 51046,
+      "reason_rejected": "Same lecture re-recorded for the 2026 batch; the 2025 upload (NgvbKb0mF10) has more views/likes/comments, so it was preferred."
+    },
+    {
+      "video_id": "009FHqBo87Q",
+      "title": "Operating System | OS in one shot | Complete GATE Course | Hindi",
+      "channel": "KnowledgeGATE by Sanchit Sir",
+      "views": 539098,
+      "reason_rejected": "Excluded per brief: whole-OS 'in one shot' course is too broad for a single topic pick; the topic-specific KnowledgeGATE 4.x series (4.1 Race Condition, 4.8 Semaphores, etc.) is similarly fragmented into 10+ short videos with lower per-video engagement than the GATE Wallah or Gate Smashers picks."
+    }
+  ],
+  "coverage_gaps": "Hinglish: the two final picks do not clearly cover monitors (no strong dedicated Hinglish monitors video was found from a top channel — searches returned only unrelated 'display monitor' results) or the swap instruction (only low-view, non-top-channel videos exist for swap specifically; test-and-set is covered by the L-3.6 pick but swap is not). English: the three final picks (critical section, semaphores, dining philosophers) leave out software/hardware solution algorithms (lock variable, strict alternation, Peterson's — see runner-up gYCiTtgGR5Q, an excellent Peterson's Solution video cut only to respect the 3-video cap), test-and-set/swap hardware instructions (Neso's 'Test and Set Lock' was disqualified for disabled captions), two of the three classical problems (producer-consumer/Bounded Buffer and readers-writers — both exist as strong Neso Academy runners-up), and monitors as a distinctly named concept (Neso's 'Monitors', lowest-viewed in its series, listed as runner-up). Students needing full coverage in English should supplement with Neso Academy's Peterson's Solution, Test and Set Lock (no captions — watch without relying on subtitles), Bounded Buffer Problem, Readers Writers Problem, and Monitors videos, all from the same well-reviewed playlist."
+}

@@ -1,0 +1,72 @@
+{
+  "topic_id": "T8",
+  "topic": "I/O & Disk Scheduling",
+  "hinglish": [
+    {
+      "video_id": "xJcl7VPUROg",
+      "title": "UNIT-5 I ONE SHOT I/O Management and Disk Scheduling I Operating System I by Kapil Sir I AKTU",
+      "channel": "GateWay Classes",
+      "duration_sec": 7044,
+      "views": 115580,
+      "likes": 1329,
+      "comments": 107,
+      "upload_date": "20240716",
+      "captions": ["hi(auto)"],
+      "covers": ["I/O devices & buffering/spooling", "disk storage structure: track, sector, spindle", "seek time, rotational latency, transfer time", "all 6 disk scheduling algorithms (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK)", "GATE/AKTU PYQ-style numericals for each algorithm, year-wise", "RAID overview"],
+      "why": "Only single video found that genuinely covers the ENTIRE T8 scope end-to-end (verified via transcript: I/O buffering -> disk structure/seek time/rotational latency -> all 6 scheduling algorithms with PYQ numericals by year -> RAID) rather than splitting into many short clips. 115K views, 1329 likes (1.15% like/view, healthy for a 117-min niche lecture), Hindi auto-captions present. Alternatives with comparable/higher popularity (Gate Smashers' disk-scheduling series, Last Moment Tuitions, KnowledgeGATE, TutorialsSpace) either split the topic across 7-9 separate videos (breaching the 3-video cap and each missing most of the other algorithms) or lack any captions at all, so were rejected per the syllabus-coverage-first rule.",
+      "comment_highlights": ["it is genuinely a great lecture more than sufficient for aktu exam file topic", "Dr kapil sir is very best teacher of operating system and data structure", "Sir please upload of 2nd and 4th unit too"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "F18RiREDkwE",
+      "title": "Basics of OS (I/O Structure)",
+      "channel": "Neso Academy",
+      "duration_sec": 764,
+      "views": 888191,
+      "likes": 11776,
+      "comments": 194,
+      "upload_date": "20170824",
+      "captions": ["en(auto)"],
+      "covers": ["I/O devices, I/O port/bus", "device controller vs device driver", "interrupt-driven I/O and DMA overview as relevant to the OS"],
+      "why": "Neso's dedicated I/O-basics lecture is the clear popularity + clarity leader for this sub-slice (888K views, 11.8K likes, 1.33% like ratio) and comments show it resolves common confusions (controller vs driver) precisely on-syllabus.",
+      "comment_highlights": ["Finally I understand that the device controller is hardware and device driver is software", "This is what I searched for. Awesome lectures.", "at first i didnt grasp the whole concept of the I/O operation but now i fully understand"]
+    },
+    {
+      "video_id": "YcRd3WMbXnE",
+      "title": "Basics of OS (Storage Structure)",
+      "channel": "Neso Academy",
+      "duration_sec": 602,
+      "views": 791485,
+      "likes": 11108,
+      "comments": 179,
+      "upload_date": "20170821",
+      "captions": ["en(auto)"],
+      "covers": ["memory/storage hierarchy", "disk as secondary storage: platters, tracks, cost-per-bit reasoning", "sets up seek-time/rotational-latency intuition"],
+      "why": "Companion Neso lecture, essentially tied with the I/O one on views/likes and same production quality; best available English treatment of disk structure concepts with strong comment engagement.",
+      "comment_highlights": ["The example of bookshelves is just osm bro", "This channel is soooooo good..from theorical cs to os..helps every where"]
+    },
+    {
+      "video_id": "m1oNigNpT5M",
+      "title": "Hard disk Architecture || Magnetic Disk Architecture || Operating Systems || Disk Management",
+      "channel": "Sudhakar Atchala",
+      "duration_sec": 351,
+      "views": 100630,
+      "likes": 1776,
+      "comments": 64,
+      "upload_date": "20230318",
+      "captions": ["en(auto)", "hi(auto, translated)"],
+      "covers": ["platters, tracks, sectors, cylinders, spindle/arm", "seek time definition, rotational latency, transfer time"],
+      "why": "Only channel found with a consistent full English series covering disk architecture AND all 6 scheduling algorithms individually (FCFS/SSTF/SCAN/C-SCAN/LOOK/C-LOOK all present with captions and 100K-172K views each, ~1.1-1.7% like ratio) -- picked as the representative structure video since it directly precedes the algorithm set in his playlist and comments confirm strong exam-prep value.",
+      "comment_highlights": ["Thank u soo much sir tomorrow is my exam u saved me", "Thankyou sir !! You made all topics in os easier"]
+    }
+  ],
+  "runners_up": [
+    { "video_id": "9uoa_p8q47Y", "title": "L-6.3: Disk Scheduling Algorithm | Operating System", "channel": "Gate Smashers", "views": 1323722, "reason_rejected": "Far higher views/likes than any pick, and has captions, but Gate Smashers splits disk structure + each of the 6 algorithms into 8 separate videos (L-6.1, 6.3-6.9); picking only 3 within the cap would leave most algorithms' numericals uncovered, so the single comprehensive GateWay Classes lecture was preferred for full syllabus coverage." },
+    { "video_id": "dEt7mr9R_Z8", "title": "FCFS SSTF SCAN CSCAN LOOK CLOOK Solved Example in Hindi | Disk Scheduling Sums", "channel": "Last moment tuitions", "views": 810050, "reason_rejected": "No captions available (manual or auto) on the video -- disqualified per the hard captions requirement, despite excellent view/like numbers (2.78% like ratio) and single-video coverage of all 6 algorithms." },
+    { "video_id": "aKmuGwHj3Cw", "title": "8.1 Disk scheduling algorithms in operating system in hindi example track sector seek time", "channel": "KnowledgeGATE by Sanchit Sir", "views": 178029, "reason_rejected": "No captions available -- disqualified despite single-video coverage of both disk structure and scheduling algorithms." },
+    { "video_id": "uEM7LfP_0mw", "title": "7.8- All Disk Scheduling Algorithm In Operating System", "channel": "TutorialsSpace- Er. Deepak Garg", "views": 149366, "reason_rejected": "No captions available; also delivered in Hindi (part of a Hindi-labelled numbered series) despite an English-only title, so would not qualify as an English pick anyway." },
+    { "video_id": "eME2bckEFQw", "title": "SSTF Disk Scheduling Algorithm", "channel": "Sudhakar Atchala", "views": 129788, "reason_rejected": "Same excellent English series as the m1oNigNpT5M pick but excluded to stay within the 3-video-per-language cap; students should continue through this channel's SSTF/CSCAN/LOOK/CLOOK videos for full numerical practice." }
+  ],
+  "coverage_gaps": "English pick set covers I/O basics and disk structure very well (Neso) plus disk architecture from Sudhakar Atchala, but does not include a top-quality English video showing every one of FCFS/SSTF/SCAN/C-SCAN/LOOK/C-LOOK worked numerically within the 3-video cap -- Sudhakar Atchala's channel has all 6 as separate captioned videos (recommend as follow-up watching) but only one was included in the pick to respect the cap."
+}

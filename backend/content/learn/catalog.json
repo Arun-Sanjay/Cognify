@@ -1,0 +1,82 @@
+{
+  "subjects": [
+    {
+      "id": "cs",
+      "code": "CS",
+      "name": "Computer Science and Information Technology",
+      "description": "GATE 2027 CS paper — 10 syllabus sections. Lectures are hand-picked from YouTube (best Hinglish + best English per topic) with AI study notes.",
+      "units": [
+        {
+          "id": "engineering-mathematics",
+          "number": 1,
+          "name": "Engineering Mathematics",
+          "syllabus": "Discrete Mathematics, Linear Algebra, Calculus, Probability and Statistics.",
+          "available": false
+        },
+        {
+          "id": "digital-logic",
+          "number": 2,
+          "name": "Digital Logic",
+          "syllabus": "Boolean algebra and minimization; combinational and sequential circuits; number representation and arithmetic.",
+          "available": false
+        },
+        {
+          "id": "coa",
+          "number": 3,
+          "name": "Computer Organization and Architecture",
+          "syllabus": "Instruction set, ALU and control unit design, memory hierarchy and cache mapping, I/O (interrupt, DMA), pipelining and hazards.",
+          "available": false
+        },
+        {
+          "id": "programming-ds",
+          "number": 4,
+          "name": "Programming and Data Structures",
+          "syllabus": "Programming in C, recursion, arrays, stacks, queues, linked lists, trees, BSTs, binary heaps, graphs.",
+          "available": false
+        },
+        {
+          "id": "algorithms",
+          "number": 5,
+          "name": "Algorithms",
+          "syllabus": "Searching, sorting, hashing; asymptotic complexity; greedy, dynamic programming, divide-and-conquer; graph traversals, MSTs, shortest paths.",
+          "available": false
+        },
+        {
+          "id": "toc",
+          "number": 6,
+          "name": "Theory of Computation",
+          "syllabus": "Regular expressions and finite automata; CFGs and PDAs; regular and context-free languages, pumping lemma; Turing machines and undecidability.",
+          "available": false
+        },
+        {
+          "id": "compiler-design",
+          "number": 7,
+          "name": "Compiler Design",
+          "syllabus": "Lexical analysis, parsing, syntax-directed translation, runtime environments, intermediate code generation, local optimisation, data-flow analyses.",
+          "available": false
+        },
+        {
+          "id": "os",
+          "number": 8,
+          "name": "Operating System",
+          "syllabus": "System calls, processes, threads, inter-process communication, concurrency and synchronization. Deadlock. CPU and I/O scheduling. Memory management and virtual memory. File systems.",
+          "available": true
+        },
+        {
+          "id": "databases",
+          "number": 9,
+          "name": "Databases",
+          "syllabus": "ER-model; relational algebra, tuple calculus, SQL; integrity constraints, normal forms; file organization, indexing (B and B+ trees); transactions and concurrency control.",
+          "available": false
+        },
+        {
+          "id": "computer-networks",
+          "number": 10,
+          "name": "Computer Networks",
+          "syllabus": "Layering; switching; data link layer, MAC, Ethernet; routing; IPv4, CIDR, NAT; TCP flow and congestion control, sockets; DNS and HTTP.",
+          "available": false
+        }
+      ]
+    }
+  ]
+}

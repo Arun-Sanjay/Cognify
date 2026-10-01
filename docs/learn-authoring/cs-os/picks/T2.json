@@ -1,0 +1,130 @@
+{
+  "topic_id": "T2",
+  "topic": "Processes",
+  "hinglish": [
+    {
+      "video_id": "2dJdHMpCLIg",
+      "title": "L-1.5: Process States in Operating System | Schedulers(Long term,Short term,Medium term)",
+      "channel": "Gate Smashers",
+      "duration_sec": 1254,
+      "views": 2480105,
+      "likes": 49712,
+      "comments": 1200,
+      "upload_date": "20200216",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["process concept", "primary process states (new, ready, running, waiting/blocked, terminated)", "state-transition diagram", "suspend-ready/suspend-wait states", "long-term scheduler", "short-term scheduler", "medium-term scheduler", "preemptive vs non-preemptive scheduling"],
+      "why": "By far the most-watched Hinglish lecture on this exact syllabus fragment (2.48M views, 49.7K likes, 1200 comments) and transcript confirms a complete, exam-focused walkthrough of all primary+suspended states and all three schedulers with clear diagrams. Comments consistently call it the clearest explanation for exam prep ('best teacher', 'helpful for semester exam'), with no coverage complaints found.",
+      "comment_highlights": ["I wish my college had these types of teachers!!", "Best teacher in the world for computer engineering", "It's 5 years old videos but still most helpful for semester exam"]
+    },
+    {
+      "video_id": "arlIBez-W_I",
+      "title": "Lecture 11: Context Switching in OS | Medium Term Scheduler | Orphan/Zombie Process",
+      "channel": "CodeHelp - by Babbar",
+      "duration_sec": 2440,
+      "views": 198580,
+      "likes": 4486,
+      "comments": 226,
+      "upload_date": "20220217",
+      "captions": ["en-IN(manual)", "hi(auto)"],
+      "covers": ["context switching", "medium-term scheduler (reinforced)", "zombie process", "orphan process"],
+      "why": "Gate Smashers' L-1.5 does not cover context switching or zombie/orphan processes at all (verified from transcript), so this lecture from Babbar's dedicated OS-for-placements series fills that exact gap with a strong like/view ratio (2.26%) and on-topic comments defining zombie vs orphan correctly, confirming accurate content.",
+      "comment_highlights": ["Best O.S playlist for placement, Quality Content and consistency", "A zombie process refers to a process that has completed its execution and waiting for its parent to collect its exit status"]
+    },
+    {
+      "video_id": "ixq5cpdEO2Q",
+      "title": "L-1.8: Fork System call with Example | Fork() system call questions",
+      "channel": "Gate Smashers",
+      "duration_sec": 601,
+      "views": 1323817,
+      "likes": 29163,
+      "comments": 1000,
+      "upload_date": "20190206",
+      "captions": ["en(manual)"],
+      "covers": ["process creation (fork() system call)", "parent/child process relationship", "GATE-style fork() counting questions"],
+      "why": "Adds process-creation coverage (1.32M views, 29.2K likes, 1000 comments) that neither of the other two picks addresses in depth, and is explicitly GATE-PYQ focused (fork tree counting), which comments confirm helped viewers solve real GATE questions quickly.",
+      "comment_highlights": ["Our education system needs more teachers like him!", "sir today i saw your lecture about fork and then solved a GATE question in a few seconds"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "jZ_6PXoaoxo",
+      "title": "Process State",
+      "channel": "Neso Academy",
+      "duration_sec": 532,
+      "views": 611081,
+      "likes": 10438,
+      "comments": 133,
+      "upload_date": "20180709",
+      "captions": ["en-GB(manual)", "en(auto)"],
+      "covers": ["process concept", "process states (new, ready, running, waiting/blocked, terminated)", "state-transition diagram"],
+      "why": "Neso Academy splits OS process management into short focused lectures (the norm for this channel), and this is the highest-approval entry point (1.7% like ratio) explicitly naming GATE prep in top comments; picked as the anchor video since states/transition diagram is the core of the syllabus fragment.",
+      "comment_highlights": ["I am preparing for gate I am addicted to ur lectures only", "Better than a 400 dollar university course tbh"]
+    },
+    {
+      "video_id": "2h3eWaPx8SA",
+      "title": "Process Scheduling",
+      "channel": "Neso Academy",
+      "duration_sec": 679,
+      "views": 778751,
+      "likes": 11748,
+      "comments": 130,
+      "upload_date": "20180720",
+      "captions": ["en-GB(manual)"],
+      "covers": ["long-term scheduler", "short-term scheduler", "medium-term scheduler", "job queue vs ready queue"],
+      "why": "The most-viewed video in Neso's process series (778K views) and covers the three scheduler types the syllabus names explicitly; comments show strong recall/understanding ('automatically goes inside the brain') rather than confusion.",
+      "comment_highlights": ["East or west NESO Academy is always best", "No need to memorize concept It automatically goes inside the brain"]
+    },
+    {
+      "video_id": "vTgccrbYHYs",
+      "title": "Context Switch",
+      "channel": "Neso Academy",
+      "duration_sec": 633,
+      "views": 462636,
+      "likes": 8001,
+      "comments": 151,
+      "upload_date": "20180725",
+      "captions": ["en-GB(manual)", "en(auto)"],
+      "covers": ["context switching", "role of PCB in saving/restoring process state during a switch"],
+      "why": "Covers context switching, a syllabus item neither of the other two English picks addresses; top comments independently and correctly explain that context is saved into the PCB during a switch, confirming the PCB-context-switch link is taught clearly.",
+      "comment_highlights": ["I really liked the example related to MOTHER", "the context of the current running process is saved into its PCB"]
+    }
+  ],
+  "runners_up": [
+    {
+      "video_id": "4s2MKuVYKV8",
+      "title": "Process Control Block",
+      "channel": "Neso Academy",
+      "views": 692485,
+      "reason_rejected": "Excellent dedicated PCB video (highest like count of Neso's process series, great comment sentiment) but not selected as a 3rd English pick since context switching (vTgccrbYHYs, which itself explains PCB's role) was judged more central to GATE numericals; still a very strong alternative/supplement."
+    },
+    {
+      "video_id": "-ddfZ0atNAU",
+      "title": "Process State Transition Diagram and various Schedulers | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "views": 510091,
+      "reason_rejected": "Covers similar ground to Gate Smashers L-1.5 (states + all 3 schedulers) but with far lower views/likes/comments engagement; Gate Smashers' equivalent is more popular and equally thorough."
+    },
+    {
+      "video_id": "xw_OuOhjauw",
+      "title": "Complete Operating System in one shot | Semester Exam | Hindi",
+      "channel": "KnowledgeGATE by Sanchit Sir",
+      "views": 3632206,
+      "reason_rejected": "Excluded per selection rules: a ~6.3 hour 'complete OS in one shot' video is too broad/unfocused for this specific topic despite huge popularity."
+    },
+    {
+      "video_id": "hWR8fOtD_g4",
+      "title": "Process Control Block (PCB) ll Operating System ll Explained with Examples in Hindi",
+      "channel": "5 Minutes Engineering",
+      "views": 250345,
+      "reason_rejected": "Decent dedicated Hinglish PCB video but weaker channel authority/production and lower engagement than the picked videos; not needed as our Hinglish picks already reach 6/7 subtopics without it."
+    },
+    {
+      "video_id": "ucVm_arB-fw",
+      "title": "OS | Process Management| Process, PCB and Attributes | Ravindrababu Ravula | Free GATE CS Classes",
+      "channel": "Prof. Ravindrababu Ravula",
+      "views": 526807,
+      "reason_rejected": "Reputable GATE-specific English teacher covering process/PCB/attributes, but lower like ratio (~0.6%) than the Neso picks and older production quality (2014); kept as a strong alternate for PCB depth."
+    }
+  ],
+  "coverage_gaps": "Neither language's pick-set includes a dedicated video on process termination mechanics (exit()/wait()) or zombie/orphan processes for the English side (no comparably popular English-language video on zombie/orphan was found; only small-channel English options like Shahid Nihal's 'Zombie Process and Orphan Process' exist, well below the popularity bar). Hinglish picks do cover zombie/orphan via CodeHelp Babbar's Lecture 11. PCB is covered as a dedicated video only for English (Neso's 'Process Control Block' was a close runner-up, not a top-3 pick); Hinglish picks touch PCB only implicitly through fork()/context-switch discussion, not as a dedicated structure walkthrough."
+}

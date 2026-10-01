@@ -1,0 +1,1126 @@
+{
+  "topic_id": "t04-ipc",
+  "questions": [
+    {
+      "id": "t04-001",
+      "subtopic": "shared-memory",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "System V shared memory",
+        "shmget/shmat"
+      ],
+      "stem": "In the System V shared-memory API, which pair of calls first **creates (or locates)** a shared-memory segment and then **maps it into the calling process's address space**?",
+      "options": [
+        "`mmap()` then `shmget()`",
+        "`shmdt()` then `shmctl()`",
+        "`shmget()` then `shmat()`",
+        "`pipe()` then `dup2()`"
+      ],
+      "answer": "C",
+      "explanation": "`shmget()` creates a new segment (or returns the id of an existing one for a key). `shmat()` attaches that segment to the caller's address space and returns its starting address. `shmdt()` detaches it and `shmctl(id, IPC_RMID, …)` marks it for removal. `mmap()`/`munmap()` belong to the POSIX route (`shm_open` + `ftruncate` + `mmap`); `pipe()`/`dup2()` are pipe calls.",
+      "option_feedback": [
+        "`mmap()` is the POSIX mapping call and `shmget()` would have to come first anyway; mixing the two APIs in this order is wrong.",
+        "`shmdt()` detaches and `shmctl()` controls/removes — these are the clean-up calls, not creation/attachment.",
+        "Correct: `shmget()` creates/locates the segment, `shmat()` attaches it.",
+        "These are pipe-related calls, not shared memory."
+      ]
+    },
+    {
+      "id": "t04-002",
+      "subtopic": "shared-memory",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "shared memory",
+        "kernel involvement"
+      ],
+      "stem": "Once a shared-memory region has been set up between two processes, how is the kernel involved when the processes read and write data in that region?",
+      "options": [
+        "Every read and write is a system call that the kernel validates",
+        "No kernel intervention is needed for routine accesses; they are ordinary memory accesses",
+        "The kernel copies the data from the writer's buffer to the reader's buffer on every write",
+        "The kernel automatically serialises concurrent accesses so no race can occur"
+      ],
+      "answer": "B",
+      "explanation": "System calls are needed only to **establish** the region (create, attach). After that, accesses are ordinary memory loads and stores through the processes' page tables; no system call is made per access. That is exactly why shared memory is faster than message passing, which needs a system call for every `send`/`receive`. The flip side: the kernel provides **no** automatic synchronisation — the processes must coordinate themselves.",
+      "option_feedback": [
+        "That describes message passing, not shared memory.",
+        "Correct: after setup, accesses are plain loads/stores.",
+        "Copying through the kernel is the message-passing model.",
+        "The kernel gives no automatic mutual exclusion on shared memory; races are the programmer's problem."
+      ],
+      "trap": "Assuming the OS synchronises shared-memory accesses."
+    },
+    {
+      "id": "t04-003",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "shared memory vs message passing",
+        "performance"
+      ],
+      "stem": "Two processes on the **same multicore machine** need to exchange a 200 MB image many times per second. Which IPC mechanism is generally faster, and why?",
+      "options": [
+        "Shared memory — after setup there are no per-transfer system calls or kernel copies",
+        "Message passing — the kernel performs the copy, which is faster than user code",
+        "Message passing — it avoids cache-coherence traffic, which dominates on multicore",
+        "Both are equally fast because both ultimately use RAM"
+      ],
+      "answer": "A",
+      "explanation": "With shared memory the data is written once into a region both processes map; the reader accesses it directly, so after setup there are no per-transfer system calls and no copying through the kernel. Message passing (and pipes) copy data user → kernel → user and require a system call per transfer, which is expensive for large volumes. Message passing is preferable for **small** amounts of data and for **distributed** systems (where no common memory exists), but here the processes share a machine and the volume is large.",
+      "option_feedback": [
+        "Correct.",
+        "Kernel copying adds work (two copies plus traps), it does not speed things up.",
+        "Cache-coherence costs can make message passing competitive for small messages on many-core systems, but for bulk 200 MB transfers the double copy dominates.",
+        "The number of copies and system calls differs, so the costs differ."
+      ]
+    },
+    {
+      "id": "t04-004",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "shared memory vs message passing",
+        "trade-offs"
+      ],
+      "stem": "Which of the following statements about the two fundamental IPC models are **correct**?",
+      "options": [
+        "Message passing is easier to use across machines in a distributed system",
+        "In the shared-memory model the OS decides the data format and synchronises access",
+        "Message passing typically involves the kernel on every exchange, shared memory only during setup",
+        "By default any process may read any other process's memory, which is what shared memory exploits"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A** True: message passing needs no shared address space, so it extends naturally to processes on different machines.\n- **B** False: in shared memory the processes, not the OS, decide the layout and must provide their own synchronisation.\n- **C** True: each send/receive is a system call involving the kernel, while shared memory needs system calls only for setup.\n- **D** False: normally the OS **prevents** one process from accessing another's memory; shared memory works only because the processes explicitly agree to remove this restriction for a region.",
+      "option_feedback": [
+        "Correct.",
+        "Wrong: format and synchronisation are the processes' responsibility.",
+        "Correct.",
+        "Wrong: memory protection forbids this by default; a region must be explicitly shared."
+      ]
+    },
+    {
+      "id": "t04-005",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "bounded buffer",
+        "in/out pointers"
+      ],
+      "stem": "A producer and a consumer share a circular buffer `item buffer[BUFFER_SIZE]` with `BUFFER_SIZE = 8`, using only the two indices `in` and `out` (initially 0):\n\n```c\n/* producer */\nwhile ((in + 1) % BUFFER_SIZE == out) ; /* wait: full */\nbuffer[in] = next_produced;\nin = (in + 1) % BUFFER_SIZE;\n\n/* consumer */\nwhile (in == out) ; /* wait: empty */\nnext_consumed = buffer[out];\nout = (out + 1) % BUFFER_SIZE;\n```\n\nWhat is the maximum number of items that can be in the buffer at the same time?",
+      "answer": {
+        "min": 7,
+        "max": 7
+      },
+      "explanation": "The buffer is **empty** when `in == out` and **full** when `(in + 1) % BUFFER_SIZE == out`. If all 8 slots were filled, `in` would wrap round to equal `out`, which is indistinguishable from empty. So one slot is always left unused: maximum = BUFFER_SIZE − 1 = **7**.",
+      "trap": "Answering 8 — the in/out scheme sacrifices one slot to distinguish full from empty."
+    },
+    {
+      "id": "t04-006",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "POSIX shared memory",
+        "shm_open"
+      ],
+      "stem": "A POSIX producer creates a shared-memory object for a consumer. Which sequence of calls is correct?",
+      "options": [
+        "`mmap()` → `shm_open()` → `ftruncate()`",
+        "`shm_open()` → `mmap()` → `ftruncate()`",
+        "`ftruncate()` → `shm_open()` → `mmap()`",
+        "`shm_open()` → `ftruncate()` → `mmap()`"
+      ],
+      "answer": "D",
+      "explanation": "POSIX shared memory is a memory-mapped object:\n1. `shm_open(name, O_CREAT | O_RDWR, 0666)` creates/opens the object and returns a file descriptor.\n2. `ftruncate(fd, SIZE)` sets its size (a new object has size 0).\n3. `mmap(0, SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)` maps it, returning a pointer.\n\nThe consumer later calls `shm_unlink(name)` to remove it. Mapping before sizing gives a zero-length object; `MAP_SHARED` is required for writes to be visible to the other process.",
+      "option_feedback": [
+        "`mmap` needs the descriptor that `shm_open` returns.",
+        "Mapping a freshly created object before setting its size maps a zero-length object.",
+        "`ftruncate` needs a descriptor, which only exists after `shm_open`.",
+        "Correct: open, size, map."
+      ]
+    },
+    {
+      "id": "t04-007",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "bounded buffer",
+        "circular indices"
+      ],
+      "stem": "A shared circular buffer of `BUFFER_SIZE = 10` slots uses the `in`/`out` scheme (empty when `in == out`, full when `(in + 1) % 10 == out`). At some instant `in = 2` and `out = 6`. How many **more** items can the producer insert before the buffer becomes full, assuming the consumer removes nothing in the meantime?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Items currently in the buffer = (in − out + N) mod N = (2 − 6 + 10) mod 10 = **6** (slots 6, 7, 8, 9, 0, 1).\n\nUsable capacity with this scheme = N − 1 = 9, so free usable slots = 9 − 6 = **3**.\n\nCheck by stepping `in`: 2→3 (insert), 3→4 (insert), 4→5 (insert); now (5 + 1) % 10 = 6 = out, so the producer waits. Three inserts.",
+      "trap": "Computing 4 by using the full 10 slots, or computing out − in = 4 directly."
+    },
+    {
+      "id": "t04-008",
+      "subtopic": "shared-memory",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 50,
+      "concepts": [
+        "shared memory",
+        "synchronisation responsibility"
+      ],
+      "stem": "Which statement about shared-memory IPC is **false**?",
+      "options": [
+        "After the region is established, data can be exchanged without system calls",
+        "The OS guarantees that two processes never write the same shared location simultaneously",
+        "The same shared region may be attached at different virtual addresses in the two processes",
+        "A System V segment can outlive the process that created it until it is explicitly removed"
+      ],
+      "answer": "B",
+      "explanation": "- A is true: shared memory is the fastest IPC because after setup data moves via ordinary loads and stores.\n- **B is false**: the OS does not serialise accesses to a shared region; two processes can update it simultaneously and race. Programmers use semaphores, mutexes, etc.\n- C is true: the region is part of both address spaces, possibly at different virtual addresses (so storing raw pointers into it is unsafe).\n- D is true: System V segments persist until removed with `shmctl(IPC_RMID)` (and detached), even if the creator exits.",
+      "option_feedback": [
+        "True — this is the speed advantage.",
+        "This is the false statement: synchronisation is the processes' responsibility.",
+        "True — each process gets its own mapping of the same physical frames.",
+        "True — segments are kernel-persistent."
+      ]
+    },
+    {
+      "id": "t04-009",
+      "subtopic": "shared-memory",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "race condition",
+        "count variable",
+        "bounded buffer"
+      ],
+      "stem": "A bounded-buffer producer and consumer share an integer `count` (currently **5**) and update it **without** synchronisation. Each update compiles to three machine instructions:\n\n```text\nproducer: count++            consumer: count--\n  r1 = count                   r2 = count\n  r1 = r1 + 1                  r2 = r2 - 1\n  count = r1                   count = r2\n```\n\nThe producer executes `count++` once and the consumer executes `count--` once, concurrently, with arbitrary interleaving on a single CPU (registers are saved/restored on context switch). Which final values of `count` are possible?",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "answer": [
+        "B",
+        "C",
+        "D"
+      ],
+      "explanation": "Each operation reads `count`, computes, and writes back. Cases:\n\n| Interleaving | Final `count` |\n|---|---|\n| producer runs fully, then consumer (or vice versa) | 5 |\n| both read 5; producer stores 6, then consumer stores 4 | **4** |\n| both read 5; consumer stores 4, then producer stores 6 | **6** |\n\nThe value written last wins whenever the two read-modify-write sequences overlap. A value of 3 would need two decrements; there is only one. So possible values: **4, 5, 6**.",
+      "option_feedback": [
+        "Impossible: only one decrement happens, so the value can never drop below 4.",
+        "Possible: both read 5, consumer's store of 4 is last.",
+        "Possible: serial execution in either order.",
+        "Possible: both read 5, producer's store of 6 is last."
+      ],
+      "trap": "Thinking only the correct value 5 is reachable, or missing one of the lost-update outcomes."
+    },
+    {
+      "id": "t04-010",
+      "subtopic": "shared-memory",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "bounded buffer",
+        "in/out pointers",
+        "trace"
+      ],
+      "stem": "A producer and consumer share a circular buffer with `BUFFER_SIZE = 6` using the `in`/`out` scheme (producer waits while `(in + 1) % 6 == out`; consumer waits while `in == out`). Initially `in = out = 0`.\n\nThe following happens in order:\n1. The producer runs alone until it has to wait.\n2. The consumer then consumes exactly 3 items and stops.\n3. The producer runs alone again until it has to wait.\n\nWhat is the value of `in` at the end of step 3?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "**Step 1.** The producer inserts while `(in + 1) % 6 != out` with `out = 0`: inserts at slots 0,1,2,3,4 → `in` = 5. Now (5 + 1) % 6 = 0 = out, so it waits (5 items — one slot is always kept free).\n\n**Step 2.** Consumer takes slots 0,1,2 → `out` = 3; 2 items remain.\n\n**Step 3.** Producer with `out = 3`:\n\n| `in` before | (in+1)%6 | equals out? | action |\n|---|---|---|---|\n| 5 | 0 | no | insert, in = 0 |\n| 0 | 1 | no | insert, in = 1 |\n| 1 | 2 | no | insert, in = 2 |\n| 2 | 3 | yes | wait |\n\nFinal `in` = **2** (buffer holds 5 items: slots 3,4,5,0,1). Cross-check: items = (2 − 3 + 6) mod 6 = 5 = N − 1, full.",
+      "trap": "Forgetting the wrap-around of `in`, or allowing 6 items in step 1."
+    },
+    {
+      "id": "t04-011",
+      "subtopic": "shared-memory",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 4,
+      "type": "mcq",
+      "est_seconds": 240,
+      "concepts": [
+        "fork and shared memory",
+        "copy-on-write vs shared mapping",
+        "shmdt/shmat",
+        "grandchild inheritance"
+      ],
+      "stem": "Consider the following program (error checks omitted; every `fork()` succeeds).\n\n```c\nint id = shmget(IPC_PRIVATE, sizeof(int), IPC_CREAT | 0600);\nint *s = (int *) shmat(id, NULL, 0);\nint g = 1;\n*s = 1;\nif (fork() == 0) {                 /* C: child */\n    *s = *s + 10;\n    g = g + 10;\n    shmdt(s);                      /* C detaches this attachment */\n    int *t = (int *) shmat(id, NULL, 0);\n    if (fork() == 0) {             /* G: child of C */\n        *t = *t * 2;\n        g = g * 2;\n        exit(0);\n    }\n    wait(NULL);\n    *t = *t + g;\n    exit(0);\n}\nwait(NULL);\nprintf(\"%d %d\\n\", *s, g);\n```\n\nWhat does the original (parent) process print?",
+      "options": [
+        "`44 1`",
+        "`22 1`",
+        "`33 1`",
+        "`33 11`"
+      ],
+      "answer": "C",
+      "explanation": "Two rules decide everything:\n- A System V segment that is attached when a process forks stays attached in the child and refers to the **same** physical memory (the same holds for an attachment the child makes itself and then passes on through a later `fork()`).\n- An ordinary variable such as `g` is **private** after `fork()` (copy-on-write): each process changes only its own copy.\n\n`shmdt(s)` in C only removes **C's** mapping at address `s`; the segment, and the parent's own attachment, are unaffected. C re-attaches the same segment as `t`.\n\n| Step | Process | Segment value | That process's `g` |\n|---|---|---|---|\n| `*s = 1` | parent | 1 | 1 |\n| `*s += 10`, `g += 10` | C | 11 | 11 (C's copy) |\n| `*t *= 2`, `g *= 2` | G (inherits `t`) | 22 | 22 (G's copy) |\n| after `wait`, `*t += g` | C | 22 + **11** = 33 | 11 |\n\nG's doubling of `g` is invisible to C, so C adds its own `g = 11`. The parent's `s` still maps the segment, so `*s` = **33**, and the parent's `g` was never changed: **1**. Output `33 1`.",
+      "option_feedback": [
+        "Adds G's `g = 22` in C — but G's `g` is a private copy; C still has `g = 11`.",
+        "Stops at G's doubling and ignores C's final `*t = *t + g`, which also writes the shared segment.",
+        "Correct: the segment goes 1 → 11 → 22 → 33 across three processes; the parent's private `g` stays 1.",
+        "The segment value is right, but `g` is private — the children's updates never reach the parent's copy."
+      ],
+      "trap": "Treating `g` as shared (answer 44) or thinking `shmdt` in the child destroys the segment or the parent's mapping.",
+      "marks": 2
+    },
+    {
+      "id": "t04-012",
+      "subtopic": "shared-memory",
+      "also_tests": [
+        "producer-consumer"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "est_seconds": 390,
+      "concepts": [
+        "bounded buffer",
+        "multiple producers/consumers",
+        "statement ordering",
+        "race condition"
+      ],
+      "stem": "A circular buffer of `N ≥ 3` slots is shared through shared memory. The reference code is:\n\n```c\n/* producer */                      /* consumer */\nwhile ((in + 1) % N == out) ;       while (in == out) ;\nbuffer[in] = item;                  item = buffer[out];\nin = (in + 1) % N;                  out = (out + 1) % N;\n```\n\n`in` and `out` start at 0. Assume sequentially consistent memory, that each individual load or store of `in`, `out` or a buffer slot is atomic, and that statements of different processes may interleave arbitrarily at that granularity. No locks are used. Which statements are **correct**?",
+      "options": [
+        "With **two** producers running the reference producer code and one consumer, the consumer can receive a value that neither producer ever inserted (stale slot contents)",
+        "With one producer and one consumer, if the producer's two statements are swapped (`int i = in; in = (i + 1) % N; buffer[i] = item;`), the consumer can read a slot before the item is stored in it",
+        "With one producer and one consumer, if the consumer's two statements are swapped (`int o = out; out = (o + 1) % N; item = buffer[o];`), the producer can overwrite slot `o` before the consumer has read it",
+        "With one producer and **two** consumers running the reference consumer code, no item can ever be delivered to both consumers, because each consumer reads `buffer[out]` before advancing `out`"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "**A — True.** Both producers pass the full-test and read `in = 0`. P1 writes `buffer[0] = a`; P2 writes `buffer[0] = b` (overwriting `a`); P1 sets `in = 1`; P2 now reads `in = 1` and sets `in = 2`. Slot 0 holds `b`, slot 1 was **never written**, but `in` says two items are present. The consumer reads `b` and then the old contents of slot 1 — a value nobody inserted (and `a` is lost).\n\n**B — True.** With the producer advancing `in` first, the consumer's test `in != out` succeeds immediately, and it can execute `item = buffer[out]` before the producer's `buffer[i] = item` — it reads stale data.\n\n**C — False (the swap is harmless).** Suppose the consumer has advanced `out` from `o` to `o + 1` but not yet read slot `o`. The producer may now write only while `(in + 1) % N != out = o + 1`. Its free slots run from `in` up to `o − 1` (the slot just before `out` is always kept empty): the furthest it can get is to write slot `o − 1`, after which `in = o` and `(o + 1) % N == out`, so it waits. Slot `o` can be written only after `out` moves past `o + 1`, which happens only after this consumer has finished reading slot `o` and run another iteration. The \"one empty slot\" convention protects the slot being read. (An exhaustive interleaving check of this variant finds no error.)\n\n**D — False.** Both consumers can pass the empty-test and both execute `item = buffer[out]` with `out = 0` before either advances `out` — the same item is delivered twice. (Their read-modify-write of `out` can also lose an increment.) Reading before advancing protects against the producer, not against another consumer.\n\nCorrect: **A, B**.",
+      "option_feedback": [
+        "True: overlapping producers write the same slot and both advance `in`, so a never-written slot is published.",
+        "True: publishing `in` before filling the slot lets the consumer read the slot early.",
+        "False: the producer always stops one slot short of `out`, so it cannot reach slot `o` until the consumer has moved on — the consumer-side swap is safe.",
+        "False: two consumers can both read `buffer[out]` before either advances `out`, so one item is delivered twice."
+      ],
+      "trap": "Assuming every statement reordering breaks SPSC (rejecting C needs the one-empty-slot argument), or believing read-before-advance also protects against a second consumer.",
+      "marks": 2
+    },
+    {
+      "id": "t04-013",
+      "subtopic": "message-passing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "indirect communication",
+        "mailbox"
+      ],
+      "stem": "In **indirect** communication under the message-passing model, messages are sent to and received from:",
+      "options": [
+        "The process id of the peer process",
+        "A shared-memory segment",
+        "A mailbox (port)",
+        "The kernel's ready queue"
+      ],
+      "answer": "C",
+      "explanation": "In indirect communication processes do not name each other; they use a shared **mailbox** (also called a port): `send(A, message)` and `receive(A, message)` where A is a mailbox. Two processes can communicate only if they share a mailbox. In direct communication the primitives name the peer process, e.g. `send(P, message)`.",
+      "option_feedback": [
+        "That is direct communication.",
+        "Shared memory is a different IPC model.",
+        "Correct.",
+        "The ready queue is for scheduling, not IPC."
+      ]
+    },
+    {
+      "id": "t04-014",
+      "subtopic": "message-passing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "buffer capacity",
+        "zero capacity",
+        "rendezvous"
+      ],
+      "stem": "A message-passing link has **zero capacity**. What does this imply?",
+      "options": [
+        "The sender never blocks",
+        "Messages are silently discarded",
+        "The receiver never blocks",
+        "The sender must block until the recipient receives the message"
+      ],
+      "answer": "D",
+      "explanation": "Zero capacity means the link's queue has maximum length 0: no message can wait in it. Hence the sender must block until the receiver actually takes the message — the sender and receiver meet (a rendezvous). With bounded capacity n the sender blocks only when n messages are queued; with unbounded capacity it never blocks.",
+      "option_feedback": [
+        "That is unbounded capacity.",
+        "Messages are not discarded; the sender waits.",
+        "A receiver blocks if no sender is ready, regardless of capacity.",
+        "Correct: rendezvous."
+      ]
+    },
+    {
+      "id": "t04-015",
+      "subtopic": "message-passing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "message passing",
+        "distributed systems"
+      ],
+      "stem": "Which is a key advantage of message passing over shared memory?",
+      "options": [
+        "It is easy to use between processes on different computers",
+        "It never needs system calls",
+        "It is always faster for large data transfers",
+        "It needs no kernel support at all"
+      ],
+      "answer": "A",
+      "explanation": "Message passing does not require a common address space, so it works equally well between processes on different machines connected by a network, and the kernel handles the transfer. For small amounts of data it also avoids the need to set up a region and synchronise it. Shared memory, not message passing, is the one that avoids per-exchange system calls and copies.",
+      "option_feedback": [
+        "Correct.",
+        "Each send/receive is normally a system call.",
+        "Large transfers are faster with shared memory.",
+        "The kernel implements the link and the queue."
+      ]
+    },
+    {
+      "id": "t04-016",
+      "subtopic": "message-passing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "blocking send",
+        "blocking receive",
+        "rendezvous"
+      ],
+      "stem": "When **both** `send()` and `receive()` are blocking, the arrangement is called:",
+      "options": [
+        "Asynchronous communication",
+        "A rendezvous",
+        "Automatic buffering",
+        "Indirect communication"
+      ],
+      "answer": "B",
+      "explanation": "With blocking send the sender waits until the message is received (by the process or mailbox); with blocking receive the receiver waits until a message is available. When both are blocking, the two processes synchronise at the exchange — this is a **rendezvous**. With blocking primitives the producer–consumer problem becomes trivial: producer calls `send()` and waits; consumer calls `receive()` and waits.",
+      "option_feedback": [
+        "Asynchronous refers to non-blocking primitives.",
+        "Correct.",
+        "Buffering is about link capacity, a separate design choice.",
+        "Indirect is about naming (mailboxes), orthogonal to blocking."
+      ]
+    },
+    {
+      "id": "t04-017",
+      "subtopic": "message-passing",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "direct communication",
+        "link properties"
+      ],
+      "stem": "With **direct**, **symmetric** communication (`send(P, msg)`, `receive(Q, msg)`), which of the following properties of the communication link hold?",
+      "options": [
+        "The link is established automatically between a pair that wants to communicate",
+        "A link is associated with exactly two processes",
+        "Between each pair of processes there is exactly one link",
+        "A link may be associated with more than two processes"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "In direct communication (Silberschatz):\n- A link is established **automatically** between every pair of processes that want to communicate; they only need to know each other's identity. (**A**)\n- A link is associated with **exactly two** processes. (**B**)\n- Between each pair there exists **exactly one** link. (**C**)\n\n**D** describes indirect communication: a mailbox can be shared by several processes, and a pair may share several mailboxes (several links).",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Correct.",
+        "Wrong — that is a property of mailbox (indirect) links."
+      ]
+    },
+    {
+      "id": "t04-018",
+      "subtopic": "message-passing",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "mailbox sharing",
+        "receiver selection"
+      ],
+      "stem": "Processes P1, P2 and P3 share mailbox A. P1 sends one message to A, and both P2 and P3 execute `receive(A, …)`. Which of the following is an acceptable scheme a system may use to decide what happens?",
+      "options": [
+        "Both P2 and P3 receive a copy of the message",
+        "The system selects exactly one of P2 or P3 by some algorithm and may identify the receiver to P1",
+        "The message is discarded because the receiver is ambiguous",
+        "P1's send fails and must be retried"
+      ],
+      "answer": "B",
+      "explanation": "Silberschatz lists three possible policies: (1) allow a link to be associated with at most two processes; (2) allow at most one process at a time to execute `receive()`; (3) let the system choose arbitrarily (e.g. round robin) which **one** process receives the message, and possibly tell the sender who it was. A single message is delivered to one receiver, not duplicated, and it is not lost.",
+      "option_feedback": [
+        "Mailbox delivery is not broadcast; one message goes to one receiver.",
+        "Correct.",
+        "No such loss is part of the model.",
+        "The send succeeds; the ambiguity is on the receive side."
+      ]
+    },
+    {
+      "id": "t04-019",
+      "subtopic": "message-passing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "asymmetric addressing",
+        "direct communication"
+      ],
+      "stem": "In **asymmetric** direct communication, the primitives are `send(P, msg)` and `receive(id, msg)`. What is the meaning of `id` in `receive`?",
+      "options": [
+        "It must be set beforehand to the process the receiver wants to hear from",
+        "It is the mailbox from which to receive",
+        "It is filled in with the name of the sending process when the message arrives",
+        "It is the size of the message buffer"
+      ],
+      "answer": "C",
+      "explanation": "In asymmetric addressing only the sender names the recipient. The receiver accepts from **any** process; on return, the variable `id` is **set** to the name of the process with which communication took place. Its disadvantage (shared with symmetric addressing) is limited modularity: changing a process's identifier requires finding all references to the old one.",
+      "option_feedback": [
+        "That is symmetric addressing: `receive(Q, msg)`.",
+        "Mailboxes belong to indirect communication.",
+        "Correct.",
+        "Unrelated."
+      ]
+    },
+    {
+      "id": "t04-020",
+      "subtopic": "message-passing",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "bounded capacity",
+        "blocking send",
+        "timeline"
+      ],
+      "stem": "Process P sends 12 messages back-to-back to a mailbox of **capacity 3** using **blocking send** (a send completes instantly if there is space; otherwise P blocks and its message is placed in the mailbox at the exact instant a slot frees). Process Q removes one message at each of the times t = 5, 10, 15, 20, … (time units). The mailbox is initially empty and P starts at t = 0; ignore all other delays.\n\nAt what time does P's **12th** send complete?",
+      "answer": {
+        "min": 45,
+        "max": 45
+      },
+      "explanation": "At t = 0, messages 1, 2, 3 fill the mailbox; send 4 blocks.\n\nEvery removal by Q frees one slot, which P immediately fills with its next message:\n\n| t | Q removes | P's send completing |\n|---|---|---|\n| 5 | m1 | m4 |\n| 10 | m2 | m5 |\n| … | … | … |\n| 5k | m(k) | m(k+3) |\n\nMessage 12 needs k + 3 = 12, i.e. k = 9, so it completes at t = 5 × 9 = **45**.",
+      "trap": "Forgetting the 3 messages that complete instantly at t = 0 (answering 60)."
+    },
+    {
+      "id": "t04-021",
+      "subtopic": "message-passing",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "blocking vs non-blocking",
+        "buffer capacity"
+      ],
+      "stem": "Which of the following statements about synchronous/asynchronous primitives and buffer capacity are **correct**?",
+      "options": [
+        "On a zero-capacity link, a non-blocking send can always deposit its message without loss even if no receiver is waiting",
+        "A non-blocking receive returns either a valid message or a null indication",
+        "On a link of bounded capacity n, a blocking send blocks only if n messages are already queued",
+        "On an unbounded-capacity link, a blocking receive never blocks"
+      ],
+      "answer": [
+        "B",
+        "C"
+      ],
+      "explanation": "- **A** False: with zero capacity no message can wait in the link, so the sender must block until the receiver takes it. A non-blocking send could only succeed if a receiver were already waiting; otherwise the message would have to be refused/dropped.\n- **B** True: a non-blocking receive returns immediately with either a valid message or a null/no-message indication.\n- **C** True: with bounded capacity n, the sender blocks only when the queue already holds n messages.\n- **D** False: unbounded capacity means the **sender** never blocks; a receiver still blocks on an empty queue.",
+      "option_feedback": [
+        "Wrong — there is nowhere to keep the message.",
+        "Correct.",
+        "Correct.",
+        "Wrong — capacity affects senders; receivers block when the queue is empty."
+      ]
+    },
+    {
+      "id": "t04-022",
+      "subtopic": "message-passing",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "rendezvous deadlock",
+        "buffer capacity"
+      ],
+      "stem": "Two processes use direct communication with **blocking send** and **blocking receive**:\n\n```text\nP1:  send(P2, a);   receive(P2, &b);\nP2:  send(P1, c);   receive(P1, &d);\n```\n\nFor which link capacities is completion of both processes **guaranteed**, whatever the scheduling?",
+      "options": [
+        "Only for zero capacity",
+        "Only for unbounded capacity",
+        "For no capacity — it can always deadlock",
+        "For any capacity of at least 1 message"
+      ],
+      "answer": "D",
+      "explanation": "**Zero capacity (rendezvous):** P1's `send` blocks until P2 executes `receive`; P2's `send` blocks until P1 executes `receive`. Both are stuck at their first statement, so neither reaches its receive → **deadlock**, under every schedule.\n\n**Capacity ≥ 1:** each `send` deposits its message in the link's queue and returns (the queue from P1 to P2 and from P2 to P1 each need hold only one message). Each process then receives the other's message. Completes under every schedule.\n\nSo completion is guaranteed exactly for capacity ≥ 1.",
+      "option_feedback": [
+        "Zero capacity is exactly the case that deadlocks.",
+        "Unbounded works, but a capacity of 1 already suffices.",
+        "With buffering both sends return immediately.",
+        "Correct."
+      ],
+      "trap": "Thinking 'blocking send' always blocks until receipt — with a non-zero buffer it blocks only when the buffer is full."
+    },
+    {
+      "id": "t04-023",
+      "subtopic": "message-passing",
+      "difficulty": 4,
+      "type": "nat",
+      "est_seconds": 240,
+      "concepts": [
+        "non-blocking send",
+        "non-blocking receive",
+        "bounded capacity",
+        "message loss"
+      ],
+      "stem": "Process P performs a **non-blocking send** to mailbox M at each of the times t = 0, 1, 2, …, 11 (12 sends). If M is full at that instant, the send fails and that message is **discarded**.\n\nProcess Q performs a **non-blocking receive** on M at each of the times\n\nt = 0.5, 0.7, 2.5, 2.7, 3.5, 8.5, 8.6, 8.7, 8.8, 8.9\n\nand at no other times. A non-blocking receive on an empty mailbox returns immediately with \"no message\" (nothing is removed). M is initially empty and holds at most c messages.\n\nWhat is the **minimum** capacity c for which **none** of P's 12 messages is discarded?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "No message is lost iff c ≥ the largest queue length reached when M is unbounded. Trace with unbounded M:\n\n| t | event | queue length |\n|---|---|---|\n| 0 | send m0 | 1 |\n| 0.5 | receive (gets m0) | 0 |\n| 0.7 | receive on **empty** M → \"no message\", wasted | 0 |\n| 1, 2 | send m1, m2 | 2 |\n| 2.5, 2.7 | receive ×2 | 0 |\n| 3 | send m3 | 1 |\n| 3.5 | receive | 0 |\n| 4, 5, 6, 7, 8 | send m4 … m8 | **5** |\n| 8.5 … 8.9 | receive ×5 | 0 |\n| 9, 10, 11 | send m9 … m11 | 3 |\n\nMaximum length = **5** (at t = 8), so c = 5 suffices. With c = 4 the send at t = 8 finds M full and m8 is discarded. Minimum c = **5**.\n\nNote that Q performs 10 receives but only 9 remove anything: the receive at t = 0.7 finds M empty.",
+      "trap": "Computing 'sends so far − receives so far' at t = 8 (9 − 5 = 4): the receive at t = 0.7 found the mailbox empty and removed nothing, so it must not be counted.",
+      "marks": 2
+    },
+    {
+      "id": "t04-024",
+      "subtopic": "message-passing",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "bounded capacity",
+        "deadlock",
+        "mailbox"
+      ],
+      "stem": "Processes P and Q communicate through two mailboxes, M1 (used only P → Q) and M2 (used only Q → P). Both mailboxes have the **same capacity k** messages; `send` blocks while the mailbox is full and `receive` blocks while it is empty.\n\n```text\nP:  repeat 6 times: send(M1, x);\n    repeat 6 times: receive(M2, &y);\n\nQ:  repeat 2 times: receive(M1, &x);\n    repeat 6 times: send(M2, y);\n    repeat 4 times: receive(M1, &x);\n```\n\nWhat is the **minimum** k for which both processes are guaranteed to terminate under every possible scheduling?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "**P's sending phase.** P must send 6 messages into M1 before it ever receives. Q removes only 2 messages from M1 before switching to sending, so at least 6 − 2 = 4 messages sit in M1 at once if P is to finish sending. If k < 4, P blocks on M1 for good.\n\n**Check k = 3 (deadlock).** P sends 3 (M1 full); Q receives 2; P sends 2 more (M1 = 3, P has sent 5) and blocks on its 6th send. Q now sends to M2: 3 messages fill M2, the 4th blocks (P is not receiving — it is stuck sending). P waits on M1, Q waits on M2 → deadlock.\n\n**Check k = 4 (always terminates).** Whatever the interleaving, M1 holds at most 6 − 2 = 4 unreceived messages during P's sends, so P finishes sending (it may wait only until Q's first two receives, which Q always performs). P then loops on `receive(M2)`; Q's 6 sends can block only while M2 is full, and P keeps draining M2, so Q finishes sending and P finishes receiving. Q's last 4 receives find exactly the 4 messages left in M1.\n\nMinimum k = **4**.",
+      "trap": "Answering 6 (ignoring Q's two early receives) or 2 (looking only at the difference in counts without the circular wait)."
+    },
+    {
+      "id": "t04-025",
+      "subtopic": "pipes",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 25,
+      "concepts": [
+        "pipe()",
+        "file descriptors"
+      ],
+      "stem": "After a successful call `pipe(fd)` in UNIX, which statement is correct?",
+      "options": [
+        "`fd[0]` is the read end and `fd[1]` is the write end",
+        "`fd[0]` is the write end and `fd[1]` is the read end",
+        "Both descriptors can be used to read and to write",
+        "`fd[0]` refers to the parent and `fd[1]` to the child"
+      ],
+      "answer": "A",
+      "explanation": "`pipe(int fd[2])` creates an ordinary pipe and returns two descriptors: **`fd[0]` is the read end** and **`fd[1]` is the write end**. Data written to `fd[1]` is read from `fd[0]` in FIFO order. An ordinary pipe is unidirectional.",
+      "option_feedback": [
+        "Correct.",
+        "Reversed.",
+        "Ordinary pipes are unidirectional.",
+        "The ends are about direction, not processes."
+      ]
+    },
+    {
+      "id": "t04-026",
+      "subtopic": "pipes",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "ordinary pipe",
+        "named pipe",
+        "FIFO"
+      ],
+      "stem": "Which statement correctly distinguishes an **ordinary (anonymous) pipe** from a **named pipe (FIFO)** in UNIX?",
+      "options": [
+        "Ordinary pipes are bidirectional while FIFOs are unidirectional",
+        "Ordinary pipes can be used across machines while FIFOs cannot",
+        "A FIFO has a name in the file system and can be used by unrelated processes; an ordinary pipe needs a parent–child (common ancestor) relationship",
+        "A FIFO is destroyed automatically when its creating process exits"
+      ],
+      "answer": "C",
+      "explanation": "An ordinary pipe has no name; it exists only as a pair of descriptors, so only the creating process and its descendants (which inherit the descriptors through `fork()`) can use it, and it disappears when all processes close it. A named pipe is created with `mkfifo()`, appears as a file in the file system, can be opened by **unrelated** processes, and persists until explicitly removed. Both are half-duplex byte streams in UNIX.",
+      "option_feedback": [
+        "Both are unidirectional (half-duplex) on UNIX.",
+        "Neither works across a network; both are local.",
+        "Correct.",
+        "A FIFO persists in the file system until unlinked."
+      ]
+    },
+    {
+      "id": "t04-027",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "EOF on pipe",
+        "read() semantics"
+      ],
+      "stem": "A process calls `read(fd[0], buf, 100)` on a pipe that is **empty**. What happens if (i) some process still has the write end open, and (ii) every write end has been closed?",
+      "options": [
+        "(i) returns 0, (ii) blocks",
+        "(i) blocks, (ii) returns 0 (EOF)",
+        "(i) blocks, (ii) returns −1 with SIGPIPE",
+        "Both return 0 immediately"
+      ],
+      "answer": "B",
+      "explanation": "On an empty pipe, `read` **blocks** as long as at least one write descriptor is open anywhere (data might still arrive). When all write descriptors are closed, there can be no more data, so `read` returns **0**, which signals end-of-file. (A `-1` return is an error, e.g. a non-blocking descriptor gives `EAGAIN` in case (i).)",
+      "option_feedback": [
+        "Reversed.",
+        "Correct.",
+        "SIGPIPE is for *writing* when no reader exists, not reading.",
+        "With a writer still open, a blocking read waits."
+      ]
+    },
+    {
+      "id": "t04-028",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "pipe semantics",
+        "SIGPIPE",
+        "FIFO"
+      ],
+      "stem": "Which of the following statements about UNIX pipes are **correct**?",
+      "options": [
+        "Writing to a pipe with no open read end delivers SIGPIPE to the writer",
+        "An ordinary pipe allows both processes to read and write on the same pipe in both directions safely",
+        "A blocking write to a full pipe waits until space becomes available",
+        "Data written to a named pipe is stored on disk in the FIFO's file"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A** True: writing to a pipe whose read ends are all closed raises **SIGPIPE** (default action terminates the process); if the signal is ignored or caught, `write` fails with `EPIPE`.\n- **B** False: ordinary pipes are unidirectional; two-way communication needs two pipes.\n- **C** True: a blocking `write` on a full pipe blocks until a reader removes enough data.\n- **D** False: pipe data is kept in a kernel buffer, not written to disk — even for a FIFO, only the name lives in the file system.",
+      "option_feedback": [
+        "Correct.",
+        "Wrong — use two pipes for two-way traffic.",
+        "Correct.",
+        "Wrong — FIFO data passes through a kernel buffer; the file-system entry is just a name."
+      ]
+    },
+    {
+      "id": "t04-029",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "dup2",
+        "shell pipeline"
+      ],
+      "stem": "To run `ls | wc -l`, a shell creates a pipe `fd` and forks a child that will exec `ls`. Before calling `exec`, which call should that child make so that `ls`'s output goes into the pipe?",
+      "options": [
+        "`dup2(fd[0], STDOUT_FILENO)`",
+        "`dup2(STDOUT_FILENO, fd[1])`",
+        "`dup2(fd[1], STDIN_FILENO)`",
+        "`dup2(fd[1], STDOUT_FILENO)`"
+      ],
+      "answer": "D",
+      "explanation": "`dup2(oldfd, newfd)` makes `newfd` refer to the same open file as `oldfd`. The `ls` child must make its standard output (descriptor 1) refer to the pipe's **write end**: `dup2(fd[1], STDOUT_FILENO)`. It then closes `fd[0]` and `fd[1]` (the copy at descriptor 1 remains) and execs `ls`. The `wc` child does the mirror: `dup2(fd[0], STDIN_FILENO)`.",
+      "option_feedback": [
+        "That would point stdout at the read end.",
+        "Arguments reversed: this makes fd[1] a copy of the terminal.",
+        "That redirects stdin, and to the wrong end.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t04-030",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "half-duplex pipes",
+        "counting"
+      ],
+      "stem": "Four processes must each be able to send data to every other process using **ordinary UNIX pipes** (each pipe carries data in one direction only, and each pipe has exactly one designated writer and one designated reader). What is the minimum number of pipes needed?",
+      "answer": {
+        "min": 12,
+        "max": 12
+      },
+      "explanation": "Each ordered pair (sender, receiver) needs its own one-directional pipe. Ordered pairs among 4 processes = 4 × 3 = **12** (equivalently, 6 unordered pairs × 2 directions).",
+      "trap": "Answering 6 — forgetting that a pipe is half-duplex."
+    },
+    {
+      "id": "t04-031",
+      "subtopic": "pipes",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "EOF",
+        "closing unused ends"
+      ],
+      "stem": "```c\nint fd[2]; char c;\npipe(fd);\nif (fork() == 0) {                     /* child */\n    while (read(fd[0], &c, 1) > 0)\n        write(STDOUT_FILENO, &c, 1);   /* unbuffered */\n    printf(\"\\ndone\\n\");\n    exit(0);\n}\nclose(fd[0]);                          /* parent */\nwrite(fd[1], \"hi\", 2);\nclose(fd[1]);\nwait(NULL);\n```\n\nWhat happens when this program runs?",
+      "options": [
+        "Prints `hi` then `done`, and both processes exit",
+        "Prints `done` only, because the child may read before the parent writes",
+        "Prints `hi`, then the child blocks forever in `read` and the parent blocks forever in `wait`",
+        "The child receives SIGPIPE and is killed"
+      ],
+      "answer": "C",
+      "explanation": "The child writes `h` and `i` straight to its standard output (unbuffered `write`), then calls `read` again on an empty pipe. `read` returns 0 (EOF) only when **all** write descriptors are closed. The parent closed its copy, but the **child never closed its own inherited `fd[1]`**, so a writer still exists — the child itself. Its `read` blocks forever, `done` is never printed, and the parent blocks forever in `wait(NULL)`.\n\nFix: the child should `close(fd[1])` before the loop.",
+      "option_feedback": [
+        "Would be correct only if the child closed its write end.",
+        "A read on an empty pipe with an open writer blocks; it does not return EOF early.",
+        "Correct.",
+        "SIGPIPE concerns writers when no readers exist; here the child is reading."
+      ],
+      "trap": "Forgetting that the reader's own inherited write end keeps the pipe from reaching EOF."
+    },
+    {
+      "id": "t04-032",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "read() semantics",
+        "pipe buffering"
+      ],
+      "stem": "```c\nint fd[2]; char buf[10];\npipe(fd);\nif (fork() == 0) {\n    write(fd[1], \"123\", 3);\n    write(fd[1], \"45\", 2);\n    exit(0);\n}\nwait(NULL);\nint n = read(fd[0], buf, 10);\nprintf(\"%d\\n\", n);\n```\n\nWhat value does the parent print? (Assume all calls succeed.)",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "A pipe is a **byte stream**: message boundaries of separate `write` calls are not preserved. The parent waits for the child to exit, so both writes (3 + 2 = 5 bytes) are already in the pipe. `read(fd[0], buf, 10)` returns as many bytes as are available, up to 10, without waiting to fill the buffer: **5**. (It does not block for more data even though the parent still holds the write end, because some data is available.)",
+      "trap": "Answering 3 (assuming one read per write) or 10 (assuming read fills the buffer)."
+    },
+    {
+      "id": "t04-033",
+      "subtopic": "pipes",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "named pipe",
+        "mkfifo",
+        "open semantics"
+      ],
+      "stem": "A named pipe is created with `mkfifo(\"/tmp/f\", 0666)`. Which statements are **correct** (default blocking mode)?",
+      "options": [
+        "Opening it for reading blocks until another process opens it for writing",
+        "Data written into it is stored in disk blocks of the file `/tmp/f`",
+        "It can be used by two unrelated processes",
+        "Its name persists after all processes using it terminate, until it is unlinked"
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "explanation": "- **A** True: `open(\"/tmp/f\", O_RDONLY)` blocks until some process opens the FIFO for writing (and vice versa for `O_WRONLY`).\n- **B** False: the file-system entry is only a name; the data passes through a kernel buffer and is never written to disk.\n- **C** True: any process with permission can open it by name — no parent–child relationship needed.\n- **D** True: the FIFO's name remains in the file system after the processes using it exit, until it is removed (`unlink`/`rm`). (Any unread data does not survive once all ends are closed.)",
+      "option_feedback": [
+        "Correct.",
+        "Wrong — data stays in a kernel buffer.",
+        "Correct.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t04-034",
+      "subtopic": "pipes",
+      "difficulty": 4,
+      "type": "nat",
+      "est_seconds": 270,
+      "concepts": [
+        "pipe capacity",
+        "PIPE_BUF atomicity",
+        "partial writes",
+        "blocking write"
+      ],
+      "stem": "A pipe has capacity **65536 bytes** and `PIPE_BUF = 4096`. Use these rules for a **blocking** `write`:\n- a write of **at most** `PIPE_BUF` bytes is atomic: it waits until all its bytes fit, then writes them at once;\n- a write of **more than** `PIPE_BUF` bytes is not atomic: it immediately writes as many bytes as fit, waits for space, writes more, and returns only when all its bytes have been written.\n\nA writer loops forever, alternating `write(fd[1], a, 4096)` and `write(fd[1], b, 6000)` (the first call writes 4096 bytes). The reader keeps the read end open but does nothing until the writer first blocks; it then performs one `read(fd[0], rbuf, 10000)`, which removes 10000 bytes, and never reads again.\n\nWhen the writer finally blocks for ever, how many bytes **in total** has it put into the pipe (including the 10000 bytes that were read)?",
+      "answer": {
+        "min": 75536,
+        "max": 75536
+      },
+      "explanation": "**Fill phase.** Each 4096 + 6000 pair puts 10096 bytes. After 6 pairs (12 calls): 60576 bytes, free = 4960.\n- Call 13 (4096, atomic) fits → free = 864.\n- Call 14 (6000, **non-atomic**) writes 864 bytes immediately → pipe full (65536 bytes written), still owes 5136 → the writer blocks for the first time.\n\n**Reader removes 10000 bytes** → free = 10000.\n- Call 14 writes its remaining 5136 → returns; free = 4864.\n- Call 15 (4096, atomic) fits → free = 768.\n- Call 16 (6000, non-atomic) writes 768 bytes → free = 0, blocks for ever.\n\nThe writer stops with the pipe completely **full**, so total written = 65536 + 10000 = **75536** bytes (check: 7 pairs = 70672, + 4096 + 768 = 75536). Fifteen calls returned.\n\nIf every write were treated as atomic, call 14 would wait without writing 864 bytes, and after the read the writer would stop at 74768 bytes with 768 bytes free — that is the trap.",
+      "trap": "Treating the 6000-byte writes as atomic (giving 74768), or forgetting that a non-atomic blocked write leaves the pipe completely full.",
+      "marks": 2
+    },
+    {
+      "id": "t04-035",
+      "subtopic": "pipes",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "single pipe bidirectional",
+        "race"
+      ],
+      "stem": "A programmer tries to implement a ping–pong exchange with **one** pipe:\n\n```c\nint fd[2]; char b[5] = {0};\npipe(fd);\nif (fork() == 0) {                 /* child */\n    read(fd[0], b, 4);\n    write(fd[1], \"pong\", 4);\n    exit(0);\n}\nwrite(fd[1], \"ping\", 4);           /* parent */\nread(fd[0], b, 4);\nprintf(\"%s\\n\", b);\n```\n\nWhich statement is correct?",
+      "options": [
+        "It always prints `pong`, because a process cannot read its own writes from a pipe",
+        "It may print `ping` or `pong` depending on scheduling; if it prints `ping`, the child is left blocked forever",
+        "It always deadlocks, because the parent and child both read before writing",
+        "It always prints `ping`, because the parent's read is executed before the child is scheduled"
+      ],
+      "answer": "B",
+      "explanation": "Both processes hold both ends of the same pipe. After the parent writes `ping`, **both** the parent and the child may be the first to `read`:\n- If the child reads first, it gets `ping`, writes `pong`, and the parent reads `pong` → prints `pong`; both finish.\n- If the parent's `read` runs first, it consumes its **own** `ping` and prints `ping`. The child then blocks in `read` forever, because no more data will arrive and every process (including itself) still holds a write end, so EOF never occurs.\n\nThe outcome depends on scheduling — the reason two-way communication uses two pipes.",
+      "option_feedback": [
+        "Nothing stops a process reading back data it wrote into a pipe.",
+        "Correct.",
+        "The parent writes before reading, so it does not deadlock unconditionally.",
+        "Scheduling after fork is not fixed; either process may run first."
+      ],
+      "trap": "Believing a pipe 'knows' who wrote the data."
+    },
+    {
+      "id": "t04-036",
+      "subtopic": "pipes",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 360,
+      "concepts": [
+        "fork with ||",
+        "inherited descriptors",
+        "closed descriptor",
+        "pipe EOF"
+      ],
+      "stem": "```c\nint fd[2], n = 0; char c;\npid_t root = getpid();\npipe(fd);\nfor (int i = 0; i < 2; i++) {\n    if (fork() || fork())\n        write(fd[1], \"x\", 1);\n    else\n        close(fd[1]);\n}\nif (getpid() != root)\n    exit(0);\nclose(fd[1]);\nwhile (read(fd[0], &c, 1) > 0)\n    n++;\nprintf(\"%d\\n\", n);\n```\n\nAll `fork()` calls succeed. A `write` on a descriptor that the process has already closed fails and writes nothing (the same for a second `close`). What number does the original process print?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "**One iteration, for a process X that runs `if (fork() || fork())`:**\n- X forks child A. In X the first `fork()` is non-zero, so `||` short-circuits → X **writes**.\n- In A the first `fork()` returned 0, so A evaluates the second `fork()`, creating B. In A it is non-zero → A **writes**.\n- In B both forks returned 0 → B executes `close(fd[1])`.\n\nSo each process becomes three: two that write (if they still hold `fd[1]`) and one that closes `fd[1]`.\n\n**Iteration 0** (1 process, root): root writes, A₀ writes, B₀ closes → **2 bytes**; processes: root, A₀ (open), B₀ (closed).\n\n**Iteration 1** (3 processes):\n| process | holds `fd[1]`? | successful writes by it and its two new children |\n|---|---|---|\n| root | yes | 2 |\n| A₀ | yes | 2 |\n| B₀ | **no** — closed in iteration 0, and its new children inherit the closed state | 0 |\n\nTotal = 2 + 2 + 2 + 0 = **6** bytes from 9 processes.\n\n**Termination.** The 8 non-root processes exit (closing whatever they still hold); the root closes its own `fd[1]`. Once all write ends are closed, `read` returns 0 after the 6 bytes, so the root prints **6**.",
+      "trap": "Counting 8 (forgetting that B₀ closed `fd[1]` before it forked, so its children have no write end) or 9 (one byte per process).",
+      "marks": 2
+    },
+    {
+      "id": "t04-037",
+      "subtopic": "pipes",
+      "also_tests": [
+        "zombie-and-orphan"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "est_seconds": 390,
+      "concepts": [
+        "inherited descriptors",
+        "pipe EOF",
+        "grandchild",
+        "wait()"
+      ],
+      "stem": "```c\nint p[2];\npipe(p);\nif (fork() == 0) {                    /* W: writer */\n    close(p[0]);\n    if (fork() == 0) {                /* G: child of W */\n        sleep(10);\n        exit(0);\n    }\n    write(p[1], \"abc\", 3);\n    exit(0);\n}\nif (fork() == 0) {                    /* R: reader */\n    close(p[1]);\n    int n = 0; char c;\n    while (read(p[0], &c, 1) > 0) n++;\n    printf(\"%d\\n\", n);\n    exit(0);\n}\nclose(p[0]);                          /* parent */\nwait(NULL);\nwait(NULL);\nclose(p[1]);\n```\n\nAll calls succeed and nothing else touches the pipe. Which statements are **correct**?",
+      "options": [
+        "As written, R prints 3 about 10 s after the program starts, and then the parent finishes",
+        "As written, nothing is ever printed: R reads 3 bytes and then blocks forever, and the parent blocks forever in its second `wait`",
+        "If the parent's `close(p[1])` is moved to just before the first `wait`, R prints 3, but only after G exits (about 10 s)",
+        "With the fix in C alone, the parent returns from both `wait` calls before G finishes sleeping, because G is not the parent's child"
+      ],
+      "answer": [
+        "B",
+        "C"
+      ],
+      "explanation": "List every holder of the write end `p[1]`: the **parent** (until its final `close`), **W** (until it exits), **G** (inherited from W, until it exits at ~10 s). R closed its own copy. `read` returns 0 (EOF) only when **all** of them are closed.\n\n**As written.** W writes `abc` and exits; G exits at ~10 s. The parent's first `wait` returns for W. Its second `wait` waits for R (G is W's child, not the parent's). R has read 3 bytes and is blocked in `read`, because the **parent itself** still holds `p[1]` — it closes it only after the waits. Parent waits for R, R waits for the parent's write end → both block for ever, and `printf` is never reached. **A false, B true.**\n\n**Fix C (parent closes `p[1]` first).** Now the remaining holders are W and G. W exits early, but G keeps `p[1]` until it exits after `sleep(10)`, so R's `read` blocks until then, then returns 0 and R prints 3 at ~10 s. **C true.**\n\n**D.** Under fix C the parent's second `wait` returns only when R exits, and R exits only after G's write end closes (~10 s). So the parent cannot finish both waits before G exits. **D false.**\n\nCorrect: **B, C**.",
+      "option_feedback": [
+        "False: the parent still holds `p[1]` while waiting for R, so R never sees EOF — a circular wait.",
+        "True: R blocks on a write end held by the parent, and the parent blocks waiting for R.",
+        "True: with the parent's copy closed, the grandchild G is the last holder of `p[1]`, so EOF arrives only when G exits.",
+        "False: G is not waited for, but R cannot exit until G closes its inherited write end, so the second `wait` still lasts ~10 s."
+      ],
+      "trap": "Tracking only W's write end — forgetting that the parent's own unclosed `p[1]` and the grandchild's inherited copy both keep `read` from reaching EOF.",
+      "marks": 2
+    },
+    {
+      "id": "t04-038",
+      "subtopic": "pipes",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "dup2",
+        "exec",
+        "stdio buffering"
+      ],
+      "stem": "```c\nint fd[2]; char buf[64]; int n;\npipe(fd);\nif (fork() == 0) {\n    dup2(fd[1], STDOUT_FILENO);\n    close(fd[0]); close(fd[1]);\n    printf(\"hi\\n\");\n    execlp(\"echo\", \"echo\", \"bye\", (char *) NULL);\n    exit(1);\n}\nclose(fd[1]);\nwhile ((n = read(fd[0], buf, sizeof buf)) > 0)\n    write(STDOUT_FILENO, buf, n);   /* parent's stdout is the terminal */\nwait(NULL);\n```\n\nAssume standard C stdio rules: `stdout` is line-buffered when it is a terminal and **fully buffered** otherwise. What appears on the terminal?",
+      "options": [
+        "`bye` only",
+        "`hi` followed by `bye`",
+        "`bye` followed by `hi`",
+        "Nothing — the parent blocks forever"
+      ],
+      "answer": "A",
+      "explanation": "In the child, descriptor 1 now refers to the pipe, so the C library treats `stdout` as **fully buffered** (it is not a terminal). `printf(\"hi\\n\")` only places `hi\\n` in the process's user-space stdio buffer; the newline does not flush it.\n\n`execlp` replaces the entire process image, and the unflushed user-space buffer is discarded — `hi` is never written to the pipe. `echo` then writes `bye\\n` to descriptor 1 (the pipe). Its exit closes the last write end; the parent copies `bye` to the terminal, then `read` returns 0.\n\nTerminal shows only **`bye`**. (A `fflush(stdout)` before `exec`, or `write(1, \"hi\\n\", 3)`, would make `hi` appear first.)",
+      "option_feedback": [
+        "Correct.",
+        "Would happen only if stdout were flushed before exec (line-buffered terminal).",
+        "`hi` is lost, not delayed: exec destroys the buffer.",
+        "The parent closed its write end and the child's copies vanish at exit, so EOF arrives."
+      ],
+      "trap": "Assuming `\\n` flushes printf output even when stdout is a pipe, and forgetting exec discards user-space buffers."
+    },
+    {
+      "id": "t04-039",
+      "subtopic": "shared-memory",
+      "also_tests": [
+        "producer-consumer"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 210,
+      "concepts": [
+        "bounded buffer",
+        "in/out pointers",
+        "modular arithmetic",
+        "working backwards"
+      ],
+      "stem": "A producer and a consumer share a circular buffer of `BUFFER_SIZE = 8` slots using the `in`/`out` scheme (producer waits while `(in + 1) % 8 == out`; consumer waits while `in == out`; both indices start at 0 and are advanced modulo 8 after each insert/remove).\n\nAfter running for a while, the producer is observed **waiting because the buffer is full**, with `in = 4`. It is also known that the consumer has removed **between 30 and 40 items (inclusive)** in total. How many items has the producer inserted in total?",
+      "answer": {
+        "min": 44,
+        "max": 44
+      },
+      "explanation": "1. **Find `out`.** The producer waits on full: `(in + 1) % 8 == out` → `out = 5`.\n2. **Items currently in the buffer.** Full in this scheme means N − 1 = **7** items (check: (in − out + 8) mod 8 = (4 − 5 + 8) mod 8 = 7).\n3. **Consumed count.** `out` advances once per removal, so consumed ≡ out = 5 (mod 8). In 30…40 the only such value is **37** (29 and 45 are outside).\n4. **Inserted** = consumed + currently stored = 37 + 7 = **44**.\n\nCheck: `in` = 44 mod 8 = 4 ✓.",
+      "trap": "Taking a full buffer to hold 8 items (giving 45), or answering the consumed count 37."
+    },
+    {
+      "id": "t04-040",
+      "subtopic": "shared-memory",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 390,
+      "concepts": [
+        "race condition",
+        "lost update",
+        "interleavings",
+        "min/max final value"
+      ],
+      "stem": "A shared variable `count` is initially **3**. Three processes update it through shared memory **without** synchronisation:\n\n```text\nT1:  count = count + 1;  count = count + 1;     (two separate updates)\nT2:  count = count * 2;\nT3:  count = count - 1;\n```\n\nEvery update compiles to *load `count` into a private register → compute → store the register into `count`*. Instructions of different processes may interleave arbitrarily (registers are private and preserved across context switches). Which of the following are possible final values of `count`?",
+      "options": [
+        "2",
+        "1",
+        "10",
+        "11"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "The final value is whatever the **last store** wrote, so look at what each store can write.\n\n**Lower bound.** `count` starts at 3, and T1's and T2's stores only ever write a value larger than the one they loaded (`+1`, or `×2` of a positive number). The only store that writes something smaller than what it loaded is T3's `−1`. T3 loads some value that is in memory at that moment; every value ever in memory before T3's store is ≥ 3, so T3 writes ≥ 2. Every other store writes ≥ (a loaded value ≥ 2) + 1 ≥ 3, or ×2 ≥ 4. So the final value is **≥ 2**, and **1 is impossible**.\n\n**2 is reachable:** T3 loads 3 first; then T1 and T2 run completely; T3 finally stores 3 − 1 = **2** (all other updates are lost).\n\n**Upper bound.** T2's store writes 2 × (value it loaded). Memory can hold at most 3 + 2 = 5 before any doubling, so T2 writes ≤ 10. T1's stores write (loaded + 1): to exceed 10, T1 would have to load ≥ 10 — i.e. load *after* T2's store — and then T2 must have loaded 5, which needs both of T1's increments to have been stored **before** T2 loaded. That leaves no increment to come after the doubling. T3 writes (loaded − 1) ≤ 9. Hence the final value is **≤ 10**, and **11 is impossible**.\n\n**10 is reachable** (T3's decrement is overwritten):\n\n| step | action | `count` |\n|---|---|---|\n| 1 | T3 loads 3 | 3 |\n| 2 | T1 loads 3 | 3 |\n| 3 | T3 stores 2 | 2 |\n| 4 | T1 stores 4 (decrement lost) | 4 |\n| 5 | T1 loads 4, stores 5 | 5 |\n| 6 | T2 loads 5, stores **10** | 10 |\n\n(Exhaustive enumeration of all interleavings gives exactly the set {2, 3, 4, 5, 6, 7, 8, 9, 10}.)\n\nCorrect: **A, C**.",
+      "option_feedback": [
+        "Possible: T3 loads 3 before anything else and stores 2 last, wiping out every other update.",
+        "Impossible: memory never falls below 3 before T3's single store, so the smallest value T3 can write is 2.",
+        "Possible: the decrement is overwritten by T1's increment, and both increments land before T2 doubles 5 to 10.",
+        "Impossible: a value above 10 would need an increment after a doubling of 5, but doubling 5 requires both increments to have happened already."
+      ],
+      "trap": "Assuming the sequential range (only values like 7, 9 or 8 depending on order) or that the minimum is 1 (3 − 1 − 1, as if the single decrement could act twice)."
+    },
+    {
+      "id": "t04-041",
+      "subtopic": "message-passing",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "zero capacity (rendezvous)",
+        "bounded capacity",
+        "deadlock",
+        "minimum buffering"
+      ],
+      "stem": "Processes P and Q communicate through two mailboxes: M1 (used only P → Q) with capacity **x** and M2 (used only Q → P) with capacity **y**, where x and y are non-negative integers. `send` blocks while its mailbox is full; capacity 0 means a **rendezvous** (`send` blocks until the receiver executes the matching `receive`). `receive` blocks while the mailbox is empty.\n\n```text\nP:  repeat 5 times: send(M1, a);\n    repeat 5 times: receive(M2, &b);\n\nQ:  repeat 3 times: send(M2, b);\n    repeat 5 times: receive(M1, &a);\n    repeat 2 times: send(M2, b);\n```\n\nWhat is the **minimum value of x + y** for which both processes are guaranteed to terminate under every scheduling?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "**Both processes start with a burst of sends.** P sends 5 messages before it receives anything; Q sends 3 before it receives anything. While both are in their bursts, nobody is receiving, so:\n- P's burst can complete on its own only if **x ≥ 5**;\n- Q's burst can complete on its own only if **y ≥ 3**.\n\nIf neither holds, P blocks on M1 and Q blocks on M2 → deadlock (e.g. x + y = 2 or any split like (1, 2), (2, 1), (4, 2)).\n\n**Either one is enough.**\n- **y ≥ 3 (any x, even 0):** Q's three sends complete without help. Q then receives 5 from M1, so P's sends go through (by rendezvous if x = 0). P then receives: 3 messages are waiting in M2, and Q's last 2 sends find P receiving. Both terminate.\n- **x ≥ 5 (any y):** P finishes its sends, then receives from M2, which lets Q finish its first 3 sends; Q receives the 5 buffered messages and sends 2 more, which P receives.\n\nSo termination is guaranteed iff x ≥ 5 **or** y ≥ 3. Minimum x + y = min(5 + 0, 0 + 3) = **3**, with x = 0 (M1 a pure rendezvous) and y = 3.\n\n(An exhaustive check of all schedules for every (x, y) with x + y ≤ 4 confirms that (0, 3), (0, 4) and (1, 3) are the only terminating pairs.)",
+      "trap": "Requiring both bursts to fit (x + y = 5 + 3 = 8), or giving both mailboxes the larger capacity: only one side of the circular wait needs to be broken, and a rendezvous on M1 is fine once Q is receiving."
+    },
+    {
+      "id": "t04-042",
+      "subtopic": "message-passing",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "bounded capacity",
+        "circular wait",
+        "mailbox ring",
+        "deadlock"
+      ],
+      "stem": "Three processes communicate in a ring through mailboxes M1 (P → Q), M2 (Q → R) and M3 (R → P). Every mailbox has the **same capacity k ≥ 0** (k = 0 means rendezvous); `send` blocks while its mailbox is full and `receive` blocks while it is empty.\n\n```text\nP:  4 × send(M1);  2 × receive(M3);  2 × send(M1);  2 × receive(M3);\nQ:  1 × receive(M1);  4 × send(M2);  5 × receive(M1);\nR:  2 × receive(M2);  4 × send(M3);  2 × receive(M2);\n```\n\nWhat is the **minimum k** for which all three processes are guaranteed to terminate under every scheduling?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "Each process has an opening **send burst** that its successor in the ring does not fully drain, because the successor is itself busy sending:\n\n| burst | messages sent | taken by the receiver before it starts its own burst | can finish without help iff |\n|---|---|---|---|\n| P → M1 | 4 | Q takes 1 | k ≥ 3 |\n| Q → M2 | 4 | R takes 2 | **k ≥ 2** |\n| R → M3 | 4 | P takes 0 (P receives only after its burst) | k ≥ 4 |\n\n**Deadlock needs all three stuck at once** (P waits for Q to receive, Q waits for R, R waits for P — a cycle). If **any one** burst can finish, the cycle breaks: e.g. with k = 2, Q completes its 4 sends (R took 2, M2 holds the other 2), Q starts receiving from M1, so P completes its burst and starts receiving from M3, so R completes its burst. Afterwards every process only receives from a sender that is able to send, and P's middle 2 sends meet Q, which is in its receive phase. Hence k ≥ min(3, 2, 4) = 2 suffices.\n\n**k = 1 deadlocks:** P sends 1 (M1 full), Q receives it, P sends again (M1 full, P has sent 2, blocked on its 3rd). Q sends; R receives; Q sends; R receives (R has its 2); Q sends once more (M2 full) and blocks on its 4th. R sends 1 (M3 full) and blocks on its 2nd. P blocks on M1, Q on M2, R on M3 → circular wait. (k = 0 deadlocks likewise.)\n\nMinimum k = **2**. (An exhaustive state-space search over all schedules agrees: k ≤ 1 can deadlock, k ≥ 2 always terminates.)",
+      "trap": "Taking the largest requirement (4, for R's burst) or P's requirement (3): only one link of the circular wait has to be wide enough."
+    }
+  ]
+}

@@ -12,12 +12,22 @@ import type {
   ChatType,
   Document,
   DocumentChunkPreview,
+  LearnCatalog,
+  LearnUnitDetail,
+  LectureDetail,
   LoginRequest,
   NotificationStatsResponse,
   NotificationStatusResponse,
+  QuizAnswerResult,
+  QuizAnswerValue,
+  QuizAttemptDetail,
+  QuizAttemptSummary,
+  QuizOverview,
   SemanticSearchResponse,
   SignupRequest,
+  StartQuizRequest,
   TokenResponse,
+  TutorMessage,
   User,
 } from '../types'
 
@@ -172,6 +182,57 @@ export const documentsApi = {
 
 // ── Chat (streaming RAG assistant) ──
 
+/**
+ * POST a JSON body and deliver the plain-text streaming response to `onChunk`
+ * as it arrives (raw fetch + ReadableStream). Resolves when the stream ends.
+ */
+async function streamPost(
+  path: string,
+  body: unknown,
+  onChunk: (delta: string) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const token = useAuthStore.getState().token
+  if (!token) throw new ApiError(401, 'Not authenticated', null)
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body),
+    signal,
+  })
+
+  if (!response.ok) {
+    let detail: unknown = `HTTP ${response.status}`
+    try {
+      const errBody = await response.json()
+      detail = errBody.detail ?? detail
+    } catch {
+      // ignore
+    }
+    if (response.status === 401) useAuthStore.getState().logout()
+    throw new ApiError(response.status, detail, null)
+  }
+
+  if (!response.body) {
+    throw new ApiError(500, 'No response body from server', null)
+  }
+
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder()
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    const text = decoder.decode(value, { stream: true })
+    if (text) onChunk(text)
+  }
+  const tail = decoder.decode()
+  if (tail) onChunk(tail)
+}
+
 export interface StreamMessageOptions {
   sessionId: string
   content: string
@@ -194,47 +255,8 @@ export const chatApi = {
    * Stream a new message into an existing session. The Promise resolves once
    * the server is done streaming. Each text delta is delivered to `onChunk`.
    */
-  streamMessage: async ({ sessionId, content, mode, onChunk, signal }: StreamMessageOptions): Promise<void> => {
-    const token = useAuthStore.getState().token
-    if (!token) throw new ApiError(401, 'Not authenticated', null)
-
-    const response = await fetch(`${API_BASE_URL}/chat/sessions/${sessionId}/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content, mode }),
-      signal,
-    })
-
-    if (!response.ok) {
-      let detail: unknown = `HTTP ${response.status}`
-      try {
-        const errBody = await response.json()
-        detail = errBody.detail ?? detail
-      } catch {
-        // ignore
-      }
-      if (response.status === 401) useAuthStore.getState().logout()
-      throw new ApiError(response.status, detail, null)
-    }
-
-    if (!response.body) {
-      throw new ApiError(500, 'No response body from server', null)
-    }
-
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    while (true) {
-      const { value, done } = await reader.read()
-      if (done) break
-      const text = decoder.decode(value, { stream: true })
-      if (text) onChunk(text)
-    }
-    const tail = decoder.decode()
-    if (tail) onChunk(tail)
-  },
+  streamMessage: ({ sessionId, content, mode, onChunk, signal }: StreamMessageOptions): Promise<void> =>
+    streamPost(`/chat/sessions/${sessionId}/messages`, { content, mode }, onChunk, signal),
 
   sendMessageBlocking: (sessionId: string, content: string, mode?: AssistantMode) =>
     api.post<ChatMessage>(`/chat/sessions/${sessionId}/messages/blocking`, { content, mode }),
@@ -262,6 +284,52 @@ export const speechApi = {
   agentSignedUrl: () => api.get<{ signed_url: string }>('/speech/agent/signed-url'),
   /** Absolute URL for a server-relative audio path. */
   audioUrl: (path: string) => `${new URL(API_BASE_URL).origin}${path}`,
+}
+
+// ── Learn (curated video lectures) ──
+
+export interface AskTutorOptions {
+  lectureId: string
+  messages: TutorMessage[]
+  slideId?: string | null
+  onChunk: (delta: string) => void
+  signal?: AbortSignal
+}
+
+export const learnApi = {
+  catalog: () => api.get<LearnCatalog>('/learn/catalog'),
+  unit: (subjectId: string, unitId: string) =>
+    api.get<LearnUnitDetail>(`/learn/subjects/${subjectId}/units/${unitId}`),
+  lecture: (lectureId: string) => api.get<LectureDetail>(`/learn/lectures/${lectureId}`),
+  /** Stream the lecture tutor's answer. `messages` is the whole conversation, ending with the question. */
+  ask: ({ lectureId, messages, slideId, onChunk, signal }: AskTutorOptions): Promise<void> =>
+    streamPost(`/learn/lectures/${lectureId}/ask`, { messages, slide_id: slideId ?? null }, onChunk, signal),
+  /** Absolute URL for a server-relative `/learn-media/...` path. */
+  mediaUrl: (path: string) => (path.startsWith('/') ? `${new URL(API_BASE_URL).origin}${path}` : path),
+}
+
+export interface AskQuestionOptions {
+  attemptId: string
+  questionId: string
+  messages: TutorMessage[]
+  onChunk: (delta: string) => void
+  signal?: AbortSignal
+}
+
+export const quizApi = {
+  overview: (subjectId: string, unitId: string) =>
+    api.get<QuizOverview>(`/learn/quiz/units/${subjectId}/${unitId}`),
+  attempts: (subjectId: string, unitId: string) =>
+    api.get<QuizAttemptSummary[]>(`/learn/quiz/units/${subjectId}/${unitId}/attempts`),
+  start: (subjectId: string, unitId: string, data: StartQuizRequest) =>
+    api.post<QuizAttemptDetail>(`/learn/quiz/units/${subjectId}/${unitId}/attempts`, data),
+  attempt: (attemptId: string) => api.get<QuizAttemptDetail>(`/learn/quiz/attempts/${attemptId}`),
+  answer: (attemptId: string, data: { question_id: string; response: QuizAnswerValue; time_ms?: number }) =>
+    api.post<QuizAnswerResult>(`/learn/quiz/attempts/${attemptId}/answer`, data),
+  finish: (attemptId: string) => api.post<QuizAttemptDetail>(`/learn/quiz/attempts/${attemptId}/finish`),
+  /** Stream the AI tutor's help on an answered question. */
+  ask: ({ attemptId, questionId, messages, onChunk, signal }: AskQuestionOptions): Promise<void> =>
+    streamPost(`/learn/quiz/attempts/${attemptId}/questions/${questionId}/ask`, { messages }, onChunk, signal),
 }
 
 // ── Admin ──

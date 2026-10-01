@@ -1,0 +1,104 @@
+{
+  "topic_id": "T10",
+  "topic": "Virtual Memory",
+  "hinglish": [
+    {
+      "video_id": "8rcUs5RutX0",
+      "title": "L-5.22: Page Replacement Introduction | FIFO Page Replacement algorithm | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 966,
+      "views": 2718598,
+      "likes": 46278,
+      "comments": 1700,
+      "upload_date": "20180413",
+      "captions": ["en(manual)"],
+      "covers": ["why page replacement is needed", "page replacement algorithm framework", "FIFO with numerical example"],
+      "why": "Highest-viewed (2.72M) page-replacement video on YouTube in any language, manual English captions, and sets up the algorithm framework GATE numericals are built on; top comments confirm students use it night-before an exam.",
+      "comment_highlights": ["3 am in morning and my exam is in 6 hours shukriya sirjiii", "Tommorow is my exam"]
+    },
+    {
+      "video_id": "q2BpMvPhhrY",
+      "title": "L-5.24: Optimal Page Replacement algorithm | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 787,
+      "views": 2015453,
+      "likes": 40953,
+      "comments": 1000,
+      "upload_date": "20180413",
+      "captions": ["en(manual)"],
+      "covers": ["Optimal page replacement with worked example", "page-fault counting"],
+      "why": "2M views, near-identical like ratio to the FIFO video, same series continuity; comments show students independently re-verify the worked example (page-hit count) and consistently confirm the answer, indicating high trust/accuracy.",
+      "comment_highlights": ["Hands down, the best channel for learning CS concepts!", "Page Hit=12 (missing one). Crystal clear!!!!!!!!!"]
+    },
+    {
+      "video_id": "dYIoWkCvd6A",
+      "title": "L-5.25: Least Recently Used Page Replacement Algorithm | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 476,
+      "views": 2022769,
+      "likes": 35485,
+      "comments": 835,
+      "upload_date": "20180414",
+      "captions": ["en(manual)"],
+      "covers": ["LRU with worked example", "comparison intuition vs FIFO/Optimal"],
+      "why": "Completes the FIFO/Optimal/LRU trio (the single most-asked GATE numerical pattern: compare page faults across all three on one reference string) from the same top-rated series; comments repeatedly cite last-minute exam confidence from this exact video.",
+      "comment_highlights": ["Before 1 hour of my exam i watched your video then i got full confident to write this problem thank you", "Sir your way of teaching is out of the world . Simple Fast Conceptual And easy"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "FWoMSiMep80",
+      "title": "Lec28 Page replacement Introduction | FIFO page replacement algorithm with example | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "duration_sec": 1208,
+      "views": 585197,
+      "likes": 10036,
+      "comments": 307,
+      "upload_date": "20190530",
+      "captions": ["en(auto)"],
+      "covers": ["pages/frames/swap-in/swap-out recap", "need for page replacement", "FIFO with example"],
+      "why": "Best-performing English-medium page-replacement lecture on YouTube (585K views, 10K likes); a top comment itself summarizes the full syllabus scope covered ('pages, virtual memory, frames, swap out... swap in') confirming solid coverage in a single ~20-min video with clean auto captions.",
+      "comment_highlights": ["u have explained very well the need of paging and page replacement as well as fifo algorithm. a great help for exams.", "Thank you for your videos ma'am. You break down concepts very well, still useful 4 years later."]
+    },
+    {
+      "video_id": "7lxAfszjy68",
+      "title": "Cache Replacement Policies - RR, FIFO, LIFO, & Optimal",
+      "channel": "Neso Academy",
+      "duration_sec": 913,
+      "views": 114452,
+      "likes": 1451,
+      "comments": 21,
+      "upload_date": "20210905",
+      "captions": ["en(auto)"],
+      "covers": ["FIFO and Optimal replacement logic (identical algorithm to page replacement, applied to cache)"],
+      "why": "Neso Academy's dedicated Virtual Memory chapter videos are extremely short (~1 min, shorts-like) and low-view, so their best coverage of the FIFO/Optimal replacement logic actually lives in this highly-produced, well-captioned lecture; algorithm mechanics are identical to page replacement and Neso explicitly cross-applies them.",
+      "comment_highlights": ["amazingly educational: easy to follow, slides carefully crafted, teacher's voice is very dynamic", "Much better than those NPTEL videos"]
+    },
+    {
+      "video_id": "_Hh-NcdbHCY",
+      "title": "Cache Replacement Policies - MRU, LRU, Pseudo-LRU, & LFU",
+      "channel": "Neso Academy",
+      "duration_sec": 1760,
+      "views": 95870,
+      "likes": 1232,
+      "comments": 33,
+      "upload_date": "20210913",
+      "captions": ["en(auto)"],
+      "covers": ["LRU logic and implementation cost trade-offs"],
+      "why": "Companion Neso Academy lecture covering LRU (and MRU/LFU) in depth with strong comment sentiment ('better than those NPTEL videos'); pairs with the FIFO/Optimal video above to complete the algorithm trio in English with reliable captions.",
+      "comment_highlights": ["Love how you added in implementation cost as part of the rationale behind choosing between MRU LRU and PLRU.", "Amazing explanation. Thank you for these videos :)"]
+    }
+  ],
+  "runners_up": [
+    {"video_id": "pR1uhp--COc", "title": "L-5.23: Belady's Anomaly in FIFO page Replacement with example", "channel": "Gate Smashers", "views": 876369, "reason_rejected": "Excellent dedicated video but including it would exceed the 3-video cap; noted as a coverage gap instead (same series as our Hinglish picks)."},
+    {"video_id": "o2_iCzS9-ZQ", "title": "L-5.19: Virtual Memory | Page fault | Significance of virtual memory", "channel": "Gate Smashers", "views": 1792601, "reason_rejected": "Strong demand-paging/page-fault intro but the 3-video cap was prioritized for the FIFO/Optimal/LRU numerical trio, which is more heavily tested; noted as a gap."},
+    {"video_id": "IyWaK8pbN6A", "title": "L-5.16: What is Thrashing", "channel": "Gate Smashers", "views": 1074614, "reason_rejected": "High quality (1.07M views) but doesn't fit the 3-video cap alongside the algorithm trio; thrashing/working set left as a coverage gap."},
+    {"video_id": "DXU7SqsYDvg", "title": "Lec29 Page Replacement Algorithms | LRU and optimal", "channel": "Jenny's Lectures CS IT", "views": 618743, "reason_rejected": "No captions available (TranscriptsDisabled) - fails the mandatory captions requirement despite good coverage/views."},
+    {"video_id": "Ub4VVDGLJx0", "title": "FIFO,LRU AND OPTIMAL PAGE REPLACEMENT ALGORITHMS", "channel": "Last moment tuitions", "views": 880222, "reason_rejected": "Would have been an efficient single-video consolidation of all 3 algorithms, but subtitles are disabled on this video - fails the mandatory captions requirement."},
+    {"video_id": "16kaPQtYo28", "title": "Page replacement Algorithms | FIFO | Example | OS | Lec-26", "channel": "Education 4u", "views": 1148662, "reason_rejected": "No captions available (TranscriptsDisabled)."},
+    {"video_id": "xw_OuOhjauw", "title": "Complete Operating System in one shot | Semester Exam | Hindi", "channel": "KnowledgeGATE by Sanchit Sir", "views": 3632206, "reason_rejected": "6.3-hour full-OS one-shot; too broad for a single topic per selection rules."},
+    {"video_id": "puobwv1xjqc", "title": "Virtual Memory | Chapter-9 | Operating System", "channel": "Neso Academy", "views": 48892, "reason_rejected": "Only 78 seconds long (shorts-like fragment) and very low views - Neso's Virtual Memory chapter is unusually thin/underperforming for this topic."},
+    {"video_id": "4iMVx_cg_aM", "title": "Operating System 06 | Virtual Memory | GATE 2025 Crash Course", "channel": "GATE Wallah CSE & DA", "views": 42895, "reason_rejected": "Comprehensive (114 min) and covers demand paging/page fault/effective access time in depth per transcript check, but modest views/likes relative to Gate Smashers and bundles in multilevel paging (T9 content), diluting topic focus."}
+  ],
+  "coverage_gaps": "Neither pick-set explicitly covers: Belady's Anomaly (dedicated companion videos exist for both language series - Gate Smashers L-5.23 for Hinglish - but were excluded by the 3-video cap), frame allocation algorithms, and working set model/thrashing in depth. Effective access time numericals for demand paging are also not directly covered by the selected picks (Gate Smashers L-5.19 and GATE Wallah's crash course cover this well but were left as runners-up)."
+}

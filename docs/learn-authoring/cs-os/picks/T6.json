@@ -1,0 +1,179 @@
+{
+  "topic_id": "T6",
+  "topic": "Deadlock",
+  "hinglish": [
+    {
+      "video_id": "rWFH6PLOIEI",
+      "title": "L-4.1: DEADLOCK concept | Example | Necessary condition | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 741,
+      "views": 2723125,
+      "likes": 46500,
+      "comments": 873,
+      "upload_date": "20180314",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["deadlock concept/definition", "necessary conditions for deadlock (mutual exclusion, hold-and-wait, no preemption, circular wait)", "real-life analogies"],
+      "why": "Opening lecture of Gate Smashers' dedicated 8-part Deadlock series; 2.7M views/46.5K likes with near-zero accuracy complaints in comments, just praise for clarity and real-life examples.",
+      "comment_highlights": ["One more example - Phone number needed for Aadhar card and Aadhar card needed for phone number", "Sir because of you 90% engineering students are ready for last moment"]
+    },
+    {
+      "video_id": "BW74JYB3QOM",
+      "title": "L-4.2: Resource Allocation Graph in Deadlock | Single Instance with example | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 1577,
+      "views": 1545689,
+      "likes": 29253,
+      "comments": 577,
+      "upload_date": "20180316",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["resource allocation graph (RAG) notation", "single-instance RAG", "cycle = deadlock rule for single-instance resources", "worked examples"],
+      "why": "RAG cycle-detection (and the single- vs multi-instance distinction) is one of the most heavily GATE-tested deadlock subtopics; 1.5M views/29K likes with comments praising exam performance and zero accuracy complaints.",
+      "comment_highlights": ["My exam went wonderful. You are the best teacher and I wish you countless subscribers", "I spent 15 mins thinking how to sum up all the amazing things I experienced learning from you"]
+    },
+    {
+      "video_id": "pPM9Ajqmy_4",
+      "title": "L-4.4: Deadlock Handling Methods and Deadlock Prevention | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 1489,
+      "views": 1673928,
+      "likes": 36611,
+      "comments": 851,
+      "upload_date": "20180320",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["overview of deadlock handling methods (ignorance, prevention, avoidance, detection)", "deadlock prevention strategies for each necessary condition"],
+      "why": "Directly maps to two named scope items (handling-methods overview + prevention) in one 25-min lecture; strong watch numbers (1.67M views, 36.6K likes) and comments praise it as still relevant years later, with a popular 'IPAD' mnemonic thread.",
+      "comment_highlights": ["Remember the four methods of handling as IPAD: ignorance, prevention, avoidance, detection", "Video made nearly 6 years ago and still as much relevant in 2025"]
+    },
+    {
+      "video_id": "7gMLNiEz3nw",
+      "title": "L-4.5: Deadlock Avoidance Banker's Algorithm with Example | With English Subtitles",
+      "channel": "Gate Smashers",
+      "duration_sec": 1444,
+      "views": 3947432,
+      "likes": 84077,
+      "comments": 2200,
+      "upload_date": "20180312",
+      "captions": ["en(manual)"],
+      "covers": ["deadlock avoidance", "safe state concept", "Banker's algorithm (safety + resource-request checks)", "worked numerical example"],
+      "why": "The most-watched video in the entire series (3.95M views, 84K likes, 2200 comments) — Banker's algorithm numericals are the most frequently tested deadlock subtopic in GATE, and comments repeatedly cite it as exam-saving with zero reported errors.",
+      "comment_highlights": ["Best explanation of banker algorithm on YouTube Thank you so much", "This video is a life saviour for those studying one night before exams"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "x9FF723STvo",
+      "title": "Lec19 Deadlock | Necessary conditions for Deadlock | Operating Systems",
+      "channel": "Jenny's Lectures CS IT",
+      "duration_sec": 794,
+      "views": 366541,
+      "likes": 5740,
+      "comments": 156,
+      "upload_date": "20190504",
+      "captions": ["en(auto)"],
+      "covers": ["deadlock definition", "system model", "four necessary conditions for deadlock"],
+      "why": "First lecture of Jenny's 9-part Deadlock series; clear whiteboard teaching with strong exam-time praise in comments and no reported factual errors.",
+      "comment_highlights": ["Tomorrow is my OS exam, best channel to understand the concepts, thank you", "Just found out this video was made 4 years ago, here for my 3rd yr degree"]
+    },
+    {
+      "video_id": "-VksGXfiK7k",
+      "title": "Resource Allocation Graph",
+      "channel": "TutorialsPoint",
+      "duration_sec": 413,
+      "views": 154169,
+      "likes": 2147,
+      "comments": 60,
+      "upload_date": "20180119",
+      "captions": ["en(auto)"],
+      "covers": ["resource allocation graph (RAG) notation", "single- and multi-instance RAG", "cycle vs. deadlock distinction"],
+      "why": "Jenny's Lectures Lec20 (RAG) and Lec22 (avoidance via RAG) both have subtitles disabled, failing the caption requirement, so this concise, well-reviewed RAG lecture fills the gap — RAG is an exam-critical subtopic (cycle=deadlock trick question in single- vs multi-instance) that must not be missing from the English picks. Comments consistently call it clearer and faster than longer alternatives, with no accuracy complaints.",
+      "comment_highlights": ["Thanks so much for this explanation in 8 minutes, 100x better than how my lecturer explained it", "Absolutely brilliant. Thank you so much. You saved me 50 marks on an assignment"]
+    },
+    {
+      "video_id": "YeXS1JWIA4Q",
+      "title": "Lec21 Deadlock handling methods | Deadlock Prevention | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "duration_sec": 1873,
+      "views": 274228,
+      "likes": 4661,
+      "comments": 149,
+      "upload_date": "20190508",
+      "captions": ["en(auto)"],
+      "covers": ["overview of deadlock handling methods", "deadlock prevention (eliminating each necessary condition) with examples"],
+      "why": "Covers both handling-methods overview and prevention in one 31-min lecture, matching two scope items; comments consistently call it clearer than college professors with no accuracy complaints.",
+      "comment_highlights": ["Such teachers like you are required in colleges for quality of studies", "Thanks u mam for such a wonderful playlist"]
+    },
+    {
+      "video_id": "bYFVbzLLxfY",
+      "title": "Lec23 Deadlock Avoidance: Banker's Algorithm with example | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "duration_sec": 1272,
+      "views": 858761,
+      "likes": 12495,
+      "comments": 329,
+      "upload_date": "20190510",
+      "captions": ["en(auto)"],
+      "covers": ["deadlock avoidance", "safe state concept", "Banker's algorithm safety check with worked numerical"],
+      "why": "By far the most-watched video in Jenny's Deadlock series (858K views vs 150-480K for siblings); comments highlight it as the clearest English-language Banker's algorithm explanation available, including from non-native speakers and IIT students.",
+      "comment_highlights": ["I don't usually comment, but this is the best video to fully understand how it works", "Understood banker's algo, something not even my profs at IIT could do"]
+    }
+  ],
+  "runners_up": [
+    {
+      "video_id": "hJhB2ddOQtg",
+      "title": "L-4.3: Multi-Instance Resource Allocation Graph with Example | Operating System",
+      "channel": "Gate Smashers",
+      "views": 888386,
+      "reason_rejected": "Follow-up multi-instance RAG lecture from the same series as the L-4.2 pick; single-instance RAG (included) covers the core GATE scope item, multi-instance nuance kept as a supplemental runner-up rather than a 5th required video."
+    },
+    {
+      "video_id": "2-7JGoy52Qo",
+      "title": "Lec25 Deadlock Detection and Recovery : Wait-for Graph and Banker's algorithm | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "views": 399202,
+      "reason_rejected": "Covers detection & recovery, a real scope item, but excluded from the 4-video English set to prioritize necessary conditions + RAG + handling/prevention + avoidance/Banker's; detection & recovery is documented as a coverage gap instead (it is tested less frequently on GATE than RAG or Banker's algorithm)."
+    },
+    {
+      "video_id": "qPuf5B5xPCs",
+      "title": "Lec20 Resource Allocation Graph in Deadlock | with example | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "views": 388015,
+      "reason_rejected": "Best-matching English RAG lecture by views/channel consistency, but subtitles are disabled (youtube_transcript_api returns no transcript track) — rejected per the hard caption requirement; TutorialsPoint's RAG video was used instead."
+    },
+    {
+      "video_id": "nDDytwtIMXE",
+      "title": "Lec22 Deadlock Avoidance with Resource Allocation Graph(with example) | Operating System",
+      "channel": "Jenny's Lectures CS IT",
+      "views": 220255,
+      "reason_rejected": "Also covers RAG-based avoidance, but subtitles are disabled (no transcript available) — rejected per the hard caption requirement."
+    },
+    {
+      "video_id": "_zOTMOubT1M",
+      "title": "5.1 Deadlock in Operating system in Hindi | Deadlock in OS | Prevention and Avoidance",
+      "channel": "KnowledgeGATE by Sanchit Sir",
+      "views": 507177,
+      "reason_rejected": "KnowledgeGATE's Deadlock unit is split into 16+ very short parts (5.1-5.16), each with lower views/engagement than Gate Smashers' equivalent lecture, making it harder to cover the syllabus within a small video cap."
+    },
+    {
+      "video_id": "2V2FfP_olaA",
+      "title": "Banker's algorithm for deadlock avoidance | An example.",
+      "channel": "Scholarly Things",
+      "views": 1508290,
+      "reason_rejected": "High views but comment_count unavailable (comments appear disabled) and only covers Banker's algorithm in isolation, without conditions/RAG/prevention context."
+    },
+    {
+      "video_id": "3obEP8eLsCw",
+      "title": "Complete Operating Systems in 1 Shot (With Notes) || For Placement Interviews",
+      "channel": "CodeHelp - by Babbar",
+      "views": 2138378,
+      "reason_rejected": "Excluded per brief: multi-hour complete-OS one-shot is too broad for a single topic pick."
+    },
+    {
+      "video_id": "ktdedseBUUc",
+      "title": "Operating System 04 | Deadlock & Banker's Algorithm | CS & IT | GATE 2025 Crash Course",
+      "channel": "GATE Wallah CSE & DA",
+      "views": 78108,
+      "reason_rejected": "Much lower views/likes than Gate Smashers/Jenny's picks and is a 100+ minute crash-course lecture bundling deadlock with other content, less focused."
+    }
+  ],
+  "coverage_gaps": "Deadlock Detection & Recovery is not covered by either final set. Gate Smashers' numbered series has no dedicated detection-and-recovery video at all (it jumps from avoidance/PYQ questions to Memory Management), and Jenny's Lec25/Lec26 (English) were left as runners-up to keep the English set at 4 videos focused on necessary conditions, RAG, handling-methods/prevention, and avoidance/Banker's algorithm. Detection & recovery is tested less frequently on GATE than RAG or Banker's algorithm, but students who need it should supplement with Jenny's Lec25 (Detection and Recovery: Wait-for Graph and Banker's algorithm) and Lec26 (Deadlock Recovery) in English; no equally strong dedicated Hinglish detection-and-recovery video from a top channel was found. Multi-instance RAG nuance (Gate Smashers L-4.3) is also left as a Hinglish runner-up rather than a required 5th video, since single-instance RAG (included) covers the core GATE scope item."
+}

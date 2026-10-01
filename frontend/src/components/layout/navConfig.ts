@@ -1,4 +1,4 @@
-import { LayoutDashboard, Sparkles, Library, Users, Bell } from 'lucide-react'
+import { LayoutDashboard, GraduationCap, Sparkles, Library, Users, Bell } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 export type Role = 'student' | 'teacher' | 'admin'
@@ -23,6 +23,7 @@ const studentNav: NavSection[] = [
     group: 'LEARN',
     items: [
       { to: '/student', icon: LayoutDashboard, label: 'Dashboard', end: true },
+      { to: '/student/learn', icon: GraduationCap, label: 'Learn' },
       { to: '/student/assistant', icon: Sparkles, label: 'AI Assistant' },
       { to: '/student/library', icon: Library, label: 'Library' },
     ],
@@ -34,6 +35,7 @@ const teacherNav: NavSection[] = [
     group: 'DASHBOARD',
     items: [
       { to: '/teacher', icon: LayoutDashboard, label: 'Overview', end: true },
+      { to: '/teacher/learn', icon: GraduationCap, label: 'Learn' },
       { to: '/teacher/assistant', icon: Sparkles, label: 'AI Assistant' },
     ],
   },
@@ -48,6 +50,7 @@ const adminNav: NavSection[] = [
     group: 'DASHBOARD',
     items: [
       { to: '/admin', icon: LayoutDashboard, label: 'Overview', end: true },
+      { to: '/admin/learn', icon: GraduationCap, label: 'Learn' },
       { to: '/admin/library', icon: Library, label: 'Library' },
       { to: '/admin/assistant', icon: Sparkles, label: 'AI Assistant' },
     ],
@@ -75,11 +78,13 @@ export const navByRole: Record<Role, NavSection[]> = {
 export const primaryNavByRole: Record<Role, NavItem[]> = {
   student: [
     { to: '/student', icon: LayoutDashboard, label: 'Home', end: true },
+    { to: '/student/learn', icon: GraduationCap, label: 'Learn' },
     { to: '/student/assistant', icon: Sparkles, label: 'Assistant' },
     { to: '/student/library', icon: Library, label: 'Library' },
   ],
   teacher: [
     { to: '/teacher', icon: LayoutDashboard, label: 'Home', end: true },
+    { to: '/teacher/learn', icon: GraduationCap, label: 'Learn' },
     { to: '/teacher/assistant', icon: Sparkles, label: 'Assistant' },
     { to: '/teacher/library', icon: Library, label: 'Library' },
   ],
@@ -98,5 +103,7 @@ export function titleForPath(pathname: string): string | undefined {
       if (hit) return hit.label
     }
   }
+  // Nested Learn pages (unit / lecture) keep the section title.
+  if (/^\/(student|teacher|admin)\/learn\//.test(pathname)) return 'Learn'
   return undefined
 }

@@ -1,0 +1,1295 @@
+{
+  "topic_id": "t11-file-systems",
+  "questions": [
+    {
+      "id": "t11-001",
+      "subtopic": "directory-structure",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "single-level directory"
+      ],
+      "stem": "What is the main drawback of a **single-level** directory structure in a multi-user system?",
+      "options": [
+        "It cannot support sequential access to files",
+        "It needs a separate master file directory per user",
+        "File names must be unique across all users, causing name collisions",
+        "It allows cycles, so garbage collection is needed"
+      ],
+      "answer": "C",
+      "explanation": "In a single-level directory every file of every user lives in one directory, so **every file name must be unique across all users**. If two users both want a file called `test.c`, one of them must rename it. This naming problem (plus the lack of any grouping) is what the two-level and tree structures were introduced to fix.",
+      "option_feedback": [
+        "Wrong: access method is independent of the directory structure.",
+        "Wrong: a per-user directory under a master file directory is the two-level structure, not single-level.",
+        "Correct: one shared namespace means names collide between users.",
+        "Wrong: cycles are a problem of general-graph directories; a single directory has no links between directories."
+      ]
+    },
+    {
+      "id": "t11-002",
+      "subtopic": "directory-structure",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "acyclic-graph directory",
+        "sharing"
+      ],
+      "stem": "Which directory structure allows a file or subdirectory to be shared (reachable by more than one path name) while **guaranteeing there are no cycles**?",
+      "options": [
+        "Tree-structured directory",
+        "Acyclic-graph directory",
+        "General-graph directory",
+        "Two-level directory"
+      ],
+      "answer": "B",
+      "explanation": "- **Tree**: every file has exactly one parent, so no sharing.\n- **Acyclic graph**: a file/subdirectory may appear in several directories (via links), but the graph is required to have no cycles.\n- **General graph**: sharing *and* cycles are allowed.\n\nHence the acyclic-graph directory.",
+      "option_feedback": [
+        "Wrong: a tree gives each file exactly one path (no sharing).",
+        "Correct: shared entries allowed, cycles forbidden.",
+        "Wrong: a general graph permits cycles.",
+        "Wrong: two-level gives each user a private directory; no sharing between them."
+      ]
+    },
+    {
+      "id": "t11-003",
+      "subtopic": "directory-structure",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "hard link",
+        "link count"
+      ],
+      "stem": "On a Unix file system, a regular file `a` (link count 1) exists. A user runs `ln a b` (a **hard** link) and then `rm a`. Which statement is true?",
+      "options": [
+        "`b` becomes a dangling link because its target was removed",
+        "The data blocks are freed, but `b`'s inode survives with size 0",
+        "`b` still works and the inode's link count is 2",
+        "`b` still works and the inode's link count is 1"
+      ],
+      "answer": "D",
+      "explanation": "`ln a b` adds a second directory entry pointing to the **same inode**; the inode's link count becomes 2. `rm a` removes only the directory entry `a` and decrements the count to 1. The inode and its data blocks are freed only when the link count reaches 0 (and no process has the file open). So `b` still accesses the full data and the link count is 1.",
+      "option_feedback": [
+        "Wrong: that describes a symbolic link, which refers to the name `a`.",
+        "Wrong: data blocks are freed only when the link count hits 0.",
+        "Wrong: `rm a` decrements the count from 2 back to 1.",
+        "Correct: one name remains, so the count is 1 and the data is intact."
+      ],
+      "trap": "Confusing hard-link behaviour with symbolic-link behaviour."
+    },
+    {
+      "id": "t11-004",
+      "subtopic": "directory-structure",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "symbolic link",
+        "hard link"
+      ],
+      "stem": "Which of the following statements about **symbolic (soft) links** in Unix are correct?",
+      "options": [
+        "A symbolic link can refer to a file on a different file system",
+        "A symbolic link has its own inode, distinct from the target's",
+        "Deleting the target leaves the symbolic link dangling",
+        "Creating a symbolic link increments the target inode's link count"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "A symbolic link is a small file of its own (own inode) whose content is a **path name**.\n\n- A: it stores a path, so it can name a file on another file system. Correct.\n- B: it has its own inode. Correct.\n- C: if the target name is removed, the stored path no longer resolves, so the link dangles. Correct.\n- D: creating a symlink does **not** change the target's link count; only hard links do. Incorrect.",
+      "option_feedback": [
+        "Correct: a path name can cross mount points.",
+        "Correct: the link is a separate file whose data is the path.",
+        "Correct: resolution fails once the name is gone.",
+        "Incorrect: only hard links (directory entries to the same inode) affect the link count."
+      ]
+    },
+    {
+      "id": "t11-005",
+      "subtopic": "directory-structure",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "directory link count",
+        ". and .."
+      ],
+      "stem": "In a traditional Unix file system, every directory contains the entries `.` (itself) and `..` (its parent), and both are counted as hard links. Directory `/d` contains **4 subdirectories** and **3 regular files** (and nothing else). What is the link count of `/d`'s inode?",
+      "options": [
+        "6",
+        "9",
+        "7",
+        "2"
+      ],
+      "answer": "A",
+      "explanation": "Hard links pointing to `/d`'s inode:\n\n| Source | Links |\n|---|---|\n| entry `d` in `/` | 1 |\n| `/d/.` | 1 |\n| `..` inside each of the 4 subdirectories | 4 |\n\nTotal = 2 + 4 = **6**. Regular files inside `/d` have no `..` entry, so they do not contribute; their entries are links to *their own* inodes, not to `/d`.",
+      "option_feedback": [
+        "Correct: 2 + number of subdirectories.",
+        "Wrong: the 3 regular files do not point back to `/d`.",
+        "Wrong: you added 1 for the files; files contribute nothing.",
+        "Wrong: that ignores the `..` entries of the subdirectories."
+      ],
+      "trap": "Adding the regular files to the directory's link count."
+    },
+    {
+      "id": "t11-006",
+      "subtopic": "directory-structure",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "path lookup",
+        "disk accesses"
+      ],
+      "stem": "A Unix-like file system resolves the path `/usr/lib/libx.so` and then reads the **first data block** of `libx.so`. Assume:\n\n- the root directory's inode is already in memory; nothing else is cached;\n- every directory's contents fit in a single disk block;\n- reading an inode costs one disk access, and reading a data block costs one disk access.\n\nHow many disk accesses are needed in total?",
+      "answer": {
+        "min": 7,
+        "max": 7
+      },
+      "explanation": "Walk the path, alternating *directory data block* → *next inode*:\n\n| Step | Read | Accesses |\n|---|---|---|\n| 1 | root directory's data block (find `usr`) | 1 |\n| 2 | inode of `usr` | 1 |\n| 3 | `usr`'s data block (find `lib`) | 1 |\n| 4 | inode of `lib` | 1 |\n| 5 | `lib`'s data block (find `libx.so`) | 1 |\n| 6 | inode of `libx.so` | 1 |\n| 7 | first data block of `libx.so` | 1 |\n\nTotal = **7**. (Root's inode is not read because it is cached.)",
+      "trap": "Forgetting either the inode read or the directory-block read at some level, or reading the root inode although it is cached."
+    },
+    {
+      "id": "t11-007",
+      "subtopic": "directory-structure",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "hard link",
+        "symbolic link",
+        "link count"
+      ],
+      "stem": "Starting from an empty directory, these commands run in order:\n\n```sh\ntouch f        # create regular file f\nln f g         # hard link\nln g h         # hard link\nln -s f s      # symbolic link\nrm f\n```\n\nWhat is the link count of the inode that `g` refers to, and does `cat s` succeed?",
+      "options": [
+        "3; succeeds",
+        "2; succeeds",
+        "2; fails",
+        "3; fails"
+      ],
+      "answer": "C",
+      "explanation": "- After `touch f`: count = 1.\n- `ln f g`: count = 2.\n- `ln g h`: `g` names the same inode, so count = 3.\n- `ln -s f s`: a new inode containing the path `f`; the target's count is unchanged (3).\n- `rm f`: removes the name `f`; count = 2. The data survives (still reachable as `g`, `h`).\n\n`s` stores the *name* `f`, which no longer exists, so `cat s` fails with “No such file or directory”. Answer: **2; fails**.",
+      "option_feedback": [
+        "Wrong: the symlink does not add to the count, and `rm f` decrements it.",
+        "Wrong: the count is right, but `s` resolves the name `f`, which is gone.",
+        "Correct: two names remain (`g`, `h`) and `s` dangles.",
+        "Wrong: you counted the symlink as a link, or forgot that `rm f` decrements."
+      ],
+      "trap": "Thinking a symbolic link follows the inode rather than the name."
+    },
+    {
+      "id": "t11-008",
+      "subtopic": "directory-structure",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "path lookup",
+        "multi-block directory",
+        "disk accesses"
+      ],
+      "stem": "A file system resolves `/a/b/c/file.txt` and then reads the first data block of `file.txt`. Assume:\n\n- only the root directory's inode is in memory; nothing else is cached;\n- a directory is searched by reading its data blocks **in order** until the wanted entry is found;\n- every inode read and every data-block read is one disk access; all directory blocks are reachable through direct pointers in the inode.\n\n| Directory | Blocks it occupies | Block holding the wanted entry |\n|---|---|---|\n| `/` | 3 | 3rd (entry `a`) |\n| `/a` | 2 | 1st (entry `b`) |\n| `/a/b` | 4 | 4th (entry `c`) |\n| `/a/b/c` | 1 | 1st (entry `file.txt`) |\n\nHow many disk accesses are needed?",
+      "answer": {
+        "min": 14,
+        "max": 14
+      },
+      "explanation": "Count, level by level:\n\n| Item | Disk accesses |\n|---|---|\n| `/` data blocks 1–3 (entry in 3rd) | 3 |\n| inode of `a` | 1 |\n| `/a` data block 1 | 1 |\n| inode of `b` | 1 |\n| `/a/b` data blocks 1–4 | 4 |\n| inode of `c` | 1 |\n| `/a/b/c` data block 1 | 1 |\n| inode of `file.txt` | 1 |\n| first data block of `file.txt` | 1 |\n\nTotal = 3 + 1 + 1 + 1 + 4 + 1 + 1 + 1 + 1 = **14**. Note that the root inode is free (cached) and `/a`'s second block is never read because `b` is found in the first.",
+      "trap": "Reading all blocks of every directory, or skipping the per-level inode reads."
+    },
+    {
+      "id": "t11-009",
+      "subtopic": "directory-structure",
+      "difficulty": 4,
+      "type": "msq",
+      "est_seconds": 200,
+      "concepts": [
+        "general-graph directory",
+        "reference counting",
+        "garbage collection"
+      ],
+      "stem": "A file system allows hard links to directories, so its directory graph may be a **general graph**. Every node (file or directory) keeps a **reference count** = the number of directory entries that name it (`.` and `..` are not stored). A node is deleted as soon as its count becomes 0; deleting a directory removes all of its entries, which decrements the counts of the nodes they name (recursively).\n\nInitially `/` has an entry `A` (a directory), `A` has an entry `B` (a directory), and `B` has entries `f` and `g` (regular files). Then, in order:\n\n1. an entry `x` is added in `B`, naming `A`;\n2. an entry `y` is added in `/`, naming `f`;\n3. the entry `A` is removed from `/`;\n4. the entry `y` is removed from `/`.\n\nWhich statements are correct?",
+      "options": [
+        "After step 3, the reference count of `A` is 1",
+        "After step 4, `f` is still reachable from `/`",
+        "After step 4, none of `A`, `B`, `f`, `g` is reachable from `/`, yet reference counting has deleted none of them",
+        "If step 1 had been omitted, step 3 would have deleted `A`, `B`, `f` and `g`"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "Track the counts (entries naming each node):\n\n| Node | Initially | After 1 | After 2 | After 3 | After 4 |\n|---|---|---|---|---|---|\n| `A` | 1 (`/A`) | 2 (`/A`, `B/x`) | 2 | 1 (`B/x`) | 1 |\n| `B` | 1 (`A/B`) | 1 | 1 | 1 | 1 |\n| `f` | 1 (`B/f`) | 1 | 2 (`/y`) | 2 | 1 |\n| `g` | 1 | 1 | 1 | 1 | 1 |\n\n- **A** Correct: after step 3 only `B/x` names `A`.\n- **B** Incorrect: after step 4 the only path to `f` would go through `A`, and `/` no longer names `A`. `A → B → A` is a cycle cut off from the root.\n- **C** Correct: all four have count ≥ 1 (the cycle `A → B → A` keeps `A` and `B` alive, and they keep `f`, `g` alive), but none is reachable. This is exactly why general-graph directories need a tracing garbage collector (mark from root, sweep the rest).\n- **D** Incorrect: without step 1, step 3 drops `A` to 0 → `A` deleted → its entry `B` removed → `B` drops to 0 → deleted → `f` drops from 2 to 1 (still named by `/y`) and `g` drops to 0. So `A`, `B`, `g` are deleted, **not** `f`.",
+      "option_feedback": [
+        "Correct: `B/x` is the only remaining entry naming `A`.",
+        "Incorrect: the only route to `f` passes through `A`, which `/` no longer names.",
+        "Correct: the cycle keeps every count ≥ 1 although the whole structure is unreachable, so reference counting alone cannot reclaim it.",
+        "Incorrect: `f` survives because `/y` still names it at step 3; only `A`, `B`, `g` would be deleted."
+      ],
+      "trap": "Assuming removing an entry cascades deletion through a cycle, or forgetting that the extra name `/y` keeps `f` alive in the counterfactual.",
+      "marks": 2
+    },
+    {
+      "id": "t11-010",
+      "subtopic": "directory-structure",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "directory link count",
+        "hard link",
+        "rename"
+      ],
+      "stem": "In a traditional Unix file system (each directory holds `.` and `..`, both counted as hard links; symbolic links never change link counts; `mv` within one file system just moves the directory entry and updates `..`), `/p` is a freshly created empty directory. Then:\n\n```sh\nmkdir /p/a\nmkdir /p/b\nmkdir /p/a/c\ntouch /p/a/f\nln /p/a/f /p/b/g\nln -s /p/a /p/b/s\nmv /p/a/c /p/b/\nrm /p/a/f\n```\n\nWhat is the **sum** of the link counts of `/p`, `/p/a`, `/p/b` and the inode named by `/p/b/g`?",
+      "answer": {
+        "min": 10,
+        "max": 10
+      },
+      "explanation": "Directory link count = 2 + number of subdirectories (entry in parent + `.` + each child's `..`).\n\n| Inode | History | Final |\n|---|---|---|\n| `/p` | empty: 2; `a` and `b` created: 4 | **4** |\n| `/p/a` | 2; `c` created: 3; `c` moved out: 2 | **2** |\n| `/p/b` | 2; symlink `s` adds nothing; `c` moved in (its `..` now points to `/p/b`): 3 | **3** |\n| file `f`/`g` | 1; `ln`: 2; `rm /p/a/f`: 1 | **1** |\n\nSum = 4 + 2 + 3 + 1 = **10**.",
+      "trap": "Counting the symlink `s` as a link to `/p/a`, or forgetting that moving `c` transfers its `..` link from `/p/a` to `/p/b`."
+    },
+    {
+      "id": "t11-011",
+      "subtopic": "allocation-methods",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "contiguous allocation",
+        "external fragmentation"
+      ],
+      "stem": "Which file allocation method suffers from **external fragmentation**?",
+      "options": [
+        "Contiguous allocation",
+        "Linked allocation",
+        "Indexed allocation",
+        "FAT-based allocation"
+      ],
+      "answer": "A",
+      "explanation": "Contiguous allocation needs a run of consecutive free blocks for each file; as files are created and deleted the free space breaks into holes that may each be too small, which is external fragmentation (similar to variable-partition memory). Linked and indexed allocation can use any free block, so they have none.",
+      "option_feedback": [
+        "Correct: needs consecutive runs, leaving unusable holes.",
+        "Wrong: any free block can be chained in.",
+        "Wrong: the index block can point to any free blocks.",
+        "Wrong: FAT is linked allocation with the pointers in a table; no external fragmentation."
+      ]
+    },
+    {
+      "id": "t11-012",
+      "subtopic": "allocation-methods",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "FAT",
+        "linked allocation"
+      ],
+      "stem": "The File Allocation Table (FAT) used by MS-DOS is best described as a variant of which allocation method?",
+      "options": [
+        "Contiguous allocation",
+        "Indexed allocation with one index block per file",
+        "Linked allocation",
+        "Multilevel indexed allocation"
+      ],
+      "answer": "C",
+      "explanation": "FAT keeps one entry per disk block; the entry for block *x* holds the number of the **next** block of the file (or an end-of-file mark). That is a linked list of blocks, with the links moved out of the data blocks into a table at the start of the volume. So it is linked allocation.",
+      "option_feedback": [
+        "Wrong: FAT files need not be contiguous.",
+        "Wrong: there is no per-file index block; the table is shared and holds next-block links.",
+        "Correct: each entry is a next-block pointer.",
+        "Wrong: that is the inode scheme."
+      ]
+    },
+    {
+      "id": "t11-013",
+      "subtopic": "allocation-methods",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "indexed allocation",
+        "direct access"
+      ],
+      "stem": "Which allocation method supports **efficient direct (random) access** and has **no external fragmentation**?",
+      "options": [
+        "Contiguous allocation",
+        "Linked allocation",
+        "Linked allocation without a FAT",
+        "Indexed allocation"
+      ],
+      "answer": "D",
+      "explanation": "- Contiguous: direct access is fast (start + i), but external fragmentation exists.\n- Linked: no external fragmentation, but reaching block *i* needs *i* pointer reads.\n- Indexed: the index block holds the address of every block, so block *i* is found with one lookup, and blocks can be anywhere on disk.\n\nOnly indexed satisfies both.",
+      "option_feedback": [
+        "Wrong: it has external fragmentation.",
+        "Wrong: random access requires following the chain.",
+        "Wrong: that is plain linked allocation, still sequential for lookups.",
+        "Correct: one index lookup, blocks anywhere."
+      ]
+    },
+    {
+      "id": "t11-014",
+      "subtopic": "allocation-methods",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "linked allocation",
+        "pointer overhead"
+      ],
+      "stem": "A file system uses **linked allocation** with 512-byte blocks; each block ends with a 4-byte pointer to the next block. How many blocks are needed to store a file of **10,000 bytes**?",
+      "options": [
+        "19",
+        "20",
+        "21",
+        "18"
+      ],
+      "answer": "B",
+      "explanation": "Each block carries 512 − 4 = 508 bytes of data.\n\nBlocks = ⌈10,000 / 508⌉ = ⌈19.69⌉ = **20**.",
+      "option_feedback": [
+        "Wrong: 10,000/512 = 19.53 ignoring pointers, and truncated, gives 19.",
+        "Correct: 508 data bytes per block, rounded up.",
+        "Wrong: overcounting; 20 × 508 = 10,160 ≥ 10,000 already.",
+        "Wrong: rounding down loses data."
+      ],
+      "trap": "Forgetting that the pointer eats into each block's data space."
+    },
+    {
+      "id": "t11-015",
+      "subtopic": "allocation-methods",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 80,
+      "concepts": [
+        "disk accesses",
+        "contiguous",
+        "linked",
+        "indexed"
+      ],
+      "stem": "A file has 100 blocks, numbered 1 to 100. Only the directory entry (start address / index-block address and length) is in memory. How many disk reads are needed to read **logical block 50** under contiguous, linked, and (single-level) indexed allocation respectively? The index block is not in memory.",
+      "options": [
+        "1, 50, 2",
+        "1, 49, 2",
+        "50, 50, 1",
+        "1, 50, 1"
+      ],
+      "answer": "A",
+      "explanation": "- **Contiguous**: physical address = start + 49 is computed directly → **1** read.\n- **Linked**: the address of block 50 is stored in block 49, whose address is in block 48, … So blocks 1–49 must be read to find block 50, then block 50 itself → **50** reads.\n- **Indexed**: read the index block (1), then block 50 (1) → **2** reads.\n\nAnswer: 1, 50, 2.",
+      "option_feedback": [
+        "Correct.",
+        "Wrong: 49 reads only find the address; block 50 itself must also be read.",
+        "Wrong: contiguous computes the address directly.",
+        "Wrong: the index block is not in memory, so it costs one read."
+      ],
+      "trap": "Counting only the pointer-chasing reads in linked allocation and forgetting the target block."
+    },
+    {
+      "id": "t11-016",
+      "subtopic": "allocation-methods",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "FAT size",
+        "FAT entry width"
+      ],
+      "stem": "A 2 GB disk partition (1 GB = 2³⁰ bytes) uses 4 KB blocks and a FAT with one entry per block. Each FAT entry stores a block number using the **minimum whole number of bytes**. What is the size of the FAT in **KB** (1 KB = 1024 bytes)?",
+      "answer": {
+        "min": 1536,
+        "max": 1536
+      },
+      "explanation": "- Blocks = 2³¹ / 2¹² = 2¹⁹ = 524,288.\n- A block number needs 19 bits → minimum whole bytes = 3 bytes.\n- FAT size = 2¹⁹ × 3 bytes = 1,572,864 bytes = 1,572,864 / 1024 = **1536 KB** (1.5 MB).",
+      "trap": "Using 19/8 bytes (non-integral) or assuming a 4-byte entry."
+    },
+    {
+      "id": "t11-017",
+      "subtopic": "allocation-methods",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "contiguous allocation",
+        "address translation"
+      ],
+      "stem": "Under **contiguous allocation**, a file starts at physical block 100 (its logical block 0 is physical block 100) and is 20 blocks long. Block size is 1 KB (1024 bytes). Logical byte 10,000 of the file (bytes numbered from 0) is in which physical block, at which offset?",
+      "options": [
+        "Block 110, offset 784",
+        "Block 109, offset 784",
+        "Block 110, offset 0",
+        "Block 109, offset 0"
+      ],
+      "answer": "B",
+      "explanation": "Logical block = ⌊10,000 / 1024⌋ = 9 (9 × 1024 = 9216).\nOffset = 10,000 − 9216 = 784.\nPhysical block = 100 + 9 = **109**, offset **784**.",
+      "option_feedback": [
+        "Wrong: off by one (treated logical blocks as numbered from 1).",
+        "Correct.",
+        "Wrong: used 1000-byte blocks and an off-by-one start.",
+        "Wrong: 1 KB here is 1024 bytes; 10,000 is not a block boundary."
+      ]
+    },
+    {
+      "id": "t11-018",
+      "subtopic": "allocation-methods",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "linked allocation",
+        "pointer overhead",
+        "random access"
+      ],
+      "stem": "A file system uses linked allocation with 1 KB blocks (1024 bytes) and a 4-byte next-pointer at the end of every block (the last block also stores a null pointer). The directory entry stores the **start and end** block addresses. A file occupies exactly 10 full blocks. Which statements are correct? Assume nothing but the directory entry is cached.",
+      "options": [
+        "The file holds 10,200 bytes of data",
+        "Reading logical block 7 (blocks numbered from 1) needs 7 disk reads",
+        "Because the end address is stored, block 7 can be read in 1 disk read",
+        "Appending a block requires reading all 10 existing blocks"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A** Correct: each block carries 1020 data bytes → 10 × 1020 = 10,200 bytes.\n- **B** Correct: reading block 7 requires reading blocks 1–6 to follow the chain, then block 7 → 7 reads.\n- **C** Incorrect: the end address only gives direct access to the **last** block (10); block 7 still needs the chain.\n- **D** Incorrect: with the end address known, appending writes the new block and rewrites the old last block's pointer (after reading it) — no full traversal.",
+      "option_feedback": [
+        "Correct: 1024 − 4 = 1020 bytes per block.",
+        "Correct: 6 reads to reach it plus 1 for the block.",
+        "Incorrect: the end pointer helps only block 10.",
+        "Incorrect: the end address makes the tail directly reachable."
+      ]
+    },
+    {
+      "id": "t11-019",
+      "subtopic": "allocation-methods",
+      "difficulty": 4,
+      "type": "nat",
+      "est_seconds": 240,
+      "concepts": [
+        "FAT",
+        "FAT caching",
+        "append cost"
+      ],
+      "stem": "A FAT file system keeps the FAT **on disk**. Block numbers are 4 bytes and FAT blocks are 1 KB (1024 bytes), so FAT block *k* holds the entries of disk blocks 256*k* to 256*k* + 255. Initially no FAT block is cached; any FAT block read stays cached in memory afterwards. Every FAT change is written back immediately (1 write per modified FAT block per operation). Data blocks are never cached. The directory entry (first block **and length in blocks**) is in memory and its updates are not counted.\n\nA file occupies 7 blocks, chained in order:\n\n`10 → 300 → 20 → 700 → 260 → 15 → 1030`\n\nThe process (i) reads the whole file sequentially, then (ii) appends one new block, which the allocator has chosen to be block **1500** (its data is in memory; free-space bookkeeping is not counted). Appending sets the FAT entry of 1030 to 1500 and the FAT entry of 1500 to end-of-file.\n\nHow many disk I/Os (block reads + block writes) do (i) and (ii) take in total?",
+      "answer": {
+        "min": 15,
+        "max": 15
+      },
+      "explanation": "**FAT block of each block** = ⌊block / 256⌋.\n\n| Block | 10 | 300 | 20 | 700 | 260 | 15 | 1030 | 1500 |\n|---|---|---|---|---|---|---|---|---|\n| FAT block | 0 | 1 | 0 | 2 | 1 | 0 | 4 | 5 |\n\n**(i) Sequential read.** To move from each block to the next we need that block's FAT entry: entries of 10, 300, 20, 700, 260, 15. The entry of the last block (1030) is **not** needed, because the length (7 blocks) is known.\n- FAT blocks needed: {0, 1, 2} → 3 reads (0 and 1 are re-used from the cache).\n- Data blocks: 7 reads.\n- Subtotal = **10**.\n\n**(ii) Append block 1500.**\n- Entry of 1030 lives in FAT block 4 (not cached) → read 1, then write 1.\n- Entry of 1500 lives in FAT block 5 (not cached) → read 1, then write 1.\n- Write the new data block 1500 → 1.\n- Subtotal = **5**.\n\nTotal = 10 + 5 = **15**.",
+      "trap": "Re-reading a FAT block for every hop (giving 13 for part i), reading FAT block 4 during the sequential read although the length is known, or forgetting the read-before-write of FAT blocks 4 and 5.",
+      "marks": 2
+    },
+    {
+      "id": "t11-020",
+      "subtopic": "allocation-methods",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "linked index blocks",
+        "indexed allocation"
+      ],
+      "stem": "A file system uses indexed allocation with **linked index blocks**: block size is 1 KB and block addresses are 4 bytes, so each index block holds 255 data-block addresses plus 1 address of the next index block. Only the address of the first index block is in memory. How many disk reads are needed to read **logical block 600** (logical blocks numbered from 0)?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "Index block *j* (j = 0, 1, 2, …) covers logical blocks 255j to 255j + 254:\n\n| Index block | Covers |\n|---|---|\n| 0 | 0–254 |\n| 1 | 255–509 |\n| 2 | 510–764 |\n\nBlock 600 is in index block 2 (⌊600/255⌋ = 2). Reads: index blocks 0, 1, 2 (3 reads, each needed to get the next one's address) + the data block (1) = **4**.",
+      "trap": "Dividing by 256 instead of 255 (one slot is the next-index pointer)."
+    },
+    {
+      "id": "t11-021",
+      "subtopic": "allocation-methods",
+      "difficulty": 4,
+      "type": "nat",
+      "est_seconds": 240,
+      "concepts": [
+        "FAT",
+        "cluster size",
+        "FAT size"
+      ],
+      "stem": "A FAT-style file system stores each FAT entry in **32 bits**, of which only the low **28 bits** hold a cluster number (the other 4 bits are reserved). The cluster size must be a power of two, at least 512 bytes, and is chosen as the **smallest** value that lets every cluster of the partition be addressed. The FAT has one entry per cluster and the volume keeps **two copies** of the FAT.\n\nFor a **1.5 TB** partition (1 TB = 2⁴⁰ bytes, 1 MB = 2²⁰ bytes), what is the total space taken by the FATs, in **MB**?",
+      "answer": {
+        "min": 1536,
+        "max": 1536
+      },
+      "explanation": "1. **Cluster size.** At most 2²⁸ clusters can be numbered, so cluster size ≥ 1.5 × 2⁴⁰ / 2²⁸ = 1.5 × 2¹² = 6 KB. The smallest power of two ≥ 6 KB is **8 KB** (2¹³).\n2. **Number of clusters** = 1.5 × 2⁴⁰ / 2¹³ = 1.5 × 2²⁷ = 201,326,592 — fewer than 2²⁸, so the FAT does not have 2²⁸ entries.\n3. **One FAT** = 201,326,592 entries × 4 bytes (the stored width, not the 28 used bits) = 805,306,368 bytes = **768 MB**.\n4. **Two copies** = 2 × 768 = **1536 MB**.",
+      "trap": "Taking the FAT to have 2²⁸ entries (giving 1024/2048 MB), sizing entries at 28 bits (giving 672/1344 MB), or forgetting the second FAT copy (768 MB).",
+      "marks": 2
+    },
+    {
+      "id": "t11-022",
+      "subtopic": "allocation-methods",
+      "also_tests": [
+        "free-space-management"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 420,
+      "concepts": [
+        "contiguous allocation",
+        "first fit",
+        "external fragmentation",
+        "relocation cost"
+      ],
+      "stem": "A disk has 40 blocks (0–39), all free at the start, and uses **contiguous allocation** with **first fit** (the lowest-numbered hole that is large enough). Rules:\n\n- `create F n`: allocate *n* blocks first-fit and write them (*n* writes).\n- `delete F`: free its blocks (no I/O).\n- `extend F k`: if the *k* blocks right after F's last block are all free, take them and write the *k* new blocks (*k* writes). Otherwise **relocate** F: find a first-fit hole of size n + k **while F's old blocks are still occupied**, read the *n* old blocks, write them to the new place, write the *k* new blocks (2n + k I/Os), then free the old blocks. If no such hole exists the operation fails and the whole sequence stops there (the failing operation does no I/O).\n\nThe operations are:\n\n1. `create A 8`\n2. `create B 6`\n3. `create C 10`\n4. `delete B`\n5. `extend A 3`\n6. `create D 2`\n7. `extend C 4`\n8. `extend A 1`\n9. `create E 5`\n10. `extend D 3`\n11. `create F 4`\n12. `delete C`\n13. `extend E 8`\n14. `extend D 1`\n\nHow many disk I/Os are performed in total before the sequence stops (or ends)?",
+      "answer": {
+        "min": 90,
+        "max": 90
+      },
+      "explanation": "Disk map after each operation (`.` = free), with the I/O it costs:\n\n```\n op                  blocks 0..39                               I/O  total\n 1 create A 8        AAAAAAAA................................     8     8\n 2 create B 6        AAAAAAAABBBBBB..........................     6    14\n 3 create C 10       AAAAAAAABBBBBBCCCCCCCCCC................    10    24\n 4 delete B          AAAAAAAA......CCCCCCCCCC................     0    24\n 5 extend A 3        AAAAAAAAAAA...CCCCCCCCCC................     3    27  (8-10 free: in place)\n 6 create D 2        AAAAAAAAAAADD.CCCCCCCCCC................     2    29  (hole 11-13)\n 7 extend C 4        AAAAAAAAAAADD.CCCCCCCCCCCCCC............     4    33  (24-27 free: in place)\n 8 extend A 1        ...........DD.CCCCCCCCCCCCCCAAAAAAAAAAAA    23    56  (11 is D -> relocate)\n 9 create E 5        EEEEE......DD.CCCCCCCCCCCCCCAAAAAAAAAAAA     5    61\n10 extend D 3        EEEEEDDDDD....CCCCCCCCCCCCCCAAAAAAAAAAAA     7    68  (14 is C -> relocate)\n11 create F 4        EEEEEDDDDDFFFFCCCCCCCCCCCCCCAAAAAAAAAAAA     4    72  (hole 10-13)\n12 delete C          EEEEEDDDDDFFFF..............AAAAAAAAAAAA     0    72\n13 extend E 8        .....DDDDDFFFFEEEEEEEEEEEEE.AAAAAAAAAAAA    18    90  (5 is D -> relocate)\n14 extend D 1        FAILS                                        0    90\n```\n\nKey decisions:\n- **Op 5**: blocks 8–10 (freed by B) follow A, so A grows in place — no relocation.\n- **Op 8**: block 11 is D, so A (11 blocks) must move with 12 blocks. With A's old blocks still occupied the holes are {13} (1) and {28–39} (12) → A goes to 28–39. Cost = 11 + 11 + 1 = 23.\n- **Op 10**: D (11–12) needs 5; block 14 is C, so relocate. Holes: 5–10 (6), 13 (1) → D goes to 5–9. Cost = 2 + 2 + 3 = 7. Freeing 11–12 merges with 13 into hole 10–13, which F takes in op 11.\n- **Op 13**: E (0–4) needs 13; block 5 is D. Holes: 14–27 (14) → E goes to 14–26. Cost = 5 + 5 + 8 = 18.\n- **Op 14**: D (5–9) needs 6; block 10 is F. Holes: 0–4 (5) and 27 (1): **6 blocks are free in total, but no hole of 6 exists** — external fragmentation, so the sequence stops.\n\nTotal = **90** disk I/Os.",
+      "trap": "Relocating A at op 5 even though the blocks after it are free, letting a relocated file reuse its own old blocks, forgetting the read half of a relocation, or assuming op 14 succeeds because 6 blocks are free in total.",
+      "marks": 2
+    },
+    {
+      "id": "t11-023",
+      "subtopic": "allocation-methods",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "FAT",
+        "allocation comparison"
+      ],
+      "stem": "Which of the following statements are correct?",
+      "options": [
+        "If the entire FAT is cached in memory, reading any logical block of a file needs only one disk access",
+        "Plain linked allocation (pointers inside data blocks) supports efficient direct access",
+        "Contiguous allocation suffers from external fragmentation",
+        "Indexed allocation suffers from external fragmentation"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A** Correct: with the whole FAT in memory, the chain is followed in RAM; only the data block itself is read.\n- **B** Incorrect: plain linked allocation needs *i* reads to reach block *i*.\n- **C** Correct: needing consecutive free runs causes external fragmentation.\n- **D** Incorrect: indexed allocation can use any free block, so no external fragmentation (it wastes space for index blocks instead).",
+      "option_feedback": [
+        "Correct: the chain walk happens in memory.",
+        "Incorrect: access is sequential along the chain.",
+        "Correct.",
+        "Incorrect: its overhead is index-block space, not external fragmentation."
+      ]
+    },
+    {
+      "id": "t11-024",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "inode contents"
+      ],
+      "stem": "Which of the following is **not** stored in a Unix inode?",
+      "options": [
+        "File size",
+        "Link count",
+        "Pointers to data blocks",
+        "File name"
+      ],
+      "answer": "D",
+      "explanation": "An inode stores the file's metadata: type and permissions, owner/group, size, timestamps, link count and block pointers. The **file name** is stored in the directory entry, which maps name → inode number; this is what makes several hard links (names) for one inode possible.",
+      "option_feedback": [
+        "Wrong: size is in the inode.",
+        "Wrong: the link count is in the inode.",
+        "Wrong: block pointers are the core of the inode.",
+        "Correct: names live in directory entries."
+      ]
+    },
+    {
+      "id": "t11-025",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "inode contents",
+        "single indirect pointer"
+      ],
+      "stem": "Which of the following are correct about a Unix-style inode?",
+      "options": [
+        "It stores the file owner and permission bits",
+        "A single indirect pointer points to a block that contains addresses of data blocks",
+        "A double indirect pointer points to a block that contains addresses of data blocks",
+        "Direct pointers exist so that small files can be accessed without reading any index block"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "explanation": "- **A** Correct: owner (uid) and permission bits are inode fields.\n- **B** Correct: a single indirect pointer points to a block filled with addresses of data blocks.\n- **C** Incorrect: a double indirect pointer points to a block of addresses of **single indirect blocks**, not directly to data blocks.\n- **D** Correct: direct pointers make small files (the common case) fast to access with no extra index reads.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Incorrect: it holds addresses of single-indirect blocks.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t11-026",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "pointers per block",
+        "single indirect"
+      ],
+      "stem": "Block size is 1 KB (1024 bytes) and a block address is 4 bytes. How much file data can be addressed through **one single indirect block** alone?",
+      "options": [
+        "1 KB",
+        "64 KB",
+        "256 KB",
+        "1 MB"
+      ],
+      "answer": "C",
+      "explanation": "Pointers per block = 1024 / 4 = 256. Each points to a 1 KB data block → 256 × 1 KB = **256 KB**.",
+      "option_feedback": [
+        "Wrong: that is the size of the indirect block itself.",
+        "Wrong: 64 KB = 256 × 256 bytes; units mixed.",
+        "Correct.",
+        "Wrong: that would need 1024 pointers (1-byte addresses) or 4 KB blocks."
+      ]
+    },
+    {
+      "id": "t11-027",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 100,
+      "concepts": [
+        "block index from byte offset",
+        "direct pointers"
+      ],
+      "stem": "An inode has **8 direct pointers**, one single indirect, and one double indirect pointer. Block size is 2 KB (2048 bytes); block addresses are 4 bytes. Byte offset **20,000** of the file (offsets from 0) is reached through which pointer?",
+      "options": [
+        "A direct pointer",
+        "The single indirect pointer",
+        "The double indirect pointer",
+        "It is beyond the maximum file size"
+      ],
+      "answer": "B",
+      "explanation": "Logical block = ⌊20,000 / 2048⌋ = 9 (9 × 2048 = 18,432 ≤ 20,000 < 20,480).\n\nDirect pointers cover logical blocks 0–7; the single indirect block covers 8 to 8 + 512 − 1 = 519. Block 9 is in the **single indirect** range (entry 1 of the indirect block).",
+      "option_feedback": [
+        "Wrong: direct pointers cover only blocks 0–7 (offsets < 16,384).",
+        "Correct: logical block 9 is in 8–519.",
+        "Wrong: the double indirect range starts at block 520.",
+        "Wrong: the maximum is far larger."
+      ]
+    },
+    {
+      "id": "t11-028",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "maximum file size",
+        "direct",
+        "single indirect",
+        "double indirect"
+      ],
+      "stem": "An inode has **10 direct** pointers, **1 single indirect** and **1 double indirect** pointer. Block size is 1 KB (1024 bytes); block addresses are 4 bytes. What is the maximum file size in **KB**?",
+      "answer": {
+        "min": 65802,
+        "max": 65802
+      },
+      "explanation": "Pointers per block = 1024 / 4 = 256.\n\n| Part | Blocks |\n|---|---|\n| direct | 10 |\n| single indirect | 256 |\n| double indirect | 256² = 65,536 |\n| total | 65,802 |\n\nEach block is 1 KB → **65,802 KB**.",
+      "trap": "Forgetting the direct blocks or using 1024 pointers per block."
+    },
+    {
+      "id": "t11-029",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 70,
+      "concepts": [
+        "maximum file size",
+        "triple indirect"
+      ],
+      "stem": "An inode has 10 direct pointers and one each of single, double and triple indirect pointers. Block size is 4 KB and block addresses are 32 bits. The maximum file size is **closest to**:",
+      "options": [
+        "4 GB",
+        "16 GB",
+        "4 TB",
+        "256 TB"
+      ],
+      "answer": "C",
+      "explanation": "Pointers per block = 4096 / 4 = 1024 = 2¹⁰.\n\n- direct: 10 × 4 KB = 40 KB\n- single: 2¹⁰ × 4 KB = 4 MB\n- double: 2²⁰ × 4 KB = 4 GB\n- triple: 2³⁰ × 4 KB = 4 TB\n\nThe triple-indirect term dominates: total ≈ 4 TB + 4 GB + 4 MB + 40 KB ≈ **4 TB**.",
+      "option_feedback": [
+        "Wrong: that is only the double-indirect contribution.",
+        "Wrong: that is the triple-indirect size for 1 KB blocks (256³ × 1 KB).",
+        "Correct: dominated by 2³⁰ × 4 KB.",
+        "Wrong: used 4096 pointers per block (forgot to divide by the 4-byte address)."
+      ]
+    },
+    {
+      "id": "t11-030",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "disk accesses",
+        "double indirect"
+      ],
+      "stem": "An inode has 10 direct pointers, 1 single indirect and 1 double indirect pointer. Block size is 1 KB (1024 bytes); block addresses are 4 bytes. The inode is in memory; nothing else is cached. How many disk accesses are needed to read the byte at offset **300,000** (offsets from 0)?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "1"
+      ],
+      "answer": "B",
+      "explanation": "Logical block = ⌊300,000 / 1024⌋ = 292 (292 × 1024 = 299,008; 293 × 1024 = 300,032 > 300,000).\n\nRanges (256 pointers per block): direct 0–9, single 10–265, double 266–65,801. Block 292 is in the **double indirect** range.\n\nReads: double-indirect block → single-indirect block → data block = **3**.",
+      "option_feedback": [
+        "Wrong: that is the cost for the single-indirect range (blocks 10–265).",
+        "Correct.",
+        "Wrong: the inode is already in memory.",
+        "Wrong: only direct blocks cost a single access."
+      ]
+    },
+    {
+      "id": "t11-031",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "hard links",
+        "inode sharing"
+      ],
+      "stem": "Two hard links `x` and `y` refer to the same file on a Unix file system. Which statements are correct?",
+      "options": [
+        "`ls -i x y` shows the same inode number for both",
+        "The inode's link count is 2",
+        "Each link has its own copy of the permission bits and timestamps",
+        "The inode stores both names `x` and `y`"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Hard links are just two directory entries holding the **same inode number**.\n\n- **A** Correct: same inode.\n- **B** Correct: the link count in that inode is 2.\n- **C** Incorrect: there is one inode, hence one set of timestamps and permissions; a `chmod` via `x` is visible via `y`.\n- **D** Incorrect: the name is in each directory entry, not in the inode, which is why one inode can have many names.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Incorrect: metadata lives once, in the shared inode.",
+        "Incorrect: names are in directory entries."
+      ]
+    },
+    {
+      "id": "t11-032",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "inode layout",
+        "maximum file size",
+        "triple indirect"
+      ],
+      "stem": "An inode is **128 bytes**. Of these, 44 bytes hold metadata; the remaining bytes hold 4-byte block pointers. The **last three** pointers are single, double and triple indirect; all others are direct. Block size is 1 KB (1024 bytes) and block addresses are 4 bytes. What is the maximum file size in **KB**?",
+      "answer": {
+        "min": 16843026,
+        "max": 16843026
+      },
+      "explanation": "- Pointer bytes = 128 − 44 = 84 → 84 / 4 = 21 pointers → 21 − 3 = **18 direct**.\n- Pointers per block = 1024 / 4 = 256.\n\n| Part | Blocks |\n|---|---|\n| direct | 18 |\n| single | 256 |\n| double | 256² = 65,536 |\n| triple | 256³ = 16,777,216 |\n| total | 16,843,026 |\n\nEach block is 1 KB → **16,843,026 KB** (≈ 16 GB).",
+      "trap": "Counting all 21 pointers as direct, or forgetting to subtract the metadata bytes."
+    },
+    {
+      "id": "t11-033",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "pointer size from disk size",
+        "maximum file size"
+      ],
+      "stem": "A **16 GB** disk (1 GB = 2³⁰ bytes) uses 1 KB blocks (1024 bytes). Block addresses use the **minimum whole number of bytes** needed to address every block on the disk, and an index block holds as many whole addresses as fit. An inode has 10 direct, 1 single indirect and 1 double indirect pointer. What is the maximum file size in **KB**?",
+      "answer": {
+        "min": 116632,
+        "max": 116632
+      },
+      "explanation": "- Blocks on disk = 2³⁴ / 2¹⁰ = 2²⁴ → 24-bit addresses → **3 bytes**.\n- Addresses per block = ⌊1024 / 3⌋ = **341** (1 byte unused).\n\n| Part | Blocks |\n|---|---|\n| direct | 10 |\n| single | 341 |\n| double | 341² = 116,281 |\n| total | 116,632 |\n\nMax file size = **116,632 KB** (≈ 114 MB, well under the disk size).",
+      "trap": "Assuming a 4-byte pointer (giving 256 per block) or using 1024/3 = 341.33 without flooring."
+    },
+    {
+      "id": "t11-034",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "disk accesses",
+        "triple indirect"
+      ],
+      "stem": "An inode has 12 direct pointers and one each of single, double and triple indirect pointers. Block size is 4 KB (4096 bytes), block addresses are 4 bytes. **Nothing is cached, not even the inode** (the inode's disk location is known). How many disk accesses are needed to read the byte at offset **8 GB** (= 2³³; offsets from 0)?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "Logical block = 2³³ / 2¹² = 2²¹ = 2,097,152.\n\nPointers per block = 1024.\n\n| Range | Logical blocks |\n|---|---|\n| direct | 0–11 |\n| single | 12–1,035 |\n| double | 1,036–1,049,611 |\n| triple | 1,049,612 onward |\n\nBlock 2,097,152 is in the **triple** range. Reads: inode (1) + triple-indirect block (1) + double-indirect block (1) + single-indirect block (1) + data block (1) = **5**.",
+      "trap": "Forgetting the inode read when it is not cached, or misplacing the block in the double range."
+    },
+    {
+      "id": "t11-035",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 400,
+      "concepts": [
+        "pointer size from disk size",
+        "indirect block count",
+        "work backwards"
+      ],
+      "stem": "A **16 GB** disk (1 GB = 2³⁰ bytes) uses 1 KB blocks (1024 bytes). Block addresses use the **minimum whole number of bytes** needed to address every block of the disk, and an index block holds as many whole addresses as fit. An inode has **10 direct** pointers and one each of single, double and triple indirect pointers. Files are written sequentially from offset 0 (no holes), and an index block is allocated only when it is first needed.\n\nWhat is the **largest file size, in KB**, whose index (indirect) blocks number **at most 400**? (The inode itself is not an index block.)",
+      "answer": {
+        "min": 135387,
+        "max": 135387
+      },
+      "explanation": "**Pointer size.** Blocks = 2³⁴ / 2¹⁰ = 2²⁴ → 24-bit addresses → **3 bytes**. Addresses per block = ⌊1024 / 3⌋ = **341**.\n\n**Spend the 400 index blocks in the order the file grows:**\n\n| Region | Index blocks used | Data blocks covered | Running index blocks |\n|---|---|---|---|\n| direct | 0 | 10 | 0 |\n| single indirect | 1 | 341 | 1 |\n| double indirect (full) | 1 + 341 | 341² = 116,281 | 343 |\n| triple indirect: top block + first double block | 2 | — | 345 |\n| triple: single blocks under that double block | 400 − 345 = 55 | 55 × 341 = 18,755 | 400 |\n\nThe triple region can only start after the double region is completely full, and its very first data block already costs **3** index blocks (triple, double, single). With 55 single blocks left, 55 × 341 data blocks fit; the next data block would need a 56th single block (401 index blocks).\n\nData blocks = 10 + 341 + 116,281 + 18,755 = **135,387** → **135,387 KB**.",
+      "trap": "Assuming 4-byte addresses (256 per block), using 341.33 pointers, forgetting the double-indirect block or the triple and second-level blocks as overhead, or not noticing that 400 index blocks spill past the double-indirect region.",
+      "marks": 2
+    },
+    {
+      "id": "t11-036",
+      "subtopic": "inode-and-max-file-size",
+      "difficulty": 5,
+      "type": "msq",
+      "est_seconds": 360,
+      "concepts": [
+        "block size effect",
+        "maximum file size",
+        "disk accesses",
+        "indirect block count"
+      ],
+      "stem": "An inode has 10 direct pointers and one each of single, double and triple indirect pointers; block addresses are 4 bytes. The block size is changed from **1 KB to 2 KB** (1 KB = 1024 bytes, 1 MB = 2²⁰ bytes). For disk-access counts, the inode is in memory and nothing else is cached. Index blocks are allocated only when needed and files have no holes. Which statements are correct?",
+      "options": [
+        "The maximum file size grows by a factor of about 16",
+        "No byte offset needs more disk accesses with 2 KB blocks than with 1 KB blocks",
+        "Reading the byte at offset 100 MB takes the same number of disk accesses with either block size",
+        "With 1 KB blocks, a file of exactly 64 MB uses exactly 256 index (indirect) blocks"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Pointers per block *p*: 256 (1 KB) and 512 (2 KB).\n\n**A** Correct. Max ≈ p³ × B: 256³ × 1 KB = 2³⁴ B = 16 GB versus 512³ × 2 KB = 2³⁸ B = 256 GB. Exactly: (10 + 256 + 256² + 256³) KB vs (10 + 512 + 512² + 512³) × 2 KB, ratio ≈ 15.97.\n\n**B** Correct. Upper byte limit of each level:\n\n| Level (accesses) | 1 KB blocks | 2 KB blocks |\n|---|---|---|\n| direct (1) | 10 KB | 20 KB |\n| single (2) | 266 KB | 1,044 KB |\n| double (3) | 65,802 KB ≈ 64.3 MB | 263,188 KB ≈ 257 MB |\n| triple (4) | ≈ 16 GB | ≈ 256 GB |\n\nEvery boundary is larger with 2 KB blocks, so for any offset the level used with 2 KB blocks is the same or shallower → never more accesses.\n\n**C** Incorrect. 100 MB = 102,400 KB. With 1 KB blocks it is beyond 65,802 KB → triple → 4 accesses. With 2 KB blocks it is below 263,188 KB → double → 3 accesses.\n\n**D** Incorrect. 64 MB = 65,536 blocks of 1 KB: 10 direct, 256 via the single block (1 index block), remaining 65,270 via the double block: 1 double block + ⌈65,270 / 256⌉ = 255 single blocks. Total = 1 + 1 + 255 = **257**.",
+      "option_feedback": [
+        "Correct: p grows ×2 (so p³ grows ×8) and each block ×2 → ≈ ×16.",
+        "Correct: every level's byte range ends later with 2 KB blocks, so the level reached is never deeper.",
+        "Incorrect: 4 accesses (triple) with 1 KB blocks vs 3 (double) with 2 KB blocks.",
+        "Incorrect: 257 — the single-indirect block and the double-indirect block itself must be counted too."
+      ],
+      "trap": "Assuming max size scales linearly with block size, or counting only the second-level single blocks under the double block.",
+      "marks": 2
+    },
+    {
+      "id": "t11-037",
+      "subtopic": "free-space-management",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "bit vector"
+      ],
+      "stem": "What is the main advantage of a **bit vector (bitmap)** for free-space management?",
+      "options": [
+        "It is simple and makes finding the first free block or a run of contiguous free blocks efficient",
+        "It needs no storage at all because it lives inside the free blocks",
+        "Its size shrinks as the disk fills up",
+        "It never needs to be cached in memory"
+      ],
+      "answer": "A",
+      "explanation": "One bit per block makes the map compact and lets the OS find the first free block (or a run of *n* consecutive free blocks) quickly using word-level bit operations, e.g. skip words that are all 0 (all allocated, if 1 = free). Its cost is that it must be kept in memory to be efficient, which is large for big disks.",
+      "option_feedback": [
+        "Correct.",
+        "Wrong: that describes the linked free list.",
+        "Wrong: its size is fixed at one bit per block.",
+        "Wrong: it must be in memory to be efficient."
+      ]
+    },
+    {
+      "id": "t11-038",
+      "subtopic": "free-space-management",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "grouping"
+      ],
+      "stem": "In which free-space management method does the first free block store the addresses of *n* free blocks, the last of which stores the addresses of another *n* free blocks, and so on?",
+      "options": [
+        "Bit vector",
+        "Linked list",
+        "Grouping",
+        "Counting"
+      ],
+      "answer": "C",
+      "explanation": "That is **grouping**: a linked list of blocks, each holding many free-block addresses. It lets the OS find many free blocks with one read, unlike the plain linked list.",
+      "option_feedback": [
+        "Wrong: one bit per block.",
+        "Wrong: each free block holds only one next-pointer.",
+        "Correct.",
+        "Wrong: counting stores (first block, number of contiguous free blocks) pairs."
+      ]
+    },
+    {
+      "id": "t11-039",
+      "subtopic": "free-space-management",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "bit vector size"
+      ],
+      "stem": "A **32 GB** disk (1 GB = 2³⁰ bytes) uses 4 KB blocks. What is the size of its free-space bit vector (1 KB = 1024 bytes)?",
+      "options": [
+        "8 MB",
+        "256 KB",
+        "4 MB",
+        "1 MB"
+      ],
+      "answer": "D",
+      "explanation": "Blocks = 2³⁵ / 2¹² = 2²³. One bit per block → 2²³ bits = 2²⁰ bytes = **1 MB** (1024 KB).",
+      "option_feedback": [
+        "Wrong: that is the number of bits (2²³ = 8M) mistaken for bytes.",
+        "Wrong: off by a factor of 4.",
+        "Wrong: that is the bitmap size for 1 KB blocks (2²⁵ bits).",
+        "Correct."
+      ],
+      "trap": "Forgetting to divide the bit count by 8."
+    },
+    {
+      "id": "t11-040",
+      "subtopic": "free-space-management",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "linked free list",
+        "disk reads"
+      ],
+      "stem": "Free space is kept as a **linked list**: the head pointer (address of the first free block) is in memory, and each free block stores the address of the next free block. How many disk reads are needed to allocate **3** blocks one after another from the head of the list?",
+      "options": [
+        "1",
+        "3",
+        "0",
+        "2"
+      ],
+      "answer": "B",
+      "explanation": "To allocate the head block we must learn the address of the next free block, which is stored **inside** the head block. So each allocation reads the block being removed to update the in-memory head: 3 allocations → **3 reads**.",
+      "option_feedback": [
+        "Wrong: one read only reveals one next-pointer.",
+        "Correct: one read per allocated block.",
+        "Wrong: the next pointers are on disk, not in memory.",
+        "Wrong: the third allocation also needs its block's next pointer to update the head."
+      ]
+    },
+    {
+      "id": "t11-041",
+      "subtopic": "free-space-management",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "bit vector vs free list",
+        "break-even"
+      ],
+      "stem": "A disk has *B* blocks. Free space can be recorded either with a bit vector (1 bit per block) or with a free list stored as a table of block numbers, each entry **4 bytes** (32 bits). At what percentage of free blocks do the two representations take exactly the same space? Give the answer as a percentage, correct to two decimal places.",
+      "answer": {
+        "min": 3.12,
+        "max": 3.13
+      },
+      "explanation": "Let *F* free blocks. Bit vector = *B* bits. Table = 32*F* bits.\n\nEqual when 32*F* = *B* → *F*/*B* = 1/32 = 0.03125 = **3.125 %** (3.12 or 3.13 after rounding).\n\nIf more than 3.125 % of blocks are free, the bit vector is smaller.",
+      "trap": "Comparing 4 bytes per free block with 1 byte (instead of 1 bit) per disk block."
+    },
+    {
+      "id": "t11-042",
+      "subtopic": "free-space-management",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "bit vector",
+        "first free block"
+      ],
+      "stem": "A bit vector uses **1 = free, 0 = allocated**; bit *i* (counting from the left, starting at 0) describes block *i*. Its first four bytes, left to right, are:\n\n```\n00000000 00000000 00010110 11000000\n```\n\nWhat is the number of the first free block?",
+      "options": [
+        "3",
+        "16",
+        "19",
+        "20"
+      ],
+      "answer": "C",
+      "explanation": "Bytes 0 and 1 are all 0 → blocks 0–15 are allocated. Byte 2 = `00010110`: bits 16, 17, 18 are 0, bit 19 is 1.\n\nFirst free block = 8 × 2 + 3 = **19**.\n\n(Algorithm: skip zero words, then find the first 1-bit: block = 8 × (number of zero bytes) + offset of first 1.)",
+      "option_feedback": [
+        "Wrong: that is the offset within byte 2, not the block number.",
+        "Wrong: block 16 corresponds to bit 0 of byte 2, which is 0.",
+        "Correct.",
+        "Wrong: off by one; offsets start at 0."
+      ]
+    },
+    {
+      "id": "t11-043",
+      "subtopic": "free-space-management",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 80,
+      "concepts": [
+        "bit vector",
+        "linked free list",
+        "counting"
+      ],
+      "stem": "Which of the following statements about free-space management are correct?",
+      "options": [
+        "A bit vector must be kept in main memory to be efficient, which is costly for very large disks",
+        "A linked free list wastes no extra disk space because the pointers are stored in the free blocks themselves",
+        "Traversing a linked free list is cheap because it needs no disk I/O",
+        "The counting method is most effective when free blocks are scattered as isolated single blocks"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A** Correct: the bit vector is efficient only if kept in memory, and its size grows linearly with disk size (e.g. 1 MB for 32 GB at 4 KB blocks).\n- **B** Correct: the next-pointer is stored *inside* each free block, which is otherwise unused, so the list costs no extra disk space (only the head pointer).\n- **C** Incorrect: traversing the list needs one disk read per block; it is slow.\n- **D** Incorrect: counting stores (start, length) pairs and is compact when free blocks come in **long contiguous runs**; scattered single blocks make it worse than a plain list.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Incorrect: each step of the traversal reads a block.",
+        "Incorrect: it is best for long contiguous runs."
+      ]
+    },
+    {
+      "id": "t11-044",
+      "subtopic": "free-space-management",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "grouping",
+        "index blocks"
+      ],
+      "stem": "Free space is managed by **grouping**. Block size is 1 KB and block addresses are 4 bytes, so each group (index) block holds 256 entries: up to 255 addresses of free blocks plus 1 address of the next group block. The group blocks are themselves free blocks and are counted among the free blocks. If there are **10,000** free blocks, what is the minimum number of group blocks needed?",
+      "answer": {
+        "min": 40,
+        "max": 40
+      },
+      "explanation": "Each group block accounts for itself plus 255 listed blocks = 256 free blocks.\n\nNeed 256*k* ≥ 10,000 → *k* ≥ 39.06 → *k* = **40**.\n\nCheck: 39 × 256 = 9,984 < 10,000; 40 × 256 = 10,240 ≥ 10,000.",
+      "trap": "Dividing by 256 listed addresses (ignoring the next-pointer slot) or forgetting that group blocks are themselves free blocks."
+    },
+    {
+      "id": "t11-045",
+      "subtopic": "free-space-management",
+      "difficulty": 4,
+      "type": "mcq",
+      "est_seconds": 200,
+      "concepts": [
+        "bit vector",
+        "first fit",
+        "contiguous runs"
+      ],
+      "stem": "A bit vector uses **1 = free, 0 = allocated**; bit *i* (counting from the left, starting at 0) describes block *i*. The disk's first 32 blocks are described by these four bytes, left to right:\n\n```\n11000111 00001111 11000000 01111111\n```\n\nAll other blocks are allocated. Three requests for **contiguous** blocks arrive in order: **5** blocks, then **4** blocks, then **3** blocks. Each is satisfied **first-fit** (lowest-numbered run of free blocks that is long enough), and the bit vector is updated before the next request. What are the starting block numbers of the three allocations?",
+      "options": [
+        "25, 12, 5",
+        "12, 25, 5",
+        "12, 25, 29",
+        "13, 26, 6"
+      ],
+      "answer": "B",
+      "explanation": "Decode the free runs (block numbers from 0):\n\n| Byte | Bits | Free blocks |\n|---|---|---|\n| 0 | 11000111 | 0, 1, 5, 6, 7 |\n| 1 | 00001111 | 12, 13, 14, 15 |\n| 2 | 11000000 | 16, 17 |\n| 3 | 01111111 | 25–31 |\n\nRuns: [0–1] (2), [5–7] (3), **[12–17] (6)** — it crosses the byte boundary — and [25–31] (7).\n\n1. **5 blocks**: first run of length ≥ 5 is [12–17] → blocks 12–16. Left: [17] (1).\n2. **4 blocks**: [0–1], [5–7], [17] are too short → [25–31] → blocks 25–28. Left: [29–31].\n3. **3 blocks**: first run of length ≥ 3 is [5–7] → block 5.\n\nAnswer: **12, 25, 5**.",
+      "option_feedback": [
+        "Incorrect: misses that 12–15 and 16–17 form one 6-block run across the byte boundary.",
+        "Correct: 12–16, then 25–28, then 5–7.",
+        "Incorrect: that is next fit for the third request; first fit restarts from block 0 and finds 5–7.",
+        "Incorrect: blocks are numbered from 0, not 1."
+      ],
+      "trap": "Treating each byte separately and missing the run that crosses the byte boundary.",
+      "marks": 2
+    },
+    {
+      "id": "t11-046",
+      "subtopic": "free-space-management",
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 420,
+      "concepts": [
+        "counting",
+        "bit vector",
+        "run-length",
+        "periodic pattern"
+      ],
+      "stem": "A disk has **196,608** blocks numbered 0 to 196,607. Blocks 0–23 are allocated (metadata). Among blocks 24 to 196,607, a block *n* is **free** exactly when\n\n- *n* mod 8 ∈ {0, 1, 2}, **or**\n- *n* mod 12 = 3;\n\nall other blocks are allocated. The **counting** method stores one (first block, count) pair per **maximal** run of consecutive free blocks, 8 bytes per pair. A bit vector uses 1 bit per block. By how many **bytes** does the counting representation exceed the bit vector?",
+      "answer": {
+        "min": 172008,
+        "max": 172008
+      },
+      "explanation": "**Period.** The pattern repeats every lcm(8, 12) = **24** blocks; 196,608 = 24 × 8192, so there are 8192 periods, of which the first (blocks 0–23) is all allocated → **8191** active periods.\n\n**Free residues mod 24:**\n- *n* mod 8 ∈ {0,1,2}: 0, 1, 2, 8, 9, 10, 16, 17, 18\n- *n* mod 12 = 3: 3, 15\n- union: {0, 1, 2, **3**, 8, 9, 10, **15**, 16, 17, 18}\n\n**Maximal runs in one period:** 3 is adjacent to 2 and 15 is adjacent to 16, so they **merge**: [0–3], [8–10], [15–18] → **3 runs**. Residue 23 is allocated, so no run continues into the next period. Block 24 starts a run, and block 23 is allocated, so the first active period behaves like the others.\n\nRuns = 3 × 8191 = 24,573 → counting = 24,573 × 8 = **196,584 bytes**.\n\nBit vector = 196,608 / 8 = **24,576 bytes**.\n\nDifference = 196,584 − 24,576 = **172,008** bytes.",
+      "trap": "Counting the two patterns' runs separately (5 runs per period, giving 303,064), ignoring the allocated first period (172,032), or comparing bits with bytes.",
+      "marks": 2
+    },
+    {
+      "id": "t11-047",
+      "subtopic": "directory-structure",
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 360,
+      "concepts": [
+        "path lookup",
+        "symbolic link",
+        "dot-dot resolution",
+        "caching"
+      ],
+      "stem": "A Unix-like file system resolves\n\n`/home/u/lnk/../data/f.txt`\n\nand then reads the **first data block** of `f.txt`. Assume:\n\n- `lnk` is a **symbolic link** whose target path `/srv/proj/src` is stored in one data block of the link (the link's inode must be read first); `/srv/proj/src` is a directory;\n- `..` is resolved by looking up the `..` entry stored in the current directory's block (the kernel's physical resolution); `data` is a directory inside `/srv/proj`;\n- every directory's contents fit in one block; reading an inode or a block is one disk access;\n- the root inode is in memory at the start; **every inode and block read during this lookup stays cached** and is not read again.\n\nHow many disk accesses are needed in total?",
+      "answer": {
+        "min": 17,
+        "max": 17
+      },
+      "explanation": "Walk the path; a symbolic link restarts the lookup at `/` with the stored target.\n\n| # | Read | Why |\n|---|---|---|\n| 1 | `/` block | find `home` |\n| 2 | `home` inode | |\n| 3 | `home` block | find `u` |\n| 4 | `u` inode | |\n| 5 | `u` block | find `lnk` |\n| 6 | `lnk` inode | it is a symlink |\n| 7 | `lnk` data block | target `/srv/proj/src` |\n| – | `/` inode, `/` block | **cached** (restart at root costs nothing) |\n| 8 | `srv` inode | |\n| 9 | `srv` block | find `proj` |\n| 10 | `proj` inode | |\n| 11 | `proj` block | find `src` |\n| 12 | `src` inode | |\n| 13 | `src` block | find `..` → inode of `proj` |\n| – | `proj` inode, `proj` block | **cached**; find `data` in it |\n| 14 | `data` inode | |\n| 15 | `data` block | find `f.txt` |\n| 16 | `f.txt` inode | |\n| 17 | `f.txt` first data block | |\n\nTotal = **17**. Without the cache it would be 20 (root block, `proj` inode and `proj` block re-read); treating `..` lexically (as `/home/u/data/f.txt`) would give only 9 and a different file.",
+      "trap": "Resolving `..` lexically (cancelling `lnk`), re-reading the root block, `proj` inode or `proj` block that are already cached, or forgetting the symlink's own inode and data block.",
+      "marks": 2
+    },
+    {
+      "id": "t11-048",
+      "subtopic": "directory-structure",
+      "also_tests": [
+        "inode-and-max-file-size"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 330,
+      "concepts": [
+        "hard link",
+        "symbolic link",
+        "open-file semantics",
+        "inode reclamation"
+      ],
+      "stem": "On a traditional Unix file system, `/p` is an existing empty directory. The following happen in order (all on the same file system):\n\n1. `mkdir /p/d1` and `mkdir /p/d2`\n2. create regular file `/p/d1/a`\n3. `ln /p/d1/a /p/d2/b` (hard link)\n4. `ln -s /p/d1/a /p/d2/s` (symbolic link)\n5. a process **P opens `/p/d1/a`** and keeps it open until after step 11\n6. create regular file `/p/d1/c`\n7. `ln -s /p/d1/c /p/cl` (symbolic link)\n8. `mv /p/d1 /p/d2/d1`\n9. `rm -r /p/d2/d1`\n10. `rm /p/d2/b`\n11. (nothing else; P still has the file open)\n\nAn inode is freed only when its link count is 0 **and** no process has it open; every symbolic link has its own inode. After step 11, how many inodes are still allocated among `/p`'s inode and the inodes of everything created in steps 1–7 (the root directory `/` is not counted)?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "Track every inode involved:\n\n| Inode | History | After step 11 |\n|---|---|---|\n| `/p` | exists throughout | allocated |\n| `d1` | moved into `d2` (step 8), removed by `rm -r` (step 9) | **freed** |\n| `d2` | never removed | allocated |\n| file `a`/`b` | count 1 → 2 (step 3); `rm -r` removes name `a` → 1; `rm b` → **0**, but P has it open | **allocated** (freed only when P closes it) |\n| symlink `s` (in `d2`) | never removed; now dangling | allocated |\n| file `c` | count 1; removed by `rm -r` → 0, not open | **freed** |\n| symlink `cl` (in `/p`) | never removed; now dangling | allocated |\n\nAllocated: `/p`, `d2`, `a`, `s`, `cl` = **5**.\n\nNote that symbolic links neither keep their targets alive nor disappear when the target goes: `s` and `cl` remain as dangling links.",
+      "trap": "Freeing `a` when its link count hits 0 although P still has it open (giving 4), thinking the symlinks are removed with their targets (giving 3), or thinking `rm -r` cannot remove `d1` because it was moved.",
+      "marks": 2
+    },
+    {
+      "id": "t11-049",
+      "subtopic": "allocation-methods",
+      "also_tests": [
+        "free-space-management"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 420,
+      "concepts": [
+        "FAT size",
+        "FAT entry width",
+        "internal fragmentation",
+        "optimisation"
+      ],
+      "stem": "A **64 GB** disk (1 GB = 2³⁰ bytes) is to be formatted with a FAT file system. The block size *B* may be any of 512 B, 1 KB, 2 KB, 4 KB, 8 KB or 16 KB. For a given *B*:\n\n- the FAT has one entry per block, each entry using the **minimum whole number of bytes** that can hold any block number of the disk (blocks numbered 0 to N − 1);\n- the volume stores **two copies** of the FAT;\n- the disk will hold 2¹⁵ files, each wasting on average **half a block** to internal fragmentation.\n\nOverhead = total FAT space + total internal fragmentation. What is the **minimum** overhead over all allowed *B*, in **MB** (1 MB = 2²⁰ bytes)?",
+      "answer": {
+        "min": 160,
+        "max": 160
+      },
+      "explanation": "Disk = 2³⁶ bytes. Internal fragmentation = 2¹⁵ × B/2 = 2¹⁴ × B.\n\n| B | Blocks N | Bits | Entry bytes | 2 FATs | Fragmentation | Overhead |\n|---|---|---|---|---|---|---|\n| 512 B | 2²⁷ | 27 | 4 | 1024 MB | 8 MB | 1032 MB |\n| 1 KB | 2²⁶ | 26 | 4 | 512 MB | 16 MB | 528 MB |\n| 2 KB | 2²⁵ | 25 | 4 | 256 MB | 32 MB | 288 MB |\n| 4 KB | 2²⁴ | 24 | **3** | 96 MB | 64 MB | **160 MB** |\n| 8 KB | 2²³ | 23 | 3 | 48 MB | 128 MB | 176 MB |\n| 16 KB | 2²² | 22 | 3 | 24 MB | 256 MB | 280 MB |\n\n(e.g. 4 KB: 2²⁴ × 3 bytes × 2 copies = 96 MB.)\n\nThe FAT shrinks as B grows, while fragmentation grows; the drop from 4-byte to 3-byte entries at 4 KB (24-bit block numbers) is what makes 4 KB the optimum. Minimum = **160 MB**.",
+      "trap": "Assuming 4-byte FAT entries throughout (minimum 192 MB, tied between 4 KB and 8 KB), counting only one FAT copy (112 MB), or taking full-block rather than half-block waste per file.",
+      "marks": 2
+    },
+    {
+      "id": "t11-050",
+      "subtopic": "free-space-management",
+      "difficulty": 4,
+      "type": "msq",
+      "est_seconds": 220,
+      "concepts": [
+        "bit vector",
+        "counting",
+        "grouping",
+        "representation size"
+      ],
+      "stem": "A disk has 2²⁰ blocks of 1 KB (1024 bytes); block addresses are 4 bytes. At the moment exactly **2¹⁸** blocks are free, forming exactly **2¹² maximal runs of 64 consecutive free blocks** each. Consider:\n\n- a bit vector (1 bit per block);\n- counting: one (first block, count) pair per maximal run, 8 bytes per pair;\n- grouping: each group block holds 255 free-block addresses plus 1 address of the next group block, and the group blocks are themselves free blocks (counted among the free blocks), packed as fully as possible.\n\nWhich statements are correct?",
+      "options": [
+        "The bit vector occupies 128 blocks",
+        "The counting list is larger than the bit vector",
+        "Grouping needs 1029 group blocks",
+        "If the same 2¹⁸ free blocks were instead all isolated (runs of length 1), the counting list would be 16 times the size of the bit vector"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "- **A** Correct: 2²⁰ bits = 2¹⁷ bytes = 128 KB = **128 blocks**.\n- **B** Incorrect: 2¹² runs × 8 bytes = 2¹⁵ bytes = 32 KB, a quarter of the 128 KB bit vector.\n- **C** Incorrect: each group block accounts for itself + 255 listed blocks = 256 free blocks, so 2¹⁸ / 256 = **1024** group blocks. (⌈2¹⁸ / 255⌉ = 1029 forgets that group blocks are free blocks themselves.)\n- **D** Correct: 2¹⁸ runs × 8 bytes = 2²¹ bytes = 2 MB = 16 × 128 KB.",
+      "option_feedback": [
+        "Correct: one bit per block, 2²⁰ bits = 128 KB.",
+        "Incorrect: 32 KB versus 128 KB — long runs make counting compact.",
+        "Incorrect: 1024; dividing by 255 ignores that each group block is itself one of the free blocks.",
+        "Correct: 2 MB versus 128 KB."
+      ],
+      "trap": "Dividing by 255 for grouping, or comparing bytes with bits.",
+      "marks": 2
+    },
+    {
+      "id": "t11-051",
+      "subtopic": "free-space-management",
+      "difficulty": 5,
+      "type": "nat",
+      "est_seconds": 400,
+      "concepts": [
+        "grouping",
+        "free list in superblock",
+        "allocation trace"
+      ],
+      "stem": "A file system manages free blocks by **grouping**, keeping one group in memory (as in classic Unix):\n\n- The in-memory array `L` has room for **4** block numbers; `n` is how many are in use. `L[0]` is a **link**: the number of a free block that stores the next group (its own `n` and array), or 0 if there is none.\n- `alloc()`: `n ← n − 1; b ← L[n]`. If now `n = 0`, read block `b` from disk (1 I/O) and copy its stored `n` and array into memory. Return `b` as the newly allocated block.\n- `free(b)`: if `n = 4`, first write the current `n` and `L` into block `b` (1 I/O) and set `n ← 0`. Then `L[n] ← b; n ← n + 1`.\n\nInitially `n = 3`, `L = [100, 21, 22]`. On disk, block 100 stores `n = 4`, `[200, 31, 32, 33]`, and block 200 stores `n = 2`, `[0, 41]`.\n\nThe operations are, in order:\n\n`alloc, alloc, alloc, free(22), free(7), alloc, alloc, alloc, free(50), free(51), free(52), free(53), alloc, alloc`\n\nWhat block number does the **last** `alloc` return?",
+      "answer": {
+        "min": 52,
+        "max": 52
+      },
+      "explanation": "Trace (`L` shows only the `n` used entries):\n\n| Op | Action | n | L | Returns | Disk I/O |\n|---|---|---|---|---|---|\n| start | | 3 | [100, 21, 22] | | |\n| alloc | n=2, take L[2] | 2 | [100, 21] | 22 | |\n| alloc | n=1, take L[1] | 1 | [100] | 21 | |\n| alloc | n=0 → take 100, read it | 4 | [200, 31, 32, 33] | 100 | read 100 |\n| free(22) | n = 4 (full) → write list into 22 | 1 | [22] | | write 22 |\n| free(7) | | 2 | [22, 7] | | |\n| alloc | n=1 | 1 | [22] | 7 | |\n| alloc | n=0 → take 22, read it | 4 | [200, 31, 32, 33] | 22 | read 22 |\n| alloc | n=3 | 3 | [200, 31, 32] | 33 | |\n| free(50) | | 4 | [200, 31, 32, 50] | | |\n| free(51) | full → write list into 51 | 1 | [51] | | write 51 |\n| free(52) | | 2 | [51, 52] | | |\n| free(53) | | 3 | [51, 52, 53] | | |\n| alloc | n=2 | 2 | [51, 52] | 53 | |\n| alloc | n=1 | 1 | [51] | **52** | |\n\nThe last allocation returns block **52** (after 4 disk I/Os in total). Note how a block freed when the in-memory list is full becomes the new link block holding the old list, and the old list comes back into memory when that link block is itself allocated.",
+      "trap": "Ignoring the full-list rule in free (so 51 never becomes a link block holding the old list), or forgetting that allocating the link block L[0] first reloads the group stored in it.",
+      "marks": 2
+    }
+  ]
+}

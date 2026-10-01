@@ -18,6 +18,10 @@ import SignupPage from '../pages/auth/SignupPage'
 import HomePage from '../pages/shared/HomePage'
 import AssistantPage from '../pages/shared/AssistantPage'
 import LibraryPage from '../pages/shared/LibraryPage'
+import LearnHomePage from '../pages/shared/learn/LearnHomePage'
+import LearnUnitPage from '../pages/shared/learn/LearnUnitPage'
+import QuizHomePage from '../pages/shared/learn/QuizHomePage'
+import QuizAttemptPage from '../pages/shared/learn/QuizAttemptPage'
 
 // Admin pages
 import AdminDashboard from '../pages/admin/DashboardPage'
@@ -40,6 +44,11 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoute allowedRoles={['student']} />}>
         <Route path="student" element={<AppLayout />}>
           <Route index element={<HomePage />} />
+          <Route path="learn" element={<LearnHomePage />} />
+          <Route path="learn/:subjectId/:unitId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/:lectureId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/quiz" element={<QuizHomePage />} />
+          <Route path="learn/:subjectId/:unitId/quiz/:attemptId" element={<QuizAttemptPage />} />
           <Route path="assistant" element={<AssistantPage />} />
           <Route path="library" element={<LibraryPage />} />
         </Route>
@@ -49,6 +58,11 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoute allowedRoles={['teacher']} />}>
         <Route path="teacher" element={<AppLayout />}>
           <Route index element={<HomePage />} />
+          <Route path="learn" element={<LearnHomePage />} />
+          <Route path="learn/:subjectId/:unitId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/:lectureId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/quiz" element={<QuizHomePage />} />
+          <Route path="learn/:subjectId/:unitId/quiz/:attemptId" element={<QuizAttemptPage />} />
           <Route path="assistant" element={<AssistantPage />} />
           <Route path="library" element={<LibraryPage />} />
         </Route>
@@ -58,6 +72,11 @@ const router = createBrowserRouter(
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path="admin" element={<AppLayout />}>
           <Route index element={<AdminDashboard />} />
+          <Route path="learn" element={<LearnHomePage />} />
+          <Route path="learn/:subjectId/:unitId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/:lectureId" element={<LearnUnitPage />} />
+          <Route path="learn/:subjectId/:unitId/quiz" element={<QuizHomePage />} />
+          <Route path="learn/:subjectId/:unitId/quiz/:attemptId" element={<QuizAttemptPage />} />
           <Route path="assistant" element={<AssistantPage />} />
           <Route path="library" element={<LibraryPage />} />
           <Route path="users" element={<UserManagementPage />} />

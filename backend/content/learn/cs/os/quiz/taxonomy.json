@@ -1,0 +1,284 @@
+{
+ "subject": "cs",
+ "unit": "os",
+ "topics": [
+  {
+   "id": "t01-os-basics",
+   "title": "OS Basics & System Calls",
+   "subtopics": [
+    {
+     "id": "types-of-os",
+     "name": "Types of OS"
+    },
+    {
+     "id": "user-vs-kernel-mode",
+     "name": "User vs kernel mode"
+    },
+    {
+     "id": "system-calls",
+     "name": "System calls"
+    },
+    {
+     "id": "fork",
+     "name": "fork()"
+    }
+   ]
+  },
+  {
+   "id": "t02-processes",
+   "title": "Processes",
+   "subtopics": [
+    {
+     "id": "process-states",
+     "name": "Process states"
+    },
+    {
+     "id": "pcb",
+     "name": "PCB"
+    },
+    {
+     "id": "context-switch",
+     "name": "Context switch"
+    },
+    {
+     "id": "schedulers",
+     "name": "Schedulers"
+    },
+    {
+     "id": "zombie-and-orphan",
+     "name": "Zombie & orphan"
+    }
+   ]
+  },
+  {
+   "id": "t03-threads",
+   "title": "Threads",
+   "subtopics": [
+    {
+     "id": "thread-vs-process",
+     "name": "Thread vs process"
+    },
+    {
+     "id": "user-vs-kernel-threads",
+     "name": "User vs kernel threads"
+    },
+    {
+     "id": "multithreading-models",
+     "name": "Multithreading models"
+    }
+   ]
+  },
+  {
+   "id": "t04-ipc",
+   "title": "Inter-Process Communication",
+   "subtopics": [
+    {
+     "id": "shared-memory",
+     "name": "Shared memory"
+    },
+    {
+     "id": "message-passing",
+     "name": "Message passing"
+    },
+    {
+     "id": "pipes",
+     "name": "Pipes"
+    }
+   ]
+  },
+  {
+   "id": "t05-synchronization",
+   "title": "Concurrency & Synchronization",
+   "subtopics": [
+    {
+     "id": "critical-section",
+     "name": "Critical section"
+    },
+    {
+     "id": "petersons-solution",
+     "name": "Peterson's solution"
+    },
+    {
+     "id": "test-and-set",
+     "name": "Test-and-set"
+    },
+    {
+     "id": "semaphores",
+     "name": "Semaphores"
+    },
+    {
+     "id": "producer-consumer",
+     "name": "Producer–consumer"
+    },
+    {
+     "id": "readers-writers",
+     "name": "Readers–writers"
+    },
+    {
+     "id": "dining-philosophers",
+     "name": "Dining philosophers"
+    }
+   ]
+  },
+  {
+   "id": "t06-deadlock",
+   "title": "Deadlock",
+   "subtopics": [
+    {
+     "id": "necessary-conditions",
+     "name": "Necessary conditions"
+    },
+    {
+     "id": "resource-allocation-graph",
+     "name": "Resource-allocation graph"
+    },
+    {
+     "id": "prevention",
+     "name": "Prevention"
+    },
+    {
+     "id": "bankers-algorithm",
+     "name": "Banker's algorithm"
+    },
+    {
+     "id": "detection-and-recovery",
+     "name": "Detection & recovery"
+    }
+   ]
+  },
+  {
+   "id": "t07-cpu-scheduling",
+   "title": "CPU Scheduling",
+   "subtopics": [
+    {
+     "id": "scheduling-criteria",
+     "name": "Scheduling criteria"
+    },
+    {
+     "id": "fcfs",
+     "name": "FCFS"
+    },
+    {
+     "id": "sjf-srtf",
+     "name": "SJF / SRTF"
+    },
+    {
+     "id": "priority",
+     "name": "Priority"
+    },
+    {
+     "id": "round-robin",
+     "name": "Round Robin"
+    },
+    {
+     "id": "multilevel-queues",
+     "name": "Multilevel queues"
+    }
+   ]
+  },
+  {
+   "id": "t08-disk-scheduling",
+   "title": "I/O & Disk Scheduling",
+   "subtopics": [
+    {
+     "id": "disk-structure",
+     "name": "Disk structure"
+    },
+    {
+     "id": "seek-and-rotational-time",
+     "name": "Seek & rotational time"
+    },
+    {
+     "id": "fcfs-sstf",
+     "name": "FCFS / SSTF"
+    },
+    {
+     "id": "scan-c-scan",
+     "name": "SCAN / C-SCAN"
+    },
+    {
+     "id": "look-c-look",
+     "name": "LOOK / C-LOOK"
+    }
+   ]
+  },
+  {
+   "id": "t09-memory-management",
+   "title": "Memory Management",
+   "subtopics": [
+    {
+     "id": "contiguous-allocation",
+     "name": "Contiguous allocation"
+    },
+    {
+     "id": "fragmentation",
+     "name": "Fragmentation"
+    },
+    {
+     "id": "paging",
+     "name": "Paging"
+    },
+    {
+     "id": "tlb-and-emat",
+     "name": "TLB & EMAT"
+    },
+    {
+     "id": "multilevel-paging",
+     "name": "Multilevel paging"
+    },
+    {
+     "id": "segmentation",
+     "name": "Segmentation"
+    }
+   ]
+  },
+  {
+   "id": "t10-virtual-memory",
+   "title": "Virtual Memory",
+   "subtopics": [
+    {
+     "id": "demand-paging",
+     "name": "Demand paging"
+    },
+    {
+     "id": "page-faults",
+     "name": "Page faults"
+    },
+    {
+     "id": "fifo-optimal-lru",
+     "name": "FIFO / Optimal / LRU"
+    },
+    {
+     "id": "beladys-anomaly",
+     "name": "Belady's anomaly"
+    },
+    {
+     "id": "thrashing",
+     "name": "Thrashing"
+    }
+   ]
+  },
+  {
+   "id": "t11-file-systems",
+   "title": "File Systems",
+   "subtopics": [
+    {
+     "id": "directory-structure",
+     "name": "Directory structure"
+    },
+    {
+     "id": "allocation-methods",
+     "name": "Allocation methods"
+    },
+    {
+     "id": "inode-and-max-file-size",
+     "name": "Inode & max file size"
+    },
+    {
+     "id": "free-space-management",
+     "name": "Free-space management"
+    }
+   ]
+  }
+ ]
+}

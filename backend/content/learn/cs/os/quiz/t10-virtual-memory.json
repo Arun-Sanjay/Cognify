@@ -1,0 +1,1641 @@
+{
+  "topic_id": "t10-virtual-memory",
+  "questions": [
+    {
+      "id": "t10-001",
+      "subtopic": "demand-paging",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "pure demand paging",
+        "lazy swapper"
+      ],
+      "stem": "A process is started under **pure demand paging**, i.e. no page of the process is in memory when it begins execution. Which statement is correct?",
+      "options": [
+        "The OS loads the entire process before it starts, so the first fault happens only after a replacement",
+        "The first page fault happens only when the process first accesses its data or stack",
+        "The very first instruction fetch causes a page fault",
+        "No page fault can occur until all free frames are used up"
+      ],
+      "answer": "C",
+      "explanation": "In pure demand paging the pager is \"lazy\": a page is brought in only when it is referenced. Since no page is resident at start, the very first instruction fetch references a non-resident page, the valid–invalid bit is invalid, and a page fault occurs. The process keeps faulting until its working set is in memory, after which faults become rare (locality).",
+      "option_feedback": [
+        "That is plain swapping, not demand paging.",
+        "The code page is also non-resident, so the instruction fetch faults first.",
+        "Correct: nothing is resident, so the first reference (the instruction fetch) faults.",
+        "A fault is about the page being absent, not about free frames running out — faults happen even with free frames available."
+      ]
+    },
+    {
+      "id": "t10-002",
+      "subtopic": "demand-paging",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "valid-invalid bit",
+        "page table"
+      ],
+      "stem": "In a demand-paged system, what happens when the CPU references a page whose page-table entry has its **valid–invalid bit set to invalid**?",
+      "options": [
+        "The MMU raises a trap to the operating system (a page fault)",
+        "The MMU loads the page from disk by itself and continues without involving the OS",
+        "The reference is ignored and returns zero",
+        "The process is always terminated immediately"
+      ],
+      "answer": "A",
+      "explanation": "The MMU checks the valid–invalid bit during translation. If it is invalid, the hardware **traps to the OS** (page-fault trap). The OS then checks an internal table: if the reference is outside the process's address space the process is terminated; if it is a legal page that is simply not in memory, the OS brings it in from the backing store, sets the bit to valid and restarts the instruction.",
+      "option_feedback": [
+        "Correct: an invalid bit causes a page-fault trap.",
+        "The MMU cannot do disk I/O; the OS page-fault handler does.",
+        "No such behaviour — memory semantics would be broken.",
+        "Only if the address is illegal (outside the address space). A legal but non-resident page is simply loaded."
+      ]
+    },
+    {
+      "id": "t10-003",
+      "subtopic": "demand-paging",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "effective access time",
+        "page-fault rate"
+      ],
+      "stem": "Memory access time is 200 ns and the average page-fault service time is 8 ms. The page-fault rate is p = 0.001 (one fault per 1000 accesses). Using EAT = (1 − p) × memory access time + p × page-fault service time, what is the effective memory access time in **nanoseconds**? (Give the answer correct to one decimal place.)",
+      "answer": {
+        "min": 8199.7,
+        "max": 8199.9
+      },
+      "explanation": "Convert to one unit first: 8 ms = 8,000,000 ns.\n\nEAT = (1 − 0.001) × 200 + 0.001 × 8,000,000\n = 199.8 + 8000\n = **8199.8 ns**\n\nSo a fault rate of just 0.1% slows memory down by a factor of about 41 — the fault service time completely dominates.",
+      "trap": "Mixing ms and ns (e.g. adding 0.001 × 8 = 0.008 to 200)."
+    },
+    {
+      "id": "t10-004",
+      "subtopic": "demand-paging",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "prepaging",
+        "demand paging"
+      ],
+      "stem": "An OS uses **prepaging**: when a process faults, it also brings in s − 1 neighbouring pages (s pages in total). Suppose a fraction α of the prepaged pages is actually used before being evicted. Assuming the cost of bringing in a page is the same whether it is prepaged or demand-paged, when does prepaging beat pure demand paging?",
+      "options": [
+        "Always, because fewer faults always means less work",
+        "When α is large (more than about half of the prepaged pages get used)",
+        "When α is close to 0",
+        "Never, because prepaging always reads extra pages"
+      ],
+      "answer": "B",
+      "explanation": "Prepaging s pages saves s × α page faults (the pages that would have faulted later) and wastes s × (1 − α) page loads (pages that were never used). Prepaging wins when the saving exceeds the waste:\n\ns × α > s × (1 − α) ⟺ α > 0.5\n\nAs α → 0 prepaging loses; as α → 1 it wins. (In practice prepaging is used where locality is predictable, e.g. reloading a swapped-out process's working set.)",
+      "option_feedback": [
+        "Extra unused pages cost I/O and frames, so it is not always better.",
+        "Correct: savings s·α must outweigh waste s·(1 − α).",
+        "Then almost every prepaged page is wasted I/O.",
+        "Prepaging pays off when most prepaged pages are used."
+      ]
+    },
+    {
+      "id": "t10-005",
+      "subtopic": "demand-paging",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "copy-on-write",
+        "fork"
+      ],
+      "stem": "A parent process calls fork() on a system that implements **copy-on-write (COW)**. Immediately after the fork, the child writes to a global variable stored in page P. What happens?",
+      "options": [
+        "The whole address space of the parent is copied at fork() time, so the child simply writes its own copy",
+        "The write is visible to the parent too, because the page is shared",
+        "The child is terminated with a protection error",
+        "A fault occurs, the kernel copies only page P for the child, and the write goes to the copy"
+      ],
+      "answer": "D",
+      "explanation": "After a COW fork, parent and child share all pages, and the shared pages are marked read-only (copy-on-write). The child's write to P causes a protection fault; the kernel allocates a free frame, copies P into it, maps the copy writable into the **child's** page table, and restarts the write. The parent keeps the original P; other shared pages stay shared. This is why fork() followed by exec() is cheap — almost nothing is copied.",
+      "option_feedback": [
+        "That is fork without COW — COW avoids exactly this up-front copy.",
+        "COW preserves separate address spaces; the parent never sees the child's write.",
+        "The protection fault is expected and handled by copying, not by killing the process.",
+        "Correct: only the written page is copied, lazily, on first write."
+      ]
+    },
+    {
+      "id": "t10-006",
+      "subtopic": "demand-paging",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "effective access time",
+        "maximum fault rate"
+      ],
+      "stem": "Memory access time is 200 ns and the page-fault service time is 8 ms. Take EAT = (1 − p) × 200 ns + p × 8 ms, where p is the page-fault rate. If the slowdown due to paging must be **at most 10%** (EAT ≤ 220 ns), the page-fault rate may be at most one fault in every N memory accesses. What is the **smallest integer N**?",
+      "answer": {
+        "min": 399990,
+        "max": 399990
+      },
+      "explanation": "8 ms = 8,000,000 ns.\n\n(1 − p) × 200 + p × 8,000,000 ≤ 220\n200 + p × (8,000,000 − 200) ≤ 220\np × 7,999,800 ≤ 20\np ≤ 20 / 7,999,800 = 1 / 399,990\n\nA rate of one fault per N accesses means p = 1/N, so 1/N ≤ 1/399,990 ⟹ N ≥ 399,990.\n\nSmallest N = **399,990**. (Dropping the \"− 200\" — i.e. writing EAT ≈ 200 + p × 8,000,000 — gives 400,000, which is the common approximate answer but not the exact one asked for here.)",
+      "trap": "Ignoring the (1 − p) factor and answering 400,000."
+    },
+    {
+      "id": "t10-007",
+      "subtopic": "demand-paging",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "effective access time",
+        "dirty page",
+        "page-fault service time"
+      ],
+      "stem": "Memory access time is 150 ns. Servicing a page fault takes 8 ms if the victim page is clean and 20 ms if the victim page is dirty (it must be written back first). 60% of the time the victim is dirty. The page-fault rate is p = 10⁻⁵. Using EAT = (1 − p) × memory access time + p × (average fault service time), what is the EAT (to two decimal places)?",
+      "options": [
+        "230.00 ns",
+        "278.00 ns",
+        "302.00 ns",
+        "350.00 ns"
+      ],
+      "answer": "C",
+      "explanation": "Average fault service time = 0.4 × 8 + 0.6 × 20 = 3.2 + 12 = 15.2 ms = 15,200,000 ns.\n\nEAT = (1 − 10⁻⁵) × 150 + 10⁻⁵ × 15,200,000\n = 149.9985 + 152\n = 301.9985 ≈ **302.00 ns**\n\n(Using only the clean time, 8 ms, gives ≈ 230 ns; using 20 ms for every fault gives ≈ 350 ns; swapping the weights gives 12.8 ms → ≈ 278 ns.)",
+      "option_feedback": [
+        "Uses the clean-victim time (8 ms) for every fault.",
+        "Weights swapped: 0.6 × 8 + 0.4 × 20 = 12.8 ms.",
+        "Correct.",
+        "Uses the dirty-victim time (20 ms) for every fault."
+      ],
+      "trap": "Weighting the clean and dirty times the wrong way round (0.6 × 8 + 0.4 × 20)."
+    },
+    {
+      "id": "t10-008",
+      "subtopic": "demand-paging",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "demand paging",
+        "swap space",
+        "locality"
+      ],
+      "stem": "Which of the following statements about demand paging are **true**?",
+      "options": [
+        "A program whose logical address space is larger than physical memory can still run",
+        "After a page fault is serviced, the faulting instruction is skipped and execution continues with the next instruction",
+        "Demand paging performs acceptably mainly because programs show locality of reference",
+        "The effective access time is insensitive to the page-fault rate as long as the rate is below 1%"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A — true.** With demand paging only the referenced pages are loaded, so the logical address space can be much larger than physical memory.\n- **B — false.** A page fault is a trap raised during execution of the instruction; the instruction is restarted *from the beginning* after the page is loaded (the hardware must support instruction restart). It is not simply \"skipped\".\n- **C — true.** Demand paging works well because of locality of reference: at any time a process actively uses only a small set of pages, so faults are rare after the working set is loaded.\n- **D — false.** EAT ≈ (1 − p) × ma + p × fault time. Because the fault time is millions of times larger than ma, EAT is extremely sensitive to p — even p = 0.001 can multiply EAT by ~40.",
+      "option_feedback": [
+        "True — only the needed pages are ever resident.",
+        "False — the instruction is restarted, not skipped.",
+        "True — locality keeps the fault rate low.",
+        "False — a fault costs ~10⁴–10⁵ memory accesses, so EAT is very sensitive to p."
+      ]
+    },
+    {
+      "id": "t10-009",
+      "subtopic": "demand-paging",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "effective access time",
+        "TLB",
+        "dirty victim",
+        "page-fault service time"
+      ],
+      "stem": "A demand-paged system has a TLB and a single-level page table kept in memory (the page table itself is always resident). A TLB lookup takes 20 ns and a memory access takes 100 ns. 95% of references hit in the TLB. Of the references that **miss** in the TLB, 0.2% find the page not resident and cause a page fault; the rest find the page in memory.\n\nThere are no free frames, so every fault replaces a victim: 70% of victims are clean (fault service time 4 ms) and 30% are dirty (fault service time 10 ms, because the victim must be written back first).\n\nAssume:\n- TLB hit: TLB lookup + one memory access.\n- TLB miss, no fault: TLB lookup + page-table access + memory access.\n- TLB miss with page fault: the **whole reference** takes exactly the fault service time (ignore all other components).\n\nFind the effective access time in **nanoseconds**, correct to two decimal places.",
+      "answer": {
+        "min": 704.97,
+        "max": 704.99
+      },
+      "explanation": "**Average fault service time.** 0.7 × 4 ms + 0.3 × 10 ms = 2.8 + 3.0 = 5.8 ms = 5,800,000 ns.\n\n**Three disjoint cases** (fractions of *all* references):\n\n| Case | Fraction | Time (ns) | Contribution (ns) |\n|---|---|---|---|\n| TLB hit | 0.95 | 20 + 100 = 120 | 114.000 |\n| TLB miss, page present | 0.05 × 0.998 = 0.0499 | 20 + 100 + 100 = 220 | 10.978 |\n| TLB miss, page fault | 0.05 × 0.002 = 0.0001 | 5,800,000 | 580.000 |\n\nCheck: 0.95 + 0.0499 + 0.0001 = 1.\n\nEAT = 114 + 10.978 + 580 = **704.978 ≈ 704.98 ns**\n\nTwo things must be combined correctly: the fault rate is **conditional on a TLB miss** (only 1 reference in 10,000 faults), and the fault service time is a **weighted average** over clean and dirty victims. The fault term alone (580 ns) is still larger than everything else together.",
+      "also_tests": [
+        "tlb-and-emat"
+      ],
+      "trap": "Applying the 0.2% fault rate to all references (fault term 0.002 × 5.8 ms = 11,600 ns) or swapping the clean/dirty weights (0.3 × 4 + 0.7 × 10 = 8.2 ms)."
+    },
+    {
+      "id": "t10-010",
+      "subtopic": "demand-paging",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "copy-on-write",
+        "fork",
+        "reference count"
+      ],
+      "stem": "Process P has 10 resident, private pages (pages 0–9). The system implements **copy-on-write** with a reference count per frame:\n\n- fork() gives the child the parent's current page table: every frame of the parent is now also mapped by the child (its count goes up by 1) and is marked COW.\n- A write to a page whose frame has count **≥ 2** allocates a new frame, copies the page **for the writer only**, and decrements the old frame's count.\n- A write to a page whose frame has count **1** is done in place (no copy).\n\nThe following happen in this order:\n1. P forks child C1.\n2. C1 writes pages 1 and 2.\n3. P forks child C2.\n4. P writes pages 1 and 3.\n5. C2 writes pages 1, 3 and 4.\n6. C1 writes pages 3, 4 and 2.\n7. P writes page 4.\n\nHow many **new frames** are allocated by copy-on-write in total?",
+      "answer": {
+        "min": 7,
+        "max": 7
+      },
+      "explanation": "Track the frame behind each page and its reference count. Write `page: {sharers}`.\n\n| Step | Event | Copies | State of the frames involved afterwards |\n|---|---|---|---|\n| 1 | P forks C1 | 0 | every page: {P, C1}, count 2 |\n| 2 | C1 writes 1, 2 | **2** | C1 gets private copies of 1 and 2; P's originals of 1, 2 now count 1 |\n| 3 | P forks C2 | 0 | C2 copies **P's** table: pages 1, 2 → P's frames {P, C2} (count 2); pages 0, 3–9 → {P, C1, C2} (count 3). C1's private 1, 2 are untouched |\n| 4 | P writes 1 | **1** | count was 2 → P gets a copy; old frame of 1 now {C2}, count 1 |\n| 4 | P writes 3 | **1** | count was 3 → P gets a copy; old frame of 3 now {C1, C2}, count 2 |\n| 5 | C2 writes 1 | 0 | count 1 → in place |\n| 5 | C2 writes 3 | **1** | count 2 → C2 gets a copy; old frame of 3 now {C1}, count 1 |\n| 5 | C2 writes 4 | **1** | count 3 → C2 gets a copy; old frame of 4 now {P, C1}, count 2 |\n| 6 | C1 writes 3 | 0 | count 1 → in place |\n| 6 | C1 writes 4 | **1** | count 2 → C1 gets a copy; old frame of 4 now {P}, count 1 |\n| 6 | C1 writes 2 | 0 | C1's private copy from step 2, count 1 → in place |\n| 7 | P writes 4 | 0 | count 1 → in place |\n\nTotal = 2 + 2 + 2 + 1 = **7** new frames (10 + 7 = 17 frames now hold these pages).\n\nKey points: with **three** sharers a page can be copied **twice** (pages 3 and 4), so \"each page is copied at most once\" is wrong here; C2 inherits P's table *at the moment of the second fork*, so it shares pages 1 and 2 only with P, not with C1; and the last remaining sharer of a frame writes in place.",
+      "also_tests": [
+        "fork"
+      ],
+      "trap": "Assuming each page is copied at most once (answer 4, one per distinct page written), or letting C2 share C1's private copies of pages 1 and 2."
+    },
+    {
+      "id": "t10-011",
+      "subtopic": "demand-paging",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "effective access time",
+        "dirty page",
+        "free-frame pool",
+        "maximum fault rate"
+      ],
+      "stem": "Memory access time is 100 ns. The OS keeps a free-frame pool: on **40%** of page faults a free frame is available and no victim is needed. Otherwise a victim is chosen, and it is dirty half of the time. Fault service times:\n\n- free frame available, or clean victim: 8 ms\n- dirty victim (write-back + read): 20 ms\n\nUse EAT = (1 − p) × 100 ns + p × (average fault service time). To keep EAT ≤ 150 ns, the page-fault rate may be at most one fault per N memory accesses. What is the **smallest integer N**?",
+      "answer": {
+        "min": 231998,
+        "max": 231998
+      },
+      "explanation": "**Average service time.** Split the faults:\n\n| Case | Fraction of faults | Time |\n|---|---|---|\n| free frame | 0.4 | 8 ms |\n| victim, clean | 0.6 × 0.5 = 0.3 | 8 ms |\n| victim, dirty | 0.6 × 0.5 = 0.3 | 20 ms |\n\nAverage = 0.4 × 8 + 0.3 × 8 + 0.3 × 20 = 3.2 + 2.4 + 6 = 11.6 ms = 11,600,000 ns.\n\n**Bound on p.**\n(1 − p) × 100 + p × 11,600,000 ≤ 150\np × (11,600,000 − 100) ≤ 50\np ≤ 50 / 11,599,900 = 1 / 231,998\n\nWith p = 1/N: N ≥ **231,998**.\n\nTraps: treating 50% of *all* faults as dirty (average 14 ms → N = 279,998), or dropping the (1 − p) term (N = 232,000).",
+      "trap": "Applying the 50% dirty fraction to all faults rather than only to faults that need a victim."
+    },
+    {
+      "id": "t10-012",
+      "subtopic": "page-faults",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "page fault",
+        "trap"
+      ],
+      "stem": "A **page fault** occurs when",
+      "options": [
+        "the referenced page's entry is missing from the TLB",
+        "the referenced page is not present in main memory",
+        "the referenced page is present in memory but has been modified",
+        "a page is evicted from memory to make room"
+      ],
+      "answer": "B",
+      "explanation": "A page fault is a trap raised by the MMU when a process references a page that is part of its (legal) logical address space but is not currently resident in a physical frame (valid–invalid bit = invalid). The OS handles it by loading the page. A TLB miss whose page *is* in memory is resolved by a page-table walk — no page fault.",
+      "option_feedback": [
+        "A TLB miss is resolved from the page table; it is not a page fault unless the page is also absent.",
+        "Correct.",
+        "That only sets the dirty bit — no fault.",
+        "Eviction is part of handling a fault, not its definition."
+      ]
+    },
+    {
+      "id": "t10-013",
+      "subtopic": "page-faults",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "frame allocation",
+        "minimum frames"
+      ],
+      "stem": "The **minimum** number of frames that must be allocated to a process in a demand-paged system is determined by",
+      "options": [
+        "the instruction-set architecture (how many pages one instruction can touch)",
+        "the amount of physical memory installed",
+        "the number of processes in the system",
+        "the size of the process's logical address space"
+      ],
+      "answer": "A",
+      "explanation": "A process must have enough frames to hold every page that a single instruction can reference, otherwise the instruction could never complete (it would keep faulting and restarting). That number depends on the **instruction-set architecture** — instruction length, number of memory operands, levels of indirection, and whether operands can straddle page boundaries. The **maximum** is bounded by the physical memory available.",
+      "option_feedback": [
+        "Correct.",
+        "Physical memory bounds the maximum allocation, not the minimum.",
+        "This affects how frames are shared, not the per-process minimum.",
+        "A process can run with far fewer frames than its logical size — that is the point of virtual memory."
+      ]
+    },
+    {
+      "id": "t10-014",
+      "subtopic": "page-faults",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "page-fault handling",
+        "steps"
+      ],
+      "stem": "Consider these actions taken while servicing a page fault for a legal reference (a free frame is available):\n\n1. Restart the instruction that caused the fault\n2. Trap to the OS and save the process state\n3. Update the page table (frame number, valid bit set)\n4. Schedule a disk read of the page into the free frame\n5. Check that the reference was legal and find the page on the backing store\n\nWhat is the correct order?",
+      "options": [
+        "5 → 2 → 4 → 3 → 1",
+        "2 → 4 → 5 → 3 → 1",
+        "2 → 5 → 4 → 3 → 1",
+        "2 → 5 → 3 → 4 → 1"
+      ],
+      "answer": "C",
+      "explanation": "Trap first (2), then the OS validates the reference and locates the page on disk (5), issues the read into a free frame (4) — the process waits; the CPU may be given to another process — then, when the I/O completes, the page table is updated (3) and finally the faulting instruction is restarted (1).\n\nOrder: **2 → 5 → 4 → 3 → 1**.",
+      "option_feedback": [
+        "The OS can only check legality after the trap has transferred control to it.",
+        "The OS must first locate the page on the backing store before it can read it.",
+        "Correct.",
+        "Marking the entry valid before the page arrives would let the process read garbage."
+      ]
+    },
+    {
+      "id": "t10-015",
+      "subtopic": "page-faults",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "page-fault bounds",
+        "reference string"
+      ],
+      "stem": "A process has a reference string of length **p** containing **n** distinct page numbers, and is given **m** frames (initially empty). For **any** page-replacement algorithm, the number of page faults F satisfies",
+      "options": [
+        "m ≤ F ≤ p",
+        "n ≤ F ≤ m",
+        "0 ≤ F ≤ n",
+        "n ≤ F ≤ p"
+      ],
+      "answer": "D",
+      "explanation": "- **Lower bound n:** every distinct page faults at least once (its first reference — a compulsory fault), whatever the algorithm and however many frames.\n- **Upper bound p:** at most every reference faults.\n\nSo n ≤ F ≤ p. Neither bound depends on m: with m ≥ n only the n compulsory faults occur (F = n); with m = 1 and no two consecutive equal references, F = p.",
+      "option_feedback": [
+        "The number of frames is not a lower bound — with m > n only n faults occur.",
+        "F can exceed m easily (every replacement adds a fault).",
+        "Every distinct page faults at least once, so F ≥ n > 0.",
+        "Correct: compulsory faults give n, one fault per reference gives p."
+      ]
+    },
+    {
+      "id": "t10-016",
+      "subtopic": "page-faults",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "proportional allocation",
+        "frame allocation"
+      ],
+      "stem": "A system has **93 free frames** to share among three processes of sizes 15, 45 and 120 pages using **proportional allocation** (aᵢ = sᵢ / S × m, rounded **down** to an integer). How many frames does the 15-page process get?",
+      "options": [
+        "8",
+        "31",
+        "15",
+        "7"
+      ],
+      "answer": "D",
+      "explanation": "S = 15 + 45 + 120 = 180 pages, m = 93.\n\n| Process | sᵢ | sᵢ / S × 93 | Frames (floor) |\n|---|---|---|---|\n| P1 | 15 | 7.75 | **7** |\n| P2 | 45 | 23.25 | 23 |\n| P3 | 120 | 62.00 | 62 |\n\nP1 gets **7** frames. (Equal allocation would give each process 31 frames — far more than P1 needs and far fewer than P3 needs.) The 93 − 92 = 1 leftover frame goes to the free pool.",
+      "option_feedback": [
+        "7.75 rounded up — the stem says round down.",
+        "Equal allocation (93 / 3), not proportional.",
+        "Its size in pages — proportional allocation scales by m / S = 93 / 180.",
+        "Correct: ⌊15 × 93 / 180⌋ = ⌊7.75⌋ = 7."
+      ],
+      "trap": "Equal allocation (93/3 = 31) or rounding 7.75 up to 8."
+    },
+    {
+      "id": "t10-017",
+      "subtopic": "page-faults",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "array traversal",
+        "row-major",
+        "page faults"
+      ],
+      "stem": "```c\nint A[128][128];   /* 4-byte int, stored row-major, page-aligned */\n```\nPage size is 512 bytes. A process is given **2 frames** for data (code is in a separate, always-resident frame), both initially empty, with LRU replacement. It zeroes the array with one of the two loops below.\n\n```c\n/* Loop X */ for (i = 0; i < 128; i++) for (j = 0; j < 128; j++) A[i][j] = 0;\n/* Loop Y */ for (j = 0; j < 128; j++) for (i = 0; i < 128; i++) A[i][j] = 0;\n```\n\nHow many page faults do Loop X and Loop Y generate, respectively?",
+      "options": [
+        "16,384 and 128",
+        "128 and 16,384",
+        "128 and 128",
+        "64 and 16,384"
+      ],
+      "answer": "B",
+      "explanation": "One row = 128 × 4 = 512 bytes = exactly **one page**, so row i lives in page i (128 pages).\n\n- **Loop X (row by row):** all 128 accesses of row i hit page i; the first one faults. 128 rows ⇒ **128 faults**.\n- **Loop Y (column by column):** for a fixed j, i runs 0…127, touching pages 0, 1, …, 127 — a different page on every access. With only 2 frames (and LRU), each page has been evicted long before it is touched again in the next column. Every access faults: 128 × 128 = **16,384 faults**.\n\nAnswer: 128 and 16,384.",
+      "option_feedback": [
+        "Reversed — row-major storage favours the row-wise loop.",
+        "Correct.",
+        "Loop Y revisits each page 128 times, but evicts it between visits.",
+        "A 512-byte row fills a whole page, so there are 128 pages, not 64."
+      ]
+    },
+    {
+      "id": "t10-018",
+      "subtopic": "page-faults",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "address trace",
+        "reference string",
+        "LRU"
+      ],
+      "stem": "A process generates the following byte addresses (hexadecimal):\n\n0x0123, 0x0128, 0x02A0, 0x0130, 0x04F0, 0x02B4, 0x0140, 0x0510, 0x0300, 0x0124, 0x04FF, 0x02C0, 0x0530, 0x0144\n\nPage size is 256 bytes. The process has **3 frames, initially empty**, and uses **LRU** replacement. How many page faults occur?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "**Step 1 — page numbers.** With 256-byte pages the page number is the address without its last two hex digits:\n\n0x0123→1, 0x0128→1, 0x02A0→2, 0x0130→1, 0x04F0→4, 0x02B4→2, 0x0140→1, 0x0510→5, 0x0300→3, 0x0124→1, 0x04FF→4, 0x02C0→2, 0x0530→5, 0x0144→1\n\nPage reference string: 1, 1, 2, 1, 4, 2, 1, 5, 3, 1, 4, 2, 5, 1\n\n**Step 2 — LRU.** (Reference 2 is to the same page as reference 1, so it is a hit.)\n\nLRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 1 | 1 | − | − | hit |\n| 3 | 2 | 1 | 2 | − | **F** |\n| 4 | 1 | 1 | 2 | − | hit |\n| 5 | 4 | 1 | 2 | 4 | **F** |\n| 6 | 2 | 1 | 2 | 4 | hit |\n| 7 | 1 | 1 | 2 | 4 | hit |\n| 8 | 5 | 1 | 2 | 5 | **F** (out 4) |\n| 9 | 3 | 1 | 3 | 5 | **F** (out 2) |\n| 10 | 1 | 1 | 3 | 5 | hit |\n| 11 | 4 | 1 | 3 | 4 | **F** (out 5) |\n| 12 | 2 | 1 | 2 | 4 | **F** (out 3) |\n| 13 | 5 | 5 | 2 | 4 | **F** (out 1) |\n| 14 | 1 | 5 | 2 | 1 | **F** (out 4) |\n\nTotal = **9 faults** (5 compulsory + 4 replacement), 5 hits.\n\n**Check (stack distance):** a reference is an LRU hit with 3 frames iff fewer than 3 distinct other pages were referenced since that page's previous use. That holds only at references #2, #4, #6, #7, #10 → 5 hits, so 14 − 5 = 9 faults ✓.",
+      "trap": "Converting addresses to page numbers wrongly (e.g. using decimal page size on hex addresses) or counting the repeated page-1 reference as a fault."
+    },
+    {
+      "id": "t10-019",
+      "subtopic": "page-faults",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "TLB miss",
+        "page fault",
+        "valid bit"
+      ],
+      "stem": "Assume a TLB caches only valid translations. Which of the following statements are **true**?",
+      "options": [
+        "Every page fault is preceded by a TLB miss",
+        "Every TLB miss leads to a page fault",
+        "A page of a process can be evicted only while that process itself is servicing a page fault",
+        "A page fault whose victim page is dirty requires two disk transfers"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "- **A — true.** If the page is not resident, its translation cannot be in the TLB (the TLB holds only valid entries), so a page fault is always preceded by a TLB miss.\n- **B — false.** Most TLB misses are resolved by walking the page table and finding a valid entry; no fault.\n- **C — false.** Under a global replacement policy a process's page can be evicted to serve *another* process's fault; under local replacement only its own pages are victims. Either way, a page can be evicted while the owning process is not running.\n- **D — true.** If the victim is dirty it must be written back before its frame is reused, so the fault costs two disk transfers (write + read).",
+      "option_feedback": [
+        "True — non-resident pages have no valid TLB entry.",
+        "False — usually the page is in memory and only the page table is consulted.",
+        "False — global replacement can steal frames from other processes.",
+        "True — write back the dirty victim, then read the new page."
+      ]
+    },
+    {
+      "id": "t10-020",
+      "subtopic": "page-faults",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "global replacement",
+        "local replacement"
+      ],
+      "stem": "Which statement correctly compares **global** and **local** page replacement?",
+      "options": [
+        "With global replacement, the number of frames allocated to a process stays fixed",
+        "With local replacement, one thrashing process can steal frames from all other processes",
+        "With global replacement, a process's page-fault rate depends partly on the paging behaviour of other processes",
+        "Local replacement generally gives higher system throughput than global replacement"
+      ],
+      "answer": "C",
+      "explanation": "- **Global**: the victim may be any frame in memory, including frames of other processes. A process's number of frames varies over time; throughput is usually higher, but a process's fault rate depends on the behaviour of others (it cannot control its own paging).\n- **Local**: the victim is chosen only from the faulting process's own frames, so the allocation stays fixed; a process's performance is isolated from others, but free memory in other processes may go unused.\n\nStatement C states exactly this.",
+      "option_feedback": [
+        "That is local replacement.",
+        "Reversed — local replacement *contains* a thrashing process; global lets it steal frames.",
+        "Correct.",
+        "Global replacement usually gives better throughput; that is why it is the common choice."
+      ]
+    },
+    {
+      "id": "t10-021",
+      "subtopic": "page-faults",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "array layout",
+        "page alignment",
+        "LRU cyclic access"
+      ],
+      "stem": "```c\nint A[64][64];   /* 4-byte int, row-major */\nfor (j = 0; j < 64; j++)\n    for (i = 0; i < 64; i++)\n        A[i][j] = i + j;\n```\nPage size is **1 KB** (1024 bytes). The array does **not** start on a page boundary: A[0][0] is at byte offset **512** within its page. The array gets **16 frames**, initially empty, with **LRU** replacement; code and the variables i, j are held elsewhere and never fault. How many page faults does the loop cause?",
+      "answer": {
+        "min": 1088,
+        "max": 1088
+      },
+      "explanation": "**Layout.** One row = 64 × 4 = 256 bytes. Row r starts at byte 512 + 256r from the start of the first page, so it lies in page ⌊(512 + 256r) / 1024⌋ = ⌊(r + 2) / 4⌋.\n\n| Page | Rows |\n|---|---|\n| 0 | 0–1 (second half of the page) |\n| 1 | 2–5 |\n| … | … |\n| 15 | 58–61 |\n| 16 | 62–63 |\n\nThe 16 KB array therefore touches **17 pages**, not 16.\n\n**One column (fixed j).** i = 0…63 visits pages 0, 1, …, 16 in order (the accesses within one page are consecutive, so only the first can fault): **17 page changes** per column.\n\n**Across columns.** Every column cycles through the same 17 pages in the same order, but only 16 frames exist. With LRU on a cycle one page longer than the frame count, the page needed next is always the least recently used one, i.e. the page just evicted. Every page change faults.\n\nFaults = 64 columns × 17 = **1088**.\n\nIf the array were page-aligned it would occupy exactly 16 pages, which fit in 16 frames, giving only **16** compulsory faults. The half-page misalignment adds one page and the fault count jumps 68-fold.",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "trap": "Assuming 64 × 64 × 4 B = 16 KB is 16 pages, which fit in 16 frames (answer 16). The 512-byte offset makes the array span 17 pages."
+    },
+    {
+      "id": "t10-022",
+      "subtopic": "page-faults",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "minimum frames",
+        "indirect addressing",
+        "page straddling"
+      ],
+      "stem": "A machine has a memory-to-memory block-move instruction `MVB @X, @Y` that copies a **300-byte** block. Both operands use one level of **indirect addressing**: X and Y are the addresses of 4-byte pointers; the pointer at X holds the start address of the source block and the pointer at Y holds the start address of the destination block. The instruction itself is 6 bytes long. Page size is **256 bytes**.\n\nAny item (the instruction, either pointer, either block) may start at any byte of a page, and all items may lie on different pages. The instruction can complete only if every page it touches is resident at the same time (after a fault it restarts from the beginning).\n\nWhat is the **minimum number of frames** a process must be allocated so that this instruction is guaranteed to complete?",
+      "answer": "B",
+      "explanation": "An item of n bytes (n ≥ 2) spans at most ⌈(n − 1) / P⌉ + 1 pages: the worst case is when it starts on the last byte of a page.\n\n| Item | Size | Worst-case pages |\n|---|---|---|\n| instruction | 6 B | ⌈5/256⌉ + 1 = 2 |\n| pointer at X | 4 B | 2 |\n| pointer at Y | 4 B | 2 |\n| source block | 300 B | ⌈299/256⌉ + 1 = 3 |\n| destination block | 300 B | 3 |\n| **Total** | | **12** |\n\nFor example, a 300-byte block starting at offset 255 covers 1 byte of its first page, all 256 bytes of the next and 43 bytes of a third.\n\nMinimum frames = **12**.",
+      "options": [
+        "10",
+        "12",
+        "8",
+        "7"
+      ],
+      "option_feedback": [
+        "Counts each 300-byte block as 2 pages; a block longer than a page can straddle 3 pages.",
+        "Correct: 2 (instruction) + 2 + 2 (pointers) + 3 + 3 (blocks) = 12.",
+        "Forgets that the two pointer words also occupy (up to 2) pages each: 2 + 3 + 3 = 8.",
+        "Ignores straddling: 1 + 1 + 1 + 2 + 2 = 7."
+      ],
+      "trap": "Treating a block bigger than a page as spanning only 2 pages, or forgetting the pages that hold the indirection pointers."
+    },
+    {
+      "id": "t10-023",
+      "subtopic": "page-faults",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "array traversal",
+        "LRU",
+        "transpose",
+        "page faults"
+      ],
+      "stem": "```c\nint A[64][64], B[64][64];   /* 4-byte int, row-major, each array page-aligned */\nfor (i = 0; i < 64; i++)\n    for (j = 0; j < 64; j++)\n        A[i][j] = B[j][i];     /* B[j][i] is read before A[i][j] is written */\n```\nPage size is 256 bytes. The two arrays together get **65 frames**, initially empty, managed by **LRU**; code and loop variables never fault. How many page faults does the loop cause?",
+      "answer": {
+        "min": 4097,
+        "max": 4097
+      },
+      "explanation": "**Layout.** A row = 64 × 4 = 256 B = one page. A has pages A0…A63 (row i in Ai), B has B0…B63.\n\n**Access pattern for one i:** B0, Ai, B1, Ai, B2, Ai, …, B63, Ai — all 64 B pages plus the single page Ai. That is 65 distinct pages per outer iteration.\n\n**i = 0:** every page is new — Ai (1) + B0…B63 (64) = **65 faults**, and the 65 frames are now full. LRU order (least → most recent): B0, B1, …, B63, A0 (A0 is used after every B access).\n\n**i = 1:**\n- B0 → hit (still resident). Recency now: B1, …, B63, A0, B0.\n- A1 → fault; LRU victim is **B1**.\n- B1 → fault; victim **B2**. B2 → fault; victim B3. … Each B page is evicted just before it is needed (a cascade).\n- B63 → fault; victim **A0** (the only page older than it).\n- A1 is used after every B, so it never becomes the victim.\n\nFaults for i = 1: A1 + B1…B63 = 1 + 63 = **64**. At the end the frames hold A1, B0…B63 with B0 least recent, which is exactly the i = 0 state shifted by one row — so every later i also costs 64.\n\nTotal = 65 + 63 × 64 = 65 + 4032 = **4097**.\n\n**Contrast:** with **66 frames** A1 takes the spare frame and each later A(i) replaces the stale A(i−2), so all of B stays resident: 65 + 63 × 1 = 128 faults. One frame makes a 32× difference because LRU on a cycle that just does not fit evicts exactly the page needed next.",
+      "trap": "Assuming 65 frames are enough because each i touches exactly 65 pages — LRU's victim is the next B page, not the stale A page."
+    },
+    {
+      "id": "t10-024",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "optimal replacement",
+        "Belady's MIN"
+      ],
+      "stem": "The **optimal (OPT/MIN)** page-replacement algorithm replaces the page that",
+      "options": [
+        "has been in memory the longest",
+        "was used least recently",
+        "will not be used for the longest period of time",
+        "has been used the fewest times"
+      ],
+      "answer": "C",
+      "explanation": "OPT evicts the page whose **next use lies farthest in the future** (or that is never used again). It gives the minimum possible number of faults for every reference string and frame count, but needs future knowledge, so it cannot be implemented in a real OS — it is used as a yardstick to judge practical algorithms.",
+      "option_feedback": [
+        "That is FIFO.",
+        "That is LRU — it looks at the past, not the future.",
+        "Correct.",
+        "That is LFU."
+      ]
+    },
+    {
+      "id": "t10-025",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "LRU approximation",
+        "reference bit"
+      ],
+      "stem": "Which of the following page-replacement algorithms rely on the hardware **reference (use) bit** to approximate LRU?",
+      "options": [
+        "Second-chance (clock)",
+        "Additional-reference-bits (aging)",
+        "FIFO",
+        "Enhanced second-chance (reference bit + modify bit)"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "explanation": "- **Second-chance (clock)** — skips (and clears) pages whose reference bit is 1.\n- **Additional-reference-bits** — periodically shifts the reference bit into an 8-bit history byte per page; the smallest value is the approximate LRU page.\n- **FIFO** — uses only load order, no reference information at all.\n- **Enhanced second-chance** — uses the (reference, modify) pair to classify pages into four classes and evicts from the lowest class.\n\nSo A, B and D.",
+      "option_feedback": [
+        "Yes — the reference bit gives a page its second chance.",
+        "Yes — shifts reference bits into a history byte.",
+        "No — FIFO ignores usage entirely.",
+        "Yes — uses the reference bit together with the modify bit."
+      ]
+    },
+    {
+      "id": "t10-026",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 100,
+      "concepts": [
+        "FIFO",
+        "page fault count"
+      ],
+      "stem": "Using **FIFO** replacement with **3 frames, initially empty**, how many page faults occur for the reference string\n\n4, 7, 0, 7, 1, 0, 1, 2, 1, 2, 7, 1, 2?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "FIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 4 | 4 | − | − | **F** |\n| 2 | 7 | 4 | 7 | − | **F** |\n| 3 | 0 | 4 | 7 | 0 | **F** |\n| 4 | 7 | 4 | 7 | 0 | hit |\n| 5 | 1 | 1 | 7 | 0 | **F** (out 4) |\n| 6 | 0 | 1 | 7 | 0 | hit |\n| 7 | 1 | 1 | 7 | 0 | hit |\n| 8 | 2 | 1 | 2 | 0 | **F** (out 7) |\n| 9 | 1 | 1 | 2 | 0 | hit |\n| 10 | 2 | 1 | 2 | 0 | hit |\n| 11 | 7 | 1 | 2 | 7 | **F** (out 0) |\n| 12 | 1 | 1 | 2 | 7 | hit |\n| 13 | 2 | 1 | 2 | 7 | hit |\n\nTotal = **6 faults** (5 compulsory + 1 replacement), 7 hits.\n\n**Check (load order = eviction order):** pages enter in the order 4, 7, 0, 1(−4), 2(−7), 7(−0) — 6 loads, each evicting the oldest resident page.",
+      "trap": "Treating a hit as refreshing the page's position in the FIFO queue (that would be LRU)."
+    },
+    {
+      "id": "t10-027",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "LRU implementation",
+        "stack",
+        "counters"
+      ],
+      "stem": "LRU can be implemented with a **stack of page numbers**. Which description is correct?",
+      "options": [
+        "On each reference the page is moved to the top; the victim is at the bottom, so no search is needed at replacement",
+        "Pages are pushed only when loaded; the victim is the page on top",
+        "On each reference the page is moved to the bottom; the victim is on top",
+        "The stack is updated only at page faults, so hits cost nothing"
+      ],
+      "answer": "A",
+      "explanation": "Stack implementation: whenever a page is referenced it is removed from wherever it is in the stack and put on **top**. The top is therefore the most recently used page and the **bottom is the LRU page** — the victim, found without any search. Each reference costs a few pointer updates (a doubly linked list is used), which is why exact LRU needs hardware help and real systems use approximations. The counter (time-stamp) implementation is the alternative: it records a time per page and must **search** for the smallest time at replacement.",
+      "option_feedback": [
+        "Correct.",
+        "Pushing only at load time ignores later uses — that is FIFO order, and the top would be the newest page.",
+        "Mirror image with inconsistent ends: the moved page would be the next victim.",
+        "If hits did not update the stack it would not track recency."
+      ]
+    },
+    {
+      "id": "t10-028",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "enhanced second-chance",
+        "modify bit"
+      ],
+      "stem": "In the **enhanced second-chance** algorithm each page is classified by its (reference bit, modify bit) pair. Which class is the **best** choice of victim?",
+      "options": [
+        "(0, 1)",
+        "(0, 0)",
+        "(1, 0)",
+        "(1, 1)"
+      ],
+      "answer": "B",
+      "explanation": "| (ref, mod) | Meaning | Victim preference |\n|---|---|---|\n| (0, 0) | not recently used, clean | **best** — no write-back, unlikely to be needed |\n| (0, 1) | not recently used, dirty | next — needs write-back |\n| (1, 0) | recently used, clean | probably needed soon |\n| (1, 1) | recently used, dirty | worst |\n\nThe algorithm scans for the lowest non-empty class.",
+      "option_feedback": [
+        "Not recently used, but dirty — must be written back first; second choice.",
+        "Correct: not recently used and clean.",
+        "Recently used — likely to be referenced again soon.",
+        "The worst choice: recently used and dirty."
+      ]
+    },
+    {
+      "id": "t10-029",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "LRU",
+        "page fault count"
+      ],
+      "stem": "Using **LRU** replacement with **3 frames, initially empty**, how many page faults occur for\n\n5, 0, 2, 5, 3, 0, 4, 2, 5, 0, 3, 4, 1, 4, 0?",
+      "answer": {
+        "min": 13,
+        "max": 13
+      },
+      "explanation": "LRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 5 | 5 | − | − | **F** |\n| 2 | 0 | 5 | 0 | − | **F** |\n| 3 | 2 | 5 | 0 | 2 | **F** |\n| 4 | 5 | 5 | 0 | 2 | hit |\n| 5 | 3 | 5 | 3 | 2 | **F** (out 0) |\n| 6 | 0 | 5 | 3 | 0 | **F** (out 2) |\n| 7 | 4 | 4 | 3 | 0 | **F** (out 5) |\n| 8 | 2 | 4 | 2 | 0 | **F** (out 3) |\n| 9 | 5 | 4 | 2 | 5 | **F** (out 0) |\n| 10 | 0 | 0 | 2 | 5 | **F** (out 4) |\n| 11 | 3 | 0 | 3 | 5 | **F** (out 2) |\n| 12 | 4 | 0 | 3 | 4 | **F** (out 5) |\n| 13 | 1 | 1 | 3 | 4 | **F** (out 0) |\n| 14 | 4 | 1 | 3 | 4 | hit |\n| 15 | 0 | 1 | 0 | 4 | **F** (out 3) |\n\nTotal = **13 faults** (6 compulsory + 7 replacement), 2 hits.\n\n**Check (stack distance):** a reference is an LRU hit with 3 frames iff fewer than 3 distinct other pages were referenced since that page's previous use. That holds only at references #4, #14 → 2 hits, so 15 − 2 = 13 faults ✓.\n\nNote: FIFO on this string gives 11 and OPT 8 — LRU is not always better than FIFO.",
+      "trap": "Evicting by load time (FIFO) instead of last use."
+    },
+    {
+      "id": "t10-030",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "optimal replacement",
+        "page fault count"
+      ],
+      "stem": "Using the **optimal** page-replacement algorithm with **3 frames, initially empty**, how many page faults occur for\n\n7, 1, 3, 2, 1, 4, 7, 3, 1, 2, 4, 6, 1, 7?\n\nIf several resident pages are never referenced again, evict the one that was loaded earliest (this choice does not change the fault count).",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "Optimal trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 7 | 7 | − | − | **F** |\n| 2 | 1 | 7 | 1 | − | **F** |\n| 3 | 3 | 7 | 1 | 3 | **F** |\n| 4 | 2 | 7 | 1 | 2 | **F** (out 3) |\n| 5 | 1 | 7 | 1 | 2 | hit |\n| 6 | 4 | 7 | 1 | 4 | **F** (out 2) |\n| 7 | 7 | 7 | 1 | 4 | hit |\n| 8 | 3 | 3 | 1 | 4 | **F** (out 7) |\n| 9 | 1 | 3 | 1 | 4 | hit |\n| 10 | 2 | 2 | 1 | 4 | **F** (out 3) |\n| 11 | 4 | 2 | 1 | 4 | hit |\n| 12 | 6 | 2 | 1 | 6 | **F** (out 4) |\n| 13 | 1 | 2 | 1 | 6 | hit |\n| 14 | 7 | 2 | 7 | 6 | **F** (out 1) |\n\nTotal = **9 faults** (6 compulsory + 3 replacement), 5 hits.\n\n**Victim choices (next use of each resident page):**\n\n- #4 (page 2): next use 7→#7, 1→#5, 3→#8 ⇒ evict **3**\n- #6 (page 4): next use 7→#7, 1→#9, 2→#10 ⇒ evict **2**\n- #8 (page 3): next use 7→#14, 1→#9, 4→#11 ⇒ evict **7**\n- #10 (page 2): next use 3→never, 1→#13, 4→#11 ⇒ evict **3**\n- #12 (page 6): next use 2→never, 1→#13, 4→never ⇒ evict **4**\n- #14 (page 7): next use 2→never, 1→never, 6→never ⇒ evict **1**\n\nFor comparison FIFO and LRU both give 13 faults here.",
+      "trap": "Looking backwards (LRU) instead of forwards when choosing the victim."
+    },
+    {
+      "id": "t10-031",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "FIFO",
+        "page fault count"
+      ],
+      "stem": "Using **FIFO** replacement with **4 frames, initially empty**, how many page faults occur for\n\n2, 5, 1, 2, 6, 3, 5, 2, 4, 6, 1, 3, 5, 2?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "FIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | − | **F** |\n| 2 | 5 | 2 | 5 | − | − | **F** |\n| 3 | 1 | 2 | 5 | 1 | − | **F** |\n| 4 | 2 | 2 | 5 | 1 | − | hit |\n| 5 | 6 | 2 | 5 | 1 | 6 | **F** |\n| 6 | 3 | 3 | 5 | 1 | 6 | **F** (out 2) |\n| 7 | 5 | 3 | 5 | 1 | 6 | hit |\n| 8 | 2 | 3 | 2 | 1 | 6 | **F** (out 5) |\n| 9 | 4 | 3 | 2 | 4 | 6 | **F** (out 1) |\n| 10 | 6 | 3 | 2 | 4 | 6 | hit |\n| 11 | 1 | 3 | 2 | 4 | 1 | **F** (out 6) |\n| 12 | 3 | 3 | 2 | 4 | 1 | hit |\n| 13 | 5 | 5 | 2 | 4 | 1 | **F** (out 3) |\n| 14 | 2 | 5 | 2 | 4 | 1 | hit |\n\nTotal = **9 faults** (6 compulsory + 3 replacement), 5 hits.\n\n**Check (load order = eviction order):** pages enter in the order 2, 5, 1, 6, 3(−2), 2(−5), 4(−1), 1(−6), 5(−3) — 9 loads, each evicting the oldest resident page.\n\nLRU would give 12 faults on this string: at #6 LRU protects page 2 (hit at #4) and evicts 5, which is needed at the very next reference, and from then on it keeps evicting pages that are needed soon. Recency is a poor predictor on this string, so FIFO wins — LRU is better only *usually*, not always.",
+      "trap": "Moving page 2 to the back of the queue on its hits."
+    },
+    {
+      "id": "t10-032",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "second-chance",
+        "clock",
+        "reference bit"
+      ],
+      "stem": "A system uses the **clock (second-chance)** algorithm with **3 frames, initially empty**, and the reference string\n\n1, 0, 4, 0, 2, 0, 3, 4, 3, 4, 2, 3\n\nConventions: frames are filled in order F1, F2, F3 while free; the pointer starts at F1 and advances one frame after each load. A loaded page gets reference bit 1; a hit sets the bit to 1. On a fault with all frames full, the pointer clears and skips frames whose bit is 1 and replaces the first frame whose bit is 0, then advances past it. How many page faults occur?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "answer": "B",
+      "explanation": "Notation: page(reference bit), ← marks the pointer after the step.\n\nClock trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1(1) | − ← | − | **F** |\n| 2 | 0 | 1(1) | 0(1) | − ← | **F** |\n| 3 | 4 | 1(1) ← | 0(1) | 4(1) | **F** |\n| 4 | 0 | 1(1) ← | 0(1) | 4(1) | hit |\n| 5 | 2 | 2(1) | 0(0) ← | 4(0) | **F** (out 1) |\n| 6 | 0 | 2(1) | 0(1) ← | 4(0) | hit |\n| 7 | 3 | 2(1) ← | 0(0) | 3(1) | **F** (out 4) |\n| 8 | 4 | 2(0) | 4(1) | 3(1) ← | **F** (out 0) |\n| 9 | 3 | 2(0) | 4(1) | 3(1) ← | hit |\n| 10 | 4 | 2(0) | 4(1) | 3(1) ← | hit |\n| 11 | 2 | 2(1) | 4(1) | 3(1) ← | hit |\n| 12 | 3 | 2(1) | 4(1) | 3(1) ← | hit |\n\nTotal = **6 faults** (5 compulsory + 1 replacement), 6 hits.\n\nKey steps: at #5 all three bits are 1, so the pointer sweeps once round (clearing them) and evicts 1 — FIFO-like. At #7 page 0's bit was re-set by the hit at #6, so 0 gets its **second chance** (bit cleared, skipped) and 4 is evicted. At #8 page 0 has bit 0 and is evicted, so 4 comes back. Everything after that hits. For comparison: FIFO = 5, LRU = 7, LFU = 8.",
+      "option_feedback": [
+        "That is FIFO's count — clock is not identical to FIFO once reference bits differ.",
+        "Correct.",
+        "That is LRU's count.",
+        "That is LFU's count (with FIFO tie-breaking) — or the result of ignoring set reference bits and evicting page 0 at #7."
+      ]
+    },
+    {
+      "id": "t10-033",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 170,
+      "concepts": [
+        "LFU",
+        "counting-based replacement"
+      ],
+      "stem": "A system uses **LFU** (least frequently used) replacement with **3 frames, initially empty**. A page's count is the number of references to it **since it was last loaded** (the count is reset when the page is evicted). Ties in count are broken by evicting the page that was **loaded earliest**. How many page faults occur for\n\n5, 1, 4, 3, 2, 5, 0, 2, 3, 2, 1, 5, 4, 2?",
+      "answer": {
+        "min": 11,
+        "max": 11
+      },
+      "explanation": "Counts (since load) at each replacement decide the victim.\n\nLFU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 5 | 5 | − | − | **F** |\n| 2 | 1 | 5 | 1 | − | **F** |\n| 3 | 4 | 5 | 1 | 4 | **F** |\n| 4 | 3 | 3 | 1 | 4 | **F** (out 5) |\n| 5 | 2 | 3 | 2 | 4 | **F** (out 1) |\n| 6 | 5 | 3 | 2 | 5 | **F** (out 4) |\n| 7 | 0 | 0 | 2 | 5 | **F** (out 3) |\n| 8 | 2 | 0 | 2 | 5 | hit |\n| 9 | 3 | 0 | 2 | 3 | **F** (out 5) |\n| 10 | 2 | 0 | 2 | 3 | hit |\n| 11 | 1 | 1 | 2 | 3 | **F** (out 0) |\n| 12 | 5 | 1 | 2 | 5 | **F** (out 3) |\n| 13 | 4 | 4 | 2 | 5 | **F** (out 1) |\n| 14 | 2 | 4 | 2 | 5 | hit |\n\nTotal = **11 faults** (6 compulsory + 5 replacement), 3 hits.\n\nDecisions: #4–#7 — every resident page has count 1, so the tie-break makes LFU behave like FIFO (evict 5, 1, 4, 3). Page 2 reaches count 2 at #8 and 3 at #10, so from then on it is never the victim; at #9, #11, #12, #13 the victim is the earliest-loaded count-1 page (5, 0, 3, 1).\n\nFor comparison: FIFO = 13 (it evicts the busy page 2 at #11), LRU = 12, OPT = 9.",
+      "trap": "Keeping counts across evictions, or breaking ties by most recent load."
+    },
+    {
+      "id": "t10-034",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "MRU",
+        "cyclic access",
+        "sequential scan"
+      ],
+      "stem": "A process repeatedly scans 4 pages in a loop, producing the reference string\n\n1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4\n\nIt has **3 frames, initially empty**. Under **MRU** (evict the most recently used page) replacement, how many page faults occur? (Compare mentally with LRU.)",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "MRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 4 | 1 | 2 | 4 | **F** (out 3) |\n| 5 | 1 | 1 | 2 | 4 | hit |\n| 6 | 2 | 1 | 2 | 4 | hit |\n| 7 | 3 | 1 | 3 | 4 | **F** (out 2) |\n| 8 | 4 | 1 | 3 | 4 | hit |\n| 9 | 1 | 1 | 3 | 4 | hit |\n| 10 | 2 | 2 | 3 | 4 | **F** (out 1) |\n| 11 | 3 | 2 | 3 | 4 | hit |\n| 12 | 4 | 2 | 3 | 4 | hit |\n\nTotal = **6 faults** (4 compulsory + 2 replacement), 6 hits.\n\nUnder **LRU** this string faults on every one of the 12 references (a cycle of 4 pages through 3 frames always evicts exactly the page needed next). MRU keeps the \"old\" pages and sacrifices the one just used, so most of the loop stays resident: **6 faults**, which here equals OPT (6). This is why databases use MRU-like policies for large sequential scans.",
+      "trap": "Assuming LRU is always at least as good as MRU (LRU gives 12 here)."
+    },
+    {
+      "id": "t10-035",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "FIFO",
+        "LRU",
+        "optimal replacement",
+        "comparison"
+      ],
+      "stem": "Reference string: 0, 4, 1, 3, 5, 4, 3, 6, 2, 3, 4, 3\n\nConsider FIFO, LRU and Optimal replacement, each with **3 frames initially empty** (Optimal: if several resident pages are never referenced again, evict the one that was loaded earliest (this choice does not change the fault count).). Which statements are **true**?",
+      "options": [
+        "FIFO causes 10 page faults",
+        "LRU causes fewer page faults than FIFO",
+        "Optimal causes 8 page faults",
+        "Increasing the number of frames to 4 reduces Optimal's fault count"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "**FIFO**\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 0 | 0 | − | − | **F** |\n| 2 | 4 | 0 | 4 | − | **F** |\n| 3 | 1 | 0 | 4 | 1 | **F** |\n| 4 | 3 | 3 | 4 | 1 | **F** (out 0) |\n| 5 | 5 | 3 | 5 | 1 | **F** (out 4) |\n| 6 | 4 | 3 | 5 | 4 | **F** (out 1) |\n| 7 | 3 | 3 | 5 | 4 | hit |\n| 8 | 6 | 6 | 5 | 4 | **F** (out 3) |\n| 9 | 2 | 6 | 2 | 4 | **F** (out 5) |\n| 10 | 3 | 6 | 2 | 3 | **F** (out 4) |\n| 11 | 4 | 4 | 2 | 3 | **F** (out 6) |\n| 12 | 3 | 4 | 2 | 3 | hit |\n\nTotal = **10 faults** (7 compulsory + 3 replacement), 2 hits.\n\n**LRU**\n\nLRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 0 | 0 | − | − | **F** |\n| 2 | 4 | 0 | 4 | − | **F** |\n| 3 | 1 | 0 | 4 | 1 | **F** |\n| 4 | 3 | 3 | 4 | 1 | **F** (out 0) |\n| 5 | 5 | 3 | 5 | 1 | **F** (out 4) |\n| 6 | 4 | 3 | 5 | 4 | **F** (out 1) |\n| 7 | 3 | 3 | 5 | 4 | hit |\n| 8 | 6 | 3 | 6 | 4 | **F** (out 5) |\n| 9 | 2 | 3 | 6 | 2 | **F** (out 4) |\n| 10 | 3 | 3 | 6 | 2 | hit |\n| 11 | 4 | 3 | 4 | 2 | **F** (out 6) |\n| 12 | 3 | 3 | 4 | 2 | hit |\n\nTotal = **9 faults** (7 compulsory + 2 replacement), 3 hits.\n\n**Check (stack distance):** a reference is an LRU hit with 3 frames iff fewer than 3 distinct other pages were referenced since that page's previous use. That holds only at references #7, #10, #12 → 3 hits, so 12 − 3 = 9 faults ✓.\n\n**Optimal**\n\nOptimal trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 0 | 0 | − | − | **F** |\n| 2 | 4 | 0 | 4 | − | **F** |\n| 3 | 1 | 0 | 4 | 1 | **F** |\n| 4 | 3 | 3 | 4 | 1 | **F** (out 0) |\n| 5 | 5 | 3 | 4 | 5 | **F** (out 1) |\n| 6 | 4 | 3 | 4 | 5 | hit |\n| 7 | 3 | 3 | 4 | 5 | hit |\n| 8 | 6 | 3 | 4 | 6 | **F** (out 5) |\n| 9 | 2 | 3 | 4 | 2 | **F** (out 6) |\n| 10 | 3 | 3 | 4 | 2 | hit |\n| 11 | 4 | 3 | 4 | 2 | hit |\n| 12 | 3 | 3 | 4 | 2 | hit |\n\nTotal = **7 faults** (7 compulsory + 0 replacement), 5 hits.\n\n- A — FIFO = 10: **true**.\n- B — LRU (9) < FIFO (10): **true**.\n- C — OPT = 7, not 8: **false**.\n- D — With 4 frames OPT still gives 7 faults: the string has 7 distinct pages, so 7 compulsory faults are unavoidable, and OPT with 3 frames already achieved exactly 7 — no replacement faults. An extra frame cannot go below the compulsory minimum: **false**.",
+      "option_feedback": [
+        "True.",
+        "True — 9 vs 10.",
+        "False — OPT gives 7 (only the 7 compulsory faults).",
+        "False — 7 is already the minimum (7 distinct pages)."
+      ]
+    },
+    {
+      "id": "t10-036",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "optimal replacement",
+        "LRU",
+        "stack distance"
+      ],
+      "stem": "For the reference string\n\n1, 2, 3, 4, 5, 1, 2, 6, 1, 2, 3, 7, 6, 3, 2, 1, 2, 3, 6, 4\n\nlet O be the number of page faults under **Optimal** replacement with **4 frames**, initially empty (if several resident pages are never referenced again, evict the one that was loaded earliest; this does not change the fault count).\n\nWhat is the **smallest number of frames m** for which **LRU** (frames initially empty) causes **at most O** page faults?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "**Step 1: O.**\n\nOptimal trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 5 | 5 | 1 | 2 | 3 | 5 | **F** (out 4) |\n| 6 | 1 | 1 | 2 | 3 | 5 | hit |\n| 7 | 2 | 1 | 2 | 3 | 5 | hit |\n| 8 | 6 | 1 | 2 | 3 | 6 | **F** (out 5) |\n| 9 | 1 | 1 | 2 | 3 | 6 | hit |\n| 10 | 2 | 1 | 2 | 3 | 6 | hit |\n| 11 | 3 | 1 | 2 | 3 | 6 | hit |\n| 12 | 7 | 7 | 2 | 3 | 6 | **F** (out 1) |\n| 13 | 6 | 7 | 2 | 3 | 6 | hit |\n| 14 | 3 | 7 | 2 | 3 | 6 | hit |\n| 15 | 2 | 7 | 2 | 3 | 6 | hit |\n| 16 | 1 | 1 | 2 | 3 | 6 | **F** (out 7) |\n| 17 | 2 | 1 | 2 | 3 | 6 | hit |\n| 18 | 3 | 1 | 2 | 3 | 6 | hit |\n| 19 | 6 | 1 | 2 | 3 | 6 | hit |\n| 20 | 4 | 1 | 4 | 3 | 6 | **F** (out 2) |\n\nTotal = **9 faults**.\n\nSo **O = 9**.\n\n**Step 2: LRU for every m at once (stack distances).** The stack distance of a reference is 1 + the number of distinct other pages referenced since the previous use of the same page (∞ for a first use). A reference hits under LRU with m frames iff its stack distance ≤ m, because LRU with m frames holds exactly the m most recently used pages.\n\n| # | 6 | 7 | 9 | 10 | 11 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| page | 1 | 2 | 1 | 2 | 3 | 6 | 3 | 2 | 1 | 2 | 3 | 6 | 4 |\n| distance | 5 | 5 | 3 | 3 | 6 | 5 | 3 | 4 | 5 | 2 | 3 | 4 | 7 |\n\nThe other 7 references are first uses (∞).\n\n| m | hits (distance ≤ m) | LRU faults |\n|---|---|---|\n| 4 | 7 | 13 |\n| 5 | 11 | **9** |\n| 6 | 12 | 8 |\n\nLRU needs **m = 5** frames to match what Optimal achieves with 4.",
+      "trap": "Stopping at m = 4 (LRU gives 13 there), or recomputing a full trace for each m and mis-evicting; stack distances give every m from one pass."
+    },
+    {
+      "id": "t10-037",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "LRU",
+        "FIFO",
+        "resident-set reasoning"
+      ],
+      "stem": "A reference string of length 20 has the property that **LRU with 3 frames** (initially empty) causes a page fault on **every** reference. Which of the following statements **must** be true?",
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "**A: true.** If the page at t equals the page at t − k for k ≤ 3, then at most k − 1 ≤ 2 other references, hence at most 2 distinct other pages, came in between. LRU with 3 frames keeps the 3 most recently used pages, so the page is still resident and the reference hits, which contradicts the assumption.\n\n**B: true.** By induction, both algorithms hold the same pages. While every reference faults under LRU, each reference loads a new page. LRU then holds the last 3 pages referenced, and these are distinct by A. Suppose FIFO has also faulted on every reference so far. Then its queue is the last 3 pages loaded, which are the same 3 pages. The next reference is not among them (LRU faults), so FIFO faults too and evicts the oldest of those three, exactly as LRU does. So FIFO also faults 20 times.\n\n**C: false.** The cyclic string 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, … (20 references) faults on every reference under LRU with 3 frames **and** with 4 frames: a 5-page cycle never fits.\n\n**D: false.** The cyclic string 1, 2, 3, 4, 1, 2, 3, 4, … uses only 4 pages, and A only forbids repeats within distance 3, so a 4-page cycle is enough. With 3 frames LRU always evicts the page needed next: 20 faults.",
+      "options": [
+        "No page is referenced twice within any 4 consecutive references (i.e. the page at position t differs from those at t − 1, t − 2 and t − 3)",
+        "FIFO with 3 frames (initially empty) also faults on every reference",
+        "LRU with 4 frames causes fewer than 20 page faults",
+        "The string contains at least 5 distinct pages"
+      ],
+      "option_feedback": [
+        "True: a repeat at distance ≤ 3 has at most 2 distinct pages in between, so LRU(3) would hit.",
+        "True: while every reference faults, LRU and FIFO both hold exactly the last 3 pages referenced, so they fault together.",
+        "False: a 5-page cycle faults on every reference with 4 frames as well.",
+        "False: a 4-page cycle already defeats LRU with 3 frames."
+      ],
+      "trap": "Expecting that one more frame must help (C), or thinking FIFO and LRU must differ somewhere. When every reference faults, FIFO and LRU hold identical resident sets."
+    },
+    {
+      "id": "t10-038",
+      "subtopic": "fifo-optimal-lru",
+      "difficulty": 5,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "optimal replacement",
+        "LRU worst case",
+        "cyclic access"
+      ],
+      "stem": "A loop scans pages 1, 2, 3, 4, 5, 6 in order, **five times** (30 references):\n\n1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, … , 1, 2, 3, 4, 5, 6\n\nFrames are initially empty. Let m_O be the **smallest** number of frames for which **Optimal** replacement causes **at most 12** page faults, and m_L the smallest number of frames for which **LRU** causes at most 12 page faults. What is (m_O, m_L)? (Optimal: if several resident pages are never referenced again, evict the one loaded earliest.)",
+      "answer": "B",
+      "explanation": "**LRU.** With m ≤ 5 frames the 6-page cycle never fits: the page needed next is always the least recently used one, which LRU has just evicted. Every reference faults (30). With m = 6 only the 6 compulsory faults occur. So **m_L = 6**: LRU falls off a cliff.\n\n**Optimal.** OPT degrades gradually. With m frames it fills m frames, then on each fault evicts the resident page whose next use is farthest away, keeping m − 1 pages that are needed soon. Fault positions in each pass of 6 references (F = fault):\n\n| m | pass 1 | pass 2 | pass 3 | pass 4 | pass 5 | total |\n|---|---|---|---|---|---|---|\n| 5 | F F F F F F | · · · · F · | · · · F · · | · · F · · · | · F · · · · | **10** |\n| 4 | F F F F F F | · · · F F · | · · F F · · | · F F · · · | F F · · · F | **15** |\n\nWith 5 frames OPT faults only once every 5 references after the first pass; with 4 frames twice every 5. In general it misses 6 − m of every 5 references in steady state, giving 25, 20, 15, 10 faults for m = 2, 3, 4, 5.\n\nSmallest m with OPT ≤ 12: **m_O = 5** (m = 4 gives 15).\n\nAnswer: **(5, 6)**.",
+      "options": [
+        "(4, 6)",
+        "(5, 6)",
+        "(6, 6)",
+        "(5, 5)"
+      ],
+      "option_feedback": [
+        "m = 4 gives 15 faults under Optimal, more than 12.",
+        "Correct: OPT 10 faults with 5 frames (15 with 4); LRU needs all 6 pages resident.",
+        "Optimal does not need the whole cycle resident: it keeps 4 of the pages fixed and rotates one frame.",
+        "LRU with 5 frames still faults on all 30 references of a 6-page cycle."
+      ],
+      "trap": "Assuming Optimal also needs the whole 6-page loop resident, or that LRU improves gradually as frames are added. On a loop LRU falls off a cliff while OPT degrades gradually."
+    },
+    {
+      "id": "t10-039",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "Belady's anomaly"
+      ],
+      "stem": "**Belady's anomaly** refers to the situation in which",
+      "options": [
+        "increasing the number of frames increases the number of page faults for some reference string",
+        "increasing the number of frames never reduces the number of page faults",
+        "the optimal algorithm causes more faults than FIFO for some reference string",
+        "a process spends more time paging than executing"
+      ],
+      "answer": "A",
+      "explanation": "Belady's anomaly: for some page-replacement algorithms (notably FIFO) there exist reference strings for which **allocating more frames increases the number of page faults**. Intuition says more memory should never hurt; for FIFO it occasionally does, because the set of pages resident with n + 1 frames need not contain the set resident with n frames.",
+      "option_feedback": [
+        "Correct.",
+        "Too strong — the anomaly happens only for particular strings; usually more frames help.",
+        "Impossible — OPT is optimal for every string and frame count.",
+        "That is thrashing."
+      ]
+    },
+    {
+      "id": "t10-040",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "Belady's anomaly",
+        "FIFO"
+      ],
+      "stem": "Which of the following page-replacement algorithms can suffer from Belady's anomaly?",
+      "options": [
+        "LRU",
+        "Optimal",
+        "FIFO",
+        "None of these"
+      ],
+      "answer": "C",
+      "explanation": "FIFO is the classic example (e.g. 1,2,3,4,1,2,5,1,2,3,4,5 gives 9 faults with 3 frames but 10 with 4). LRU and Optimal are **stack algorithms**: the pages resident with n frames are always a subset of those resident with n + 1 frames, so more frames can never cause more faults.",
+      "option_feedback": [
+        "LRU is a stack algorithm — immune.",
+        "OPT is a stack algorithm — immune.",
+        "Correct.",
+        "FIFO does suffer from it."
+      ]
+    },
+    {
+      "id": "t10-041",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "stack algorithm",
+        "inclusion property"
+      ],
+      "stem": "Which of the following are **stack algorithms** (and therefore can never exhibit Belady's anomaly)?",
+      "options": [
+        "LRU",
+        "Optimal",
+        "FIFO",
+        "Second-chance (clock)"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "A stack algorithm satisfies the **inclusion property**: for every reference string and every time t, the set of pages in memory with n frames is a subset of the set with n + 1 frames.\n\n- **LRU** — with n frames memory holds the n most recently used pages ⊂ the n + 1 most recently used. Stack algorithm.\n- **Optimal** — memory holds the pages chosen by a fixed priority (next-use distance); also a stack algorithm.\n- **FIFO** — the resident set depends on load order, which itself depends on n; inclusion can fail (classic anomaly string).\n- **Second-chance (clock)** — degenerates to FIFO when all reference bits are set, so it inherits the anomaly (it shows 9 vs 10 faults on the classic string too).",
+      "option_feedback": [
+        "Yes.",
+        "Yes.",
+        "No — FIFO is the classic anomaly case.",
+        "No — it can behave exactly like FIFO."
+      ]
+    },
+    {
+      "id": "t10-042",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "Belady's anomaly",
+        "FIFO"
+      ],
+      "stem": "Using **FIFO** replacement with **4 frames, initially empty**, how many page faults occur for\n\n1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5?",
+      "answer": {
+        "min": 10,
+        "max": 10
+      },
+      "explanation": "FIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 5 | 1 | 1 | 2 | 3 | 4 | hit |\n| 6 | 2 | 1 | 2 | 3 | 4 | hit |\n| 7 | 5 | 5 | 2 | 3 | 4 | **F** (out 1) |\n| 8 | 1 | 5 | 1 | 3 | 4 | **F** (out 2) |\n| 9 | 2 | 5 | 1 | 2 | 4 | **F** (out 3) |\n| 10 | 3 | 5 | 1 | 2 | 3 | **F** (out 4) |\n| 11 | 4 | 4 | 1 | 2 | 3 | **F** (out 5) |\n| 12 | 5 | 4 | 5 | 2 | 3 | **F** (out 1) |\n\nTotal = **10 faults** (5 compulsory + 5 replacement), 2 hits.\n\n**Check (load order = eviction order):** pages enter in the order 1, 2, 3, 4, 5(−1), 1(−2), 2(−3), 3(−4), 4(−5), 5(−1) — 10 loads, each evicting the oldest resident page.\n\nWith **3 frames** the same string gives only **9** faults:\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 4 | 4 | 2 | 3 | **F** (out 1) |\n| 5 | 1 | 4 | 1 | 3 | **F** (out 2) |\n| 6 | 2 | 4 | 1 | 2 | **F** (out 3) |\n| 7 | 5 | 5 | 1 | 2 | **F** (out 4) |\n| 8 | 1 | 5 | 1 | 2 | hit |\n| 9 | 2 | 5 | 1 | 2 | hit |\n| 10 | 3 | 5 | 3 | 2 | **F** (out 1) |\n| 11 | 4 | 5 | 3 | 4 | **F** (out 2) |\n| 12 | 5 | 5 | 3 | 4 | hit |\n\nTotal = **9 faults** (5 compulsory + 4 replacement), 3 hits.\n\nOne more frame, one more fault — this is the classic demonstration of **Belady's anomaly**.",
+      "trap": "Assuming 4 frames must give fewer faults than 3 (9 is the 3-frame count)."
+    },
+    {
+      "id": "t10-043",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "LRU",
+        "stack algorithm"
+      ],
+      "stem": "For the reference string 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5, let L₃ and L₄ be the numbers of page faults under **LRU** with 3 and 4 frames respectively (frames initially empty). What is **L₃ − L₄**?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "**3 frames**\n\nLRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 4 | 4 | 2 | 3 | **F** (out 1) |\n| 5 | 1 | 4 | 1 | 3 | **F** (out 2) |\n| 6 | 2 | 4 | 1 | 2 | **F** (out 3) |\n| 7 | 5 | 5 | 1 | 2 | **F** (out 4) |\n| 8 | 1 | 5 | 1 | 2 | hit |\n| 9 | 2 | 5 | 1 | 2 | hit |\n| 10 | 3 | 3 | 1 | 2 | **F** (out 5) |\n| 11 | 4 | 3 | 4 | 2 | **F** (out 1) |\n| 12 | 5 | 3 | 4 | 5 | **F** (out 2) |\n\nTotal = **10 faults** (5 compulsory + 5 replacement), 2 hits.\n\n**Check (stack distance):** a reference is an LRU hit with 3 frames iff fewer than 3 distinct other pages were referenced since that page's previous use. That holds only at references #8, #9 → 2 hits, so 12 − 2 = 10 faults ✓.\n\n**4 frames**\n\nLRU trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 5 | 1 | 1 | 2 | 3 | 4 | hit |\n| 6 | 2 | 1 | 2 | 3 | 4 | hit |\n| 7 | 5 | 1 | 2 | 5 | 4 | **F** (out 3) |\n| 8 | 1 | 1 | 2 | 5 | 4 | hit |\n| 9 | 2 | 1 | 2 | 5 | 4 | hit |\n| 10 | 3 | 1 | 2 | 5 | 3 | **F** (out 4) |\n| 11 | 4 | 1 | 2 | 4 | 3 | **F** (out 5) |\n| 12 | 5 | 5 | 2 | 4 | 3 | **F** (out 1) |\n\nTotal = **8 faults** (5 compulsory + 3 replacement), 4 hits.\n\n**Check (stack distance):** a reference is an LRU hit with 4 frames iff fewer than 4 distinct other pages were referenced since that page's previous use. That holds only at references #5, #6, #8, #9 → 4 hits, so 12 − 4 = 8 faults ✓.\n\nL₃ − L₄ = 10 − 8 = **2**. Unlike FIFO (9 → 10), LRU improves with the extra frame — as it must, being a stack algorithm.",
+      "trap": "Mixing up with FIFO, whose counts go 9 → 10 on this string."
+    },
+    {
+      "id": "t10-044",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "inclusion property",
+        "stack algorithm"
+      ],
+      "stem": "Let M(n, t) be the set of pages in memory at time t when a process runs with n frames. An algorithm is immune to Belady's anomaly if, for every reference string, every t and every n,",
+      "options": [
+        "M(n + 1, t) ⊆ M(n, t)",
+        "M(n, t) ⊆ M(n + 1, t)",
+        "|M(n, t)| = n once the frames are full",
+        "M(n, t) ∩ M(n + 1, t) = ∅"
+      ],
+      "answer": "B",
+      "explanation": "The **inclusion (stack) property** is M(n, t) ⊆ M(n + 1, t). If it holds, every reference that hits with n frames also hits with n + 1 frames, so faults(n + 1) ≤ faults(n). LRU (n most recently used pages) and OPT satisfy it; FIFO does not: on 1,2,3,4,1,2,5,1,2,3,4,5, right after the 7th reference (page 5) FIFO holds {1, 2, 5} with 3 frames but {2, 3, 4, 5} with 4 frames — page 1 is in the smaller memory but not the larger, so the next reference (to 1) hits with 3 frames and faults with 4.",
+      "option_feedback": [
+        "Reversed — the larger memory must contain the smaller one.",
+        "Correct: the inclusion property.",
+        "True of every algorithm once frames fill up; says nothing about the anomaly.",
+        "Nonsense — the two memories share most pages."
+      ]
+    },
+    {
+      "id": "t10-045",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "Belady's anomaly",
+        "FIFO",
+        "frame-count search"
+      ],
+      "stem": "For the reference string\n\n4, 6, 1, 5, 2, 4, 6, 3, 4, 6, 1, 5, 2, 3\n\nlet f(m) be the number of page faults under **FIFO** with m frames, initially empty. There is **exactly one** value m ∈ {1, 2, …, 6} for which f(m + 1) > f(m). Find that m.",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "**Quick bounds.** No two consecutive references are equal, so f(1) = 14. The string has 6 distinct pages, so f(6) = f(7) = 6 (only compulsory faults). An anomaly can occur only between 2 and 6 frames.\n\n**Traces for m = 3, 4, 5** (f(2) = 14 as well: with 2 frames no page survives until it is used again).\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 4 | 4 | − | − | **F** |\n| 2 | 6 | 4 | 6 | − | **F** |\n| 3 | 1 | 4 | 6 | 1 | **F** |\n| 4 | 5 | 5 | 6 | 1 | **F** (out 4) |\n| 5 | 2 | 5 | 2 | 1 | **F** (out 6) |\n| 6 | 4 | 5 | 2 | 4 | **F** (out 1) |\n| 7 | 6 | 6 | 2 | 4 | **F** (out 5) |\n| 8 | 3 | 6 | 3 | 4 | **F** (out 2) |\n| 9 | 4 | 6 | 3 | 4 | hit |\n| 10 | 6 | 6 | 3 | 4 | hit |\n| 11 | 1 | 6 | 3 | 1 | **F** (out 4) |\n| 12 | 5 | 5 | 3 | 1 | **F** (out 6) |\n| 13 | 2 | 5 | 2 | 1 | **F** (out 3) |\n| 14 | 3 | 5 | 2 | 3 | **F** (out 1) |\n\nTotal = **12 faults**.\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 4 | 4 | − | − | − | **F** |\n| 2 | 6 | 4 | 6 | − | − | **F** |\n| 3 | 1 | 4 | 6 | 1 | − | **F** |\n| 4 | 5 | 4 | 6 | 1 | 5 | **F** |\n| 5 | 2 | 2 | 6 | 1 | 5 | **F** (out 4) |\n| 6 | 4 | 2 | 4 | 1 | 5 | **F** (out 6) |\n| 7 | 6 | 2 | 4 | 6 | 5 | **F** (out 1) |\n| 8 | 3 | 2 | 4 | 6 | 3 | **F** (out 5) |\n| 9 | 4 | 2 | 4 | 6 | 3 | hit |\n| 10 | 6 | 2 | 4 | 6 | 3 | hit |\n| 11 | 1 | 1 | 4 | 6 | 3 | **F** (out 2) |\n| 12 | 5 | 1 | 5 | 6 | 3 | **F** (out 4) |\n| 13 | 2 | 1 | 5 | 2 | 3 | **F** (out 6) |\n| 14 | 3 | 1 | 5 | 2 | 3 | hit |\n\nTotal = **11 faults**.\n\nFIFO trace with 5 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | F5 | Result |\n|---|---|---|---|---|---|---|---|\n| 1 | 4 | 4 | − | − | − | − | **F** |\n| 2 | 6 | 4 | 6 | − | − | − | **F** |\n| 3 | 1 | 4 | 6 | 1 | − | − | **F** |\n| 4 | 5 | 4 | 6 | 1 | 5 | − | **F** |\n| 5 | 2 | 4 | 6 | 1 | 5 | 2 | **F** |\n| 6 | 4 | 4 | 6 | 1 | 5 | 2 | hit |\n| 7 | 6 | 4 | 6 | 1 | 5 | 2 | hit |\n| 8 | 3 | 3 | 6 | 1 | 5 | 2 | **F** (out 4) |\n| 9 | 4 | 3 | 4 | 1 | 5 | 2 | **F** (out 6) |\n| 10 | 6 | 3 | 4 | 6 | 5 | 2 | **F** (out 1) |\n| 11 | 1 | 3 | 4 | 6 | 1 | 2 | **F** (out 5) |\n| 12 | 5 | 3 | 4 | 6 | 1 | 5 | **F** (out 2) |\n| 13 | 2 | 2 | 4 | 6 | 1 | 5 | **F** (out 3) |\n| 14 | 3 | 2 | 3 | 6 | 1 | 5 | **F** (out 4) |\n\nTotal = **12 faults**.\n\n| m | 1 | 2 | 3 | 4 | 5 | 6 | 7 |\n|---|---|---|---|---|---|---|---|\n| f(m) | 14 | 14 | 12 | **11** | **12** | 6 | 6 |\n\nOnly f(5) = 12 > f(4) = 11, so **m = 4**.\n\nThe string is the classic anomaly pattern a, b, c, d, e, a, b, f, a, b, c, d, e, f (here with a = 4, b = 6, c = 1, d = 5, e = 2, f = 3), which is anomalous between 4 and 5 frames, not between 3 and 4. With 5 frames, the reload of f (#8) evicts a. That starts a chain in which every later reference finds its page just evicted. With 4 frames the eviction order leaves a and b resident at #9 and #10.",
+      "trap": "Answering 3 because the textbook anomaly is between 3 and 4 frames; on this string f(3) = 12 > f(4) = 11."
+    },
+    {
+      "id": "t10-046",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "Belady's anomaly",
+        "FIFO",
+        "case analysis"
+      ],
+      "stem": "Consider the reference string\n\n2, x, 3, 1, 4, 2, 3, 5, 2, 3, 1, 4, 5\n\nwhere x is a page number. Frames are initially empty. For which values of x does **FIFO with 4 frames** cause **more** page faults than **FIFO with 3 frames**?",
+      "answer": [
+        "B",
+        "C"
+      ],
+      "explanation": "**Shortcut for x = 2 and x = 3.** Under FIFO a hit changes nothing (the queue is ordered by load time only). For x = 2 the reference to x immediately follows a reference to 2. For x = 3 it is immediately followed by a reference to 3. Either way that extra reference is a hit with both 3 and 4 frames (a page referenced at t − 1 is always still resident), and the extra 3 in the x = 3 case is likewise a hit. Deleting it leaves\n\n2, 3, 1, 4, 2, 3, 5, 2, 3, 1, 4, 5\n\nwhich is the classic anomaly string 1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5 with pages renamed (1→2, 2→3, 3→1). FIFO gives **9 faults with 3 frames and 10 with 4**, so both x = 2 and x = 3 show the anomaly.\n\n**x = 1** (an early extra reference to 1 changes the load order):\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | **F** |\n| 2 | 1 | 2 | 1 | − | **F** |\n| 3 | 3 | 2 | 1 | 3 | **F** |\n| 4 | 1 | 2 | 1 | 3 | hit |\n| 5 | 4 | 4 | 1 | 3 | **F** (out 2) |\n| 6 | 2 | 4 | 2 | 3 | **F** (out 1) |\n| 7 | 3 | 4 | 2 | 3 | hit |\n| 8 | 5 | 4 | 2 | 5 | **F** (out 3) |\n| 9 | 2 | 4 | 2 | 5 | hit |\n| 10 | 3 | 3 | 2 | 5 | **F** (out 4) |\n| 11 | 1 | 3 | 1 | 5 | **F** (out 2) |\n| 12 | 4 | 3 | 1 | 4 | **F** (out 5) |\n| 13 | 5 | 5 | 1 | 4 | **F** (out 3) |\n\nTotal = **10 faults**.\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | − | **F** |\n| 2 | 1 | 2 | 1 | − | − | **F** |\n| 3 | 3 | 2 | 1 | 3 | − | **F** |\n| 4 | 1 | 2 | 1 | 3 | − | hit |\n| 5 | 4 | 2 | 1 | 3 | 4 | **F** |\n| 6 | 2 | 2 | 1 | 3 | 4 | hit |\n| 7 | 3 | 2 | 1 | 3 | 4 | hit |\n| 8 | 5 | 5 | 1 | 3 | 4 | **F** (out 2) |\n| 9 | 2 | 5 | 2 | 3 | 4 | **F** (out 1) |\n| 10 | 3 | 5 | 2 | 3 | 4 | hit |\n| 11 | 1 | 5 | 2 | 1 | 4 | **F** (out 3) |\n| 12 | 4 | 5 | 2 | 1 | 4 | hit |\n| 13 | 5 | 5 | 2 | 1 | 4 | hit |\n\nTotal = **7 faults**.\n\n10 vs 7: no anomaly.\n\n**x = 5** (5 is loaded early, a new page at that point):\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | **F** |\n| 2 | 5 | 2 | 5 | − | **F** |\n| 3 | 3 | 2 | 5 | 3 | **F** |\n| 4 | 1 | 1 | 5 | 3 | **F** (out 2) |\n| 5 | 4 | 1 | 4 | 3 | **F** (out 5) |\n| 6 | 2 | 1 | 4 | 2 | **F** (out 3) |\n| 7 | 3 | 3 | 4 | 2 | **F** (out 1) |\n| 8 | 5 | 3 | 5 | 2 | **F** (out 4) |\n| 9 | 2 | 3 | 5 | 2 | hit |\n| 10 | 3 | 3 | 5 | 2 | hit |\n| 11 | 1 | 3 | 5 | 1 | **F** (out 2) |\n| 12 | 4 | 4 | 5 | 1 | **F** (out 3) |\n| 13 | 5 | 4 | 5 | 1 | hit |\n\nTotal = **10 faults**.\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | − | **F** |\n| 2 | 5 | 2 | 5 | − | − | **F** |\n| 3 | 3 | 2 | 5 | 3 | − | **F** |\n| 4 | 1 | 2 | 5 | 3 | 1 | **F** |\n| 5 | 4 | 4 | 5 | 3 | 1 | **F** (out 2) |\n| 6 | 2 | 4 | 2 | 3 | 1 | **F** (out 5) |\n| 7 | 3 | 4 | 2 | 3 | 1 | hit |\n| 8 | 5 | 4 | 2 | 5 | 1 | **F** (out 3) |\n| 9 | 2 | 4 | 2 | 5 | 1 | hit |\n| 10 | 3 | 4 | 2 | 5 | 3 | **F** (out 1) |\n| 11 | 1 | 1 | 2 | 5 | 3 | **F** (out 4) |\n| 12 | 4 | 1 | 4 | 5 | 3 | **F** (out 2) |\n| 13 | 5 | 1 | 4 | 5 | 3 | hit |\n\nTotal = **10 faults**.\n\n10 vs 10: no anomaly.\n\nSo the anomaly appears exactly for **x = 2 and x = 3**. A one-page change elsewhere in the string removes it (x = 4 also gives 10 vs 7).",
+      "options": [
+        "x = 1",
+        "x = 2",
+        "x = 3",
+        "x = 5"
+      ],
+      "option_feedback": [
+        "False: 10 faults with 3 frames, 7 with 4. Loading 1 early changes the FIFO order in favour of the larger memory.",
+        "True: the second reference is a hit, so the string behaves like the classic anomaly string (9 vs 10).",
+        "True: the following reference to 3 becomes a hit, again reducing to the classic anomaly string (9 vs 10).",
+        "False: 10 faults with both 3 and 4 frames."
+      ],
+      "trap": "Tracing blindly instead of noticing that a repeated adjacent reference is a hit and leaves FIFO's state unchanged, or assuming the anomaly survives any change to the string."
+    },
+    {
+      "id": "t10-047",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "Belady's anomaly",
+        "stack algorithm",
+        "FIFO"
+      ],
+      "stem": "Which of the following statements are **true**?",
+      "options": [
+        "For every reference string, FIFO with 4 frames causes more faults than FIFO with 3 frames",
+        "For LRU, the number of faults with n + 1 frames is never more than with n frames",
+        "The Optimal algorithm can exhibit Belady's anomaly when the page size is increased",
+        "If the number of frames is at least the number of distinct pages in the string, no algorithm can show Belady's anomaly when frames are added further"
+      ],
+      "answer": [
+        "B",
+        "D"
+      ],
+      "explanation": "- **A — false.** FIFO shows the anomaly only for *some* strings; for most strings (e.g. any string with at most n distinct pages, or a sequential scan) more frames do not hurt.\n- **B — true.** For a stack algorithm the resident set with n frames is always contained in that with n + 1 frames, so every hit with n frames is a hit with n + 1 frames.\n- **C — false.** Belady's anomaly concerns the *number of frames*, not the page size; and OPT is a stack algorithm anyway.\n- **D — true.** With n ≥ number of distinct pages, every algorithm incurs exactly the compulsory faults, so adding frames beyond that changes nothing — the anomaly needs fewer frames than distinct pages.",
+      "option_feedback": [
+        "False — only for specific strings.",
+        "True — inclusion property.",
+        "False — OPT is a stack algorithm; and the anomaly is about frame count.",
+        "True — only compulsory faults remain."
+      ]
+    },
+    {
+      "id": "t10-048",
+      "subtopic": "beladys-anomaly",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "Belady's anomaly",
+        "FIFO",
+        "reference string analysis"
+      ],
+      "stem": "For which of the following reference strings does **FIFO** cause **more** page faults with **4 frames** than with **3 frames** (frames initially empty in both cases)?",
+      "options": [
+        "3, 1, 4, 2, 3, 1, 5, 1, 3, 5, 6, 1, 2, 5",
+        "1, 2, 3, 4, 2, 1, 5, 2, 1, 3, 4, 5",
+        "1, 2, 3, 1, 4, 1, 2, 5, 1, 2, 3, 4, 5",
+        "1, 2, 3, 4, 1, 2, 5, 1, 2, 5, 3, 4"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "**A: 3, 1, 4, 2, 3, 1, 5, 1, 3, 5, 6, 1, 2, 5** → 3 frames: 9, 4 frames: 10 — **anomaly**\n\n3 frames:\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 3 | 3 | − | − | **F** |\n| 2 | 1 | 3 | 1 | − | **F** |\n| 3 | 4 | 3 | 1 | 4 | **F** |\n| 4 | 2 | 2 | 1 | 4 | **F** (out 3) |\n| 5 | 3 | 2 | 3 | 4 | **F** (out 1) |\n| 6 | 1 | 2 | 3 | 1 | **F** (out 4) |\n| 7 | 5 | 5 | 3 | 1 | **F** (out 2) |\n| 8 | 1 | 5 | 3 | 1 | hit |\n| 9 | 3 | 5 | 3 | 1 | hit |\n| 10 | 5 | 5 | 3 | 1 | hit |\n| 11 | 6 | 5 | 6 | 1 | **F** (out 3) |\n| 12 | 1 | 5 | 6 | 1 | hit |\n| 13 | 2 | 5 | 6 | 2 | **F** (out 1) |\n| 14 | 5 | 5 | 6 | 2 | hit |\n\nTotal = **9 faults** (6 compulsory + 3 replacement), 5 hits.\n\n4 frames:\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 3 | 3 | − | − | − | **F** |\n| 2 | 1 | 3 | 1 | − | − | **F** |\n| 3 | 4 | 3 | 1 | 4 | − | **F** |\n| 4 | 2 | 3 | 1 | 4 | 2 | **F** |\n| 5 | 3 | 3 | 1 | 4 | 2 | hit |\n| 6 | 1 | 3 | 1 | 4 | 2 | hit |\n| 7 | 5 | 5 | 1 | 4 | 2 | **F** (out 3) |\n| 8 | 1 | 5 | 1 | 4 | 2 | hit |\n| 9 | 3 | 5 | 3 | 4 | 2 | **F** (out 1) |\n| 10 | 5 | 5 | 3 | 4 | 2 | hit |\n| 11 | 6 | 5 | 3 | 6 | 2 | **F** (out 4) |\n| 12 | 1 | 5 | 3 | 6 | 1 | **F** (out 2) |\n| 13 | 2 | 2 | 3 | 6 | 1 | **F** (out 5) |\n| 14 | 5 | 2 | 5 | 6 | 1 | **F** (out 3) |\n\nTotal = **10 faults** (6 compulsory + 4 replacement), 4 hits.\n\n**B: 1, 2, 3, 4, 2, 1, 5, 2, 1, 3, 4, 5** → 3 frames: 10, 4 frames: 6 — no anomaly\n\n3 frames:\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 4 | 4 | 2 | 3 | **F** (out 1) |\n| 5 | 2 | 4 | 2 | 3 | hit |\n| 6 | 1 | 4 | 1 | 3 | **F** (out 2) |\n| 7 | 5 | 4 | 1 | 5 | **F** (out 3) |\n| 8 | 2 | 2 | 1 | 5 | **F** (out 4) |\n| 9 | 1 | 2 | 1 | 5 | hit |\n| 10 | 3 | 2 | 3 | 5 | **F** (out 1) |\n| 11 | 4 | 2 | 3 | 4 | **F** (out 5) |\n| 12 | 5 | 5 | 3 | 4 | **F** (out 2) |\n\nTotal = **10 faults** (5 compulsory + 5 replacement), 2 hits.\n\n4 frames:\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 5 | 2 | 1 | 2 | 3 | 4 | hit |\n| 6 | 1 | 1 | 2 | 3 | 4 | hit |\n| 7 | 5 | 5 | 2 | 3 | 4 | **F** (out 1) |\n| 8 | 2 | 5 | 2 | 3 | 4 | hit |\n| 9 | 1 | 5 | 1 | 3 | 4 | **F** (out 2) |\n| 10 | 3 | 5 | 1 | 3 | 4 | hit |\n| 11 | 4 | 5 | 1 | 3 | 4 | hit |\n| 12 | 5 | 5 | 1 | 3 | 4 | hit |\n\nTotal = **6 faults** (5 compulsory + 1 replacement), 6 hits.\n\n**C: 1, 2, 3, 1, 4, 1, 2, 5, 1, 2, 3, 4, 5** → 3 frames: 9, 4 frames: 10 — **anomaly**\n\n3 frames:\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 1 | 1 | 2 | 3 | hit |\n| 5 | 4 | 4 | 2 | 3 | **F** (out 1) |\n| 6 | 1 | 4 | 1 | 3 | **F** (out 2) |\n| 7 | 2 | 4 | 1 | 2 | **F** (out 3) |\n| 8 | 5 | 5 | 1 | 2 | **F** (out 4) |\n| 9 | 1 | 5 | 1 | 2 | hit |\n| 10 | 2 | 5 | 1 | 2 | hit |\n| 11 | 3 | 5 | 3 | 2 | **F** (out 1) |\n| 12 | 4 | 5 | 3 | 4 | **F** (out 2) |\n| 13 | 5 | 5 | 3 | 4 | hit |\n\nTotal = **9 faults** (5 compulsory + 4 replacement), 4 hits.\n\n4 frames:\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 1 | 1 | 2 | 3 | − | hit |\n| 5 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 6 | 1 | 1 | 2 | 3 | 4 | hit |\n| 7 | 2 | 1 | 2 | 3 | 4 | hit |\n| 8 | 5 | 5 | 2 | 3 | 4 | **F** (out 1) |\n| 9 | 1 | 5 | 1 | 3 | 4 | **F** (out 2) |\n| 10 | 2 | 5 | 1 | 2 | 4 | **F** (out 3) |\n| 11 | 3 | 5 | 1 | 2 | 3 | **F** (out 4) |\n| 12 | 4 | 4 | 1 | 2 | 3 | **F** (out 5) |\n| 13 | 5 | 4 | 5 | 2 | 3 | **F** (out 1) |\n\nTotal = **10 faults** (5 compulsory + 5 replacement), 3 hits.\n\n**D: 1, 2, 3, 4, 1, 2, 5, 1, 2, 5, 3, 4** → 3 frames: 9, 4 frames: 9 — no anomaly\n\n3 frames:\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | **F** |\n| 4 | 4 | 4 | 2 | 3 | **F** (out 1) |\n| 5 | 1 | 4 | 1 | 3 | **F** (out 2) |\n| 6 | 2 | 4 | 1 | 2 | **F** (out 3) |\n| 7 | 5 | 5 | 1 | 2 | **F** (out 4) |\n| 8 | 1 | 5 | 1 | 2 | hit |\n| 9 | 2 | 5 | 1 | 2 | hit |\n| 10 | 5 | 5 | 1 | 2 | hit |\n| 11 | 3 | 5 | 3 | 2 | **F** (out 1) |\n| 12 | 4 | 5 | 3 | 4 | **F** (out 2) |\n\nTotal = **9 faults** (5 compulsory + 4 replacement), 3 hits.\n\n4 frames:\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 1 | 1 | − | − | − | **F** |\n| 2 | 2 | 1 | 2 | − | − | **F** |\n| 3 | 3 | 1 | 2 | 3 | − | **F** |\n| 4 | 4 | 1 | 2 | 3 | 4 | **F** |\n| 5 | 1 | 1 | 2 | 3 | 4 | hit |\n| 6 | 2 | 1 | 2 | 3 | 4 | hit |\n| 7 | 5 | 5 | 2 | 3 | 4 | **F** (out 1) |\n| 8 | 1 | 5 | 1 | 3 | 4 | **F** (out 2) |\n| 9 | 2 | 5 | 1 | 2 | 4 | **F** (out 3) |\n| 10 | 5 | 5 | 1 | 2 | 4 | hit |\n| 11 | 3 | 5 | 1 | 2 | 3 | **F** (out 4) |\n| 12 | 4 | 4 | 1 | 2 | 3 | **F** (out 5) |\n\nTotal = **9 faults** (5 compulsory + 4 replacement), 3 hits.\n\n**Cross-check without recounting:** faults(4) − faults(3) = (references that hit with 3 frames but fault with 4) − (references that hit with 4 but fault with 3).\n\n| String | hit₃ & fault₄ | hit₄ & fault₃ | difference |\n|---|---|---|---|\n| A | #9, #12, #14 | #5, #6 | +1 |\n| B | #9 | #6, #8, #10, #11, #12 | −4 |\n| C | #9, #10, #13 | #6, #7 | +1 |\n| D | #8, #9 | #5, #6 | 0 |\n\nOnly A and C get worse with the extra frame. Note that D differs from the classic anomaly string only in its tail, yet the anomaly disappears — whether FIFO is anomalous depends on the exact string.",
+      "option_feedback": [
+        "Anomaly: 9 → 10.",
+        "No: 10 → 6 — the extra frame helps a lot.",
+        "Anomaly: 9 → 10 (the classic string with an early extra reuse of page 1).",
+        "No: 9 → 9 — neutral."
+      ]
+    },
+    {
+      "id": "t10-049",
+      "subtopic": "thrashing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "thrashing"
+      ],
+      "stem": "A process is said to be **thrashing** when",
+      "options": [
+        "it is blocked waiting for a semaphore held by another process",
+        "two processes keep pre-empting each other on the CPU",
+        "its page table no longer fits in one page",
+        "it spends more time servicing page faults than executing"
+      ],
+      "answer": "D",
+      "explanation": "Thrashing: the process does not have enough frames to hold the pages it is actively using, so it faults, evicts a page it will need almost immediately, faults again, and so on. It spends more time **paging** (waiting for the paging device) than executing; CPU utilisation collapses.",
+      "option_feedback": [
+        "That is ordinary blocking (or possibly deadlock), not thrashing.",
+        "That is a scheduling issue, not paging.",
+        "Unrelated — handled by multilevel paging.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t10-050",
+      "subtopic": "thrashing",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "degree of multiprogramming",
+        "CPU utilisation"
+      ],
+      "stem": "As the **degree of multiprogramming** is increased in a demand-paged system, CPU utilisation typically",
+      "options": [
+        "rises steadily and saturates at 100%",
+        "rises to a maximum and then falls sharply",
+        "falls steadily from the start",
+        "stays constant because the CPU is time-shared"
+      ],
+      "answer": "B",
+      "explanation": "At first more processes mean more work ready to run, so utilisation rises. Beyond some point the processes' combined working sets exceed physical memory; each process gets too few frames, page faults soar, processes queue at the paging device, and CPU utilisation **drops sharply** — thrashing. (A naive scheduler that reacts to low utilisation by admitting even more processes makes it worse.)",
+      "option_feedback": [
+        "Ignores thrashing — memory runs out before the CPU does.",
+        "Correct: the classic thrashing curve.",
+        "Initially more processes do help.",
+        "Utilisation depends on whether processes are runnable, which paging affects heavily."
+      ]
+    },
+    {
+      "id": "t10-051",
+      "subtopic": "thrashing",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "working set",
+        "window size"
+      ],
+      "stem": "In the working-set model with window Δ, which statements are correct?",
+      "options": [
+        "If Δ is too small, the working set will not cover the entire current locality",
+        "If Δ is too large, the working set under-estimates the frames the process needs",
+        "When a process moves into a smaller locality, its working-set size can decrease",
+        "Δ is measured in page faults rather than in references"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "WS(t, Δ) = the set of pages referenced in the most recent Δ references.\n\n- Δ **too small**: the window does not cover the whole current locality, so pages that are still needed are dropped → extra faults.\n- Δ **too large**: the window spans several localities, so the working set over-estimates real need and frames are wasted (fewer processes can be admitted).\n- Δ = ∞: the working set is every page the process has ever touched.\n- When the process moves to a smaller locality, old pages leave the window and the WSS **shrinks**; Δ is measured in references (virtual time), not faults.",
+      "option_feedback": [
+        "Correct.",
+        "Reversed — a large Δ over-estimates (overlapping localities).",
+        "Correct — pages of the old locality drop out of the window.",
+        "Δ is a number of memory references (virtual time)."
+      ]
+    },
+    {
+      "id": "t10-052",
+      "subtopic": "thrashing",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "working set",
+        "working-set size"
+      ],
+      "stem": "A process makes the page references below (time t = 1 is the first reference):\n\n1, 3, 5, 3, 2, 2, 4, 3, 1, 6, 6, 6, 6, 5, 6, 7, 6, 5, 7, 5\n\nWith window **Δ = 5**, the working set at time t is the set of distinct pages among references t − 4, …, t. What is the **working-set size at t = 10**?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "References at t = 6, 7, 8, 9, 10: 2, 4, 3, 1, 6.\n\nDistinct pages: {1, 2, 3, 4, 6} → **WSS = 5**.\n\n(At t = 15 the window is 6, 6, 6, 5, 6 → {5, 6}, WSS = 2: the process has moved into a smaller locality.)",
+      "trap": "Using a window of 5 references ending at t = 9 (or starting at t = 10)."
+    },
+    {
+      "id": "t10-053",
+      "subtopic": "thrashing",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "thrashing remedies",
+        "working set",
+        "PFF"
+      ],
+      "stem": "A system is thrashing. Which of the following actions help to **reduce** thrashing?",
+      "options": [
+        "Suspend one or more processes",
+        "Increase the degree of multiprogramming to keep the CPU busy",
+        "Allocate frames using the working-set model or page-fault frequency",
+        "Use local instead of global page replacement"
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "explanation": "- **A — helps.** Suspending (swapping out) a process frees its frames for the others, lowering the degree of multiprogramming until Σ WSSᵢ ≤ available frames.\n- **B — makes it worse.** Admitting more processes is exactly how the OS slips into thrashing (it misreads low CPU utilisation as idle CPU).\n- **C — helps.** Working-set or page-fault-frequency control allocates frames according to actual need and suspends processes when demand exceeds supply.\n- **D — helps.** With local replacement a thrashing process cannot steal frames from others, so thrashing is contained instead of spreading (it does not cure that process, but reduces system-wide thrashing).",
+      "option_feedback": [
+        "Helps — frees frames.",
+        "Worsens thrashing.",
+        "Helps — allocation follows locality.",
+        "Helps — limits the spread."
+      ]
+    },
+    {
+      "id": "t10-054",
+      "subtopic": "thrashing",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "page-fault frequency",
+        "PFF"
+      ],
+      "stem": "Under **page-fault frequency (PFF)** control, the OS sets an upper and a lower bound on each process's fault rate. If a process's measured fault rate is **above the upper bound** and there are **no free frames**, the OS should",
+      "options": [
+        "take frames away from this process",
+        "do nothing; the rate will settle by itself",
+        "suspend some process and give its frames to processes that need them",
+        "increase the degree of multiprogramming"
+      ],
+      "answer": "C",
+      "explanation": "PFF: rate above the upper bound → the process needs more frames; rate below the lower bound → it has more than it needs, so take frames away. If a process needs more frames but none are free (and no other process is below its lower bound), the right move is to **suspend a process** and redistribute its frames; otherwise the system thrashes.",
+      "option_feedback": [
+        "That is the action for a rate below the lower bound.",
+        "A high fault rate with no free frames is the onset of thrashing.",
+        "Correct.",
+        "Would make the shortage worse."
+      ]
+    },
+    {
+      "id": "t10-055",
+      "subtopic": "thrashing",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "working set",
+        "total demand",
+        "thrashing"
+      ],
+      "stem": "Four processes run under the working-set model with **Δ = 6**. The last six page references of each process are:\n\n| Process | Last 6 references (oldest → newest) |\n|---|---|\n| P1 | 3, 4, 3, 4, 4, 3 |\n| P2 | 7, 1, 2, 7, 5, 1 |\n| P3 | 9, 9, 8, 6, 8, 6 |\n| P4 | 2, 5, 2, 0, 1, 3 |\n\n(Page numbers are private to each process.) The system has **12 frames** available. Which statements are **true**?",
+      "options": [
+        "The total demand D = Σ WSSᵢ is 14",
+        "The working-set policy must suspend at least one process to avoid thrashing",
+        "Suspending P1 alone brings the demand within the available frames",
+        "The working-set size of P2 is 6"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "| Process | Working set | WSS |\n|---|---|---|\n| P1 | {3, 4} | 2 |\n| P2 | {1, 2, 5, 7} | 4 |\n| P3 | {6, 8, 9} | 3 |\n| P4 | {0, 1, 2, 3, 5} | 5 |\n\nD = 2 + 4 + 3 + 5 = **14**.\n\n- **A — true:** D = 14.\n- **B — true:** D > 12 frames, so the processes cannot all keep their working sets; the working-set policy suspends a process rather than let the system thrash.\n- **C — true:** suspending P1 leaves D = 4 + 3 + 5 = 12 ≤ 12 — just enough (suspending P4 would leave 9).\n- **D — false:** P2 made 6 references but only to 4 distinct pages; WSS counts distinct pages.",
+      "option_feedback": [
+        "True — 2 + 4 + 3 + 5.",
+        "True — 14 > 12.",
+        "True — 14 − 2 = 12 ≤ 12.",
+        "False — 4 distinct pages {1, 2, 5, 7}."
+      ],
+      "trap": "Counting repeated references (6 per process, D = 24) instead of distinct pages."
+    },
+    {
+      "id": "t10-056",
+      "subtopic": "thrashing",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "page-fault frequency",
+        "PFF"
+      ],
+      "stem": "A process controlled by **page-fault frequency** starts with **10 frames**. The OS measures its fault rate over consecutive intervals of 1000 references each. After every interval: if the rate is **above 0.05** faults/reference, the process gets **2 more** frames; if it is **below 0.01**, it loses **1** frame; otherwise its allocation is unchanged. (Free frames are always available.)\n\nFaults observed in the seven intervals: 62, 48, 55, 9, 7, 30, 4.\n\nHow many frames does the process hold after the seventh interval?",
+      "answer": {
+        "min": 11,
+        "max": 11
+      },
+      "explanation": "| Interval | Faults | Rate | Action | Frames after |\n|---|---|---|---|---|\n| 1 | 62 | 0.062 | > 0.05 → +2 | 12 |\n| 2 | 48 | 0.048 | in band | 12 |\n| 3 | 55 | 0.055 | > 0.05 → +2 | 14 |\n| 4 | 9 | 0.009 | < 0.01 → −1 | 13 |\n| 5 | 7 | 0.007 | < 0.01 → −1 | 12 |\n| 6 | 30 | 0.030 | in band | 12 |\n| 7 | 4 | 0.004 | < 0.01 → −1 | **11** |\n\nFinal allocation: **11 frames**.",
+      "trap": "Treating 0.048 as above the bound, or reacting to the rate before the interval ends."
+    },
+    {
+      "id": "t10-057",
+      "subtopic": "thrashing",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "working-set model",
+        "LRU",
+        "inclusion property"
+      ],
+      "stem": "Definitions (memory initially empty in every case):\n\n- **Pure working-set replacement** with window Δ: the reference at time t is a hit iff its page occurs among the references at times t − Δ, …, t − 1; otherwise it is a page fault.\n- WS(t, Δ) is the set of distinct pages among the references at times t − Δ + 1, …, t, and **m\\*** = max over all t of |WS(t, Δ)|.\n- **LRU** runs with a fixed number of frames.\n\nWhich statements hold for **every** reference string and every Δ ≥ 1?",
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "**A: true.** Suppose the reference at t hits under working-set replacement: its page p was last used within references t − Δ, …, t − 1. Every page referenced since then lies in WS(t − 1, Δ), which has at most m\\* pages, including p. So fewer than m\\* distinct other pages were referenced since p's last use. LRU with m\\* frames holds the m\\* most recently used pages, so p is resident and the reference hits under LRU as well. Every WS hit is an LRU(m\\*) hit, hence LRU(m\\*) faults ≤ WS(Δ) faults.\n\n**B: true.** If p occurs among the last Δ references, it also occurs among the last Δ + 1. Every hit with window Δ is a hit with window Δ + 1, so working-set replacement has no Belady-type anomaly.\n\n**C: false.** Counter-example 1, 2, 2, 1 with Δ = 2:\n\n| t | ref | previous 2 refs | WS result | WS(t, 2) |\n|---|---|---|---|---|\n| 1 | 1 | — | F | {1} |\n| 2 | 2 | 1 | F | {1, 2} |\n| 3 | 2 | 1, 2 | hit | {2} |\n| 4 | 1 | 2, 2 | F | {1, 2} |\n\nWS faults = 3 and m\\* = 2. LRU with 2 frames: F, F, hit, hit = 2 faults. The inequality in A can be strict.\n\n**D: false.** The same example: WS with Δ = 2 gives 3 faults, LRU with 2 frames gives 2. The window counts *references*; LRU's frames count *distinct pages*. Repeated references (2, 2) push a page out of the window while it would still be resident under LRU. (The reverse inequality, LRU(Δ) ≤ WS(Δ), is the one that always holds.)",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "options": [
+        "LRU with m* frames causes no more page faults than pure working-set replacement with window Δ",
+        "Pure working-set replacement with window Δ + 1 causes no more page faults than with window Δ",
+        "LRU with m* frames causes exactly as many page faults as pure working-set replacement with window Δ",
+        "Pure working-set replacement with window Δ causes no more page faults than LRU with Δ frames"
+      ],
+      "option_feedback": [
+        "True: every working-set hit has at most m* distinct pages in the window, so it is also a hit for LRU with m* frames.",
+        "True: the window with Δ + 1 contains the window with Δ, so hits are preserved; no Belady anomaly.",
+        "False: 1, 2, 2, 1 with Δ = 2 gives 3 WS faults but 2 LRU faults with m* = 2 frames.",
+        "False: the window counts references, not distinct pages; on 1, 2, 2, 1 WS(Δ = 2) faults 3 times and LRU(2) only twice."
+      ],
+      "trap": "Treating a window of Δ references as if it held Δ distinct pages (choosing D), or assuming that equal memory means equal faults (choosing C)."
+    },
+    {
+      "id": "t10-058",
+      "subtopic": "thrashing",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "working set",
+        "average working-set size"
+      ],
+      "stem": "A process makes the page references below (t = 1 is the first reference):\n\n1, 3, 5, 3, 2, 2, 4, 3, 1, 6, 6, 6, 6, 5, 6, 7, 6, 5, 7, 5\n\nWith window **Δ = 4**, WS(t) is the set of distinct pages among the references at times max(1, t − 3), …, t (fewer than 4 references are used for t < 4). What is the **average working-set size** over t = 1, 2, …, 20? (Answer correct to one decimal place.)",
+      "answer": {
+        "min": 2.7,
+        "max": 2.7
+      },
+      "explanation": "| t | ref | window | WS(t) | WSS |\n|---|---|---|---|---|\n| 1 | 1 | 1 | {1} | 1 |\n| 2 | 3 | 1, 3 | {1, 3} | 2 |\n| 3 | 5 | 1, 3, 5 | {1, 3, 5} | 3 |\n| 4 | 3 | 1, 3, 5, 3 | {1, 3, 5} | 3 |\n| 5 | 2 | 3, 5, 3, 2 | {2, 3, 5} | 3 |\n| 6 | 2 | 5, 3, 2, 2 | {2, 3, 5} | 3 |\n| 7 | 4 | 3, 2, 2, 4 | {2, 3, 4} | 3 |\n| 8 | 3 | 2, 2, 4, 3 | {2, 3, 4} | 3 |\n| 9 | 1 | 2, 4, 3, 1 | {1, 2, 3, 4} | 4 |\n| 10 | 6 | 4, 3, 1, 6 | {1, 3, 4, 6} | 4 |\n| 11 | 6 | 3, 1, 6, 6 | {1, 3, 6} | 3 |\n| 12 | 6 | 1, 6, 6, 6 | {1, 6} | 2 |\n| 13 | 6 | 6, 6, 6, 6 | {6} | 1 |\n| 14 | 5 | 6, 6, 6, 5 | {5, 6} | 2 |\n| 15 | 6 | 6, 6, 5, 6 | {5, 6} | 2 |\n| 16 | 7 | 6, 5, 6, 7 | {5, 6, 7} | 3 |\n| 17 | 6 | 5, 6, 7, 6 | {5, 6, 7} | 3 |\n| 18 | 5 | 6, 7, 6, 5 | {5, 6, 7} | 3 |\n| 19 | 7 | 7, 6, 5, 7 | {5, 6, 7} | 3 |\n| 20 | 5 | 6, 5, 7, 5 | {5, 6, 7} | 3 |\n\nSum = 1 + 2 + 3 + 3 + 3 + 3 + 3 + 3 + 4 + 4 + 3 + 2 + 1 + 2 + 2 + 3 + 3 + 3 + 3 + 3 = 54.\n\nAverage = 54 / 20 = **2.7**.\n\nThe average WSS is what the working-set policy would reserve for this process on average; note the dip to 1 at t = 13 (four consecutive references to page 6) and the jump to 4 at t = 9–10 while the process moves from locality {1, 2, 3, 4, 5} to {5, 6, 7}.",
+      "trap": "Using a window that excludes the current reference, or dividing by 17 (ignoring the first three instants)."
+    },
+    {
+      "id": "t10-059",
+      "subtopic": "thrashing",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "working-set replacement",
+        "window size",
+        "space–fault trade-off"
+      ],
+      "stem": "A process is managed by **pure working-set replacement** with window Δ: the reference at time t is a page fault iff its page does **not** occur among the references at times t − Δ, …, t − 1 (memory initially empty). Its working set WS(t, Δ) is the set of distinct pages among the references at times t − Δ + 1, …, t.\n\nReference string (t = 1, 2, …, 20):\n\n3, 1, 3, 2, 1, 3, 4, 1, 4, 2, 5, 2, 4, 5, 6, 5, 2, 6, 5, 1\n\nThe process may never hold more than **4 frames**, so only windows Δ with |WS(t, Δ)| ≤ 4 for **all** t are allowed. Over all allowed Δ, what is the **minimum** number of page faults?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "**Two monotonicity facts reduce the search to one Δ.**\n- WS(t, Δ) ⊆ WS(t, Δ + 1), so the peak working-set size never decreases as Δ grows. The allowed Δ form a range 1, …, Δ\\*.\n- A hit with window Δ is a hit with window Δ + 1, so the number of faults never increases as Δ grows. The minimum is reached at Δ\\*.\n\n**Find Δ\\* (peak WSS).**\n- Δ = 5: no 5 consecutive references contain 5 distinct pages (e.g. t = 7…11 is 4, 1, 4, 2, 5 → {1, 2, 4, 5}). Peak = 4: allowed.\n- Δ = 6: references t = 6…11 are 3, 4, 1, 4, 2, 5 → {1, 2, 3, 4, 5}, size 5: not allowed.\n\nSo Δ\\* = 5.\n\n**Faults with Δ = 5 (reuse gaps).** A re-reference hits iff the gap to the previous use of the same page is ≤ Δ.\n\n| t | page | gap |\n|---|---|---|\n| 3 | 3 | 2 |\n| 5 | 1 | 3 |\n| 6 | 3 | 3 |\n| 8 | 1 | 3 |\n| 9 | 4 | 2 |\n| 10 | 2 | **6** |\n| 12 | 2 | 2 |\n| 13 | 4 | 4 |\n| 14 | 5 | 3 |\n| 16 | 5 | 2 |\n| 17 | 2 | 5 |\n| 18 | 6 | 3 |\n| 19 | 5 | 3 |\n| 20 | 1 | **12** |\n\n6 distinct pages give 6 compulsory faults (t = 1, 2, 4, 7, 11, 15). Only the gaps of 6 and 12 exceed 5. Faults = 6 + 2 = **8**.\n\n(Δ = 4 is also allowed but gives 9 faults, since the gap of 5 at t = 17 also faults. Δ = 6 would give 7 but needs 5 frames.)",
+      "trap": "Assuming the largest allowed window is Δ = 4 because the frame limit is 4. The window counts references, not pages, and Δ = 5 still never holds more than 4 distinct pages."
+    },
+    {
+      "id": "t10-060",
+      "subtopic": "demand-paging",
+      "also_tests": [
+        "tlb-and-emat",
+        "multilevel-paging"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "effective access time",
+        "two-level page table",
+        "instruction restart",
+        "dirty victim"
+      ],
+      "stem": "A demand-paged system has a TLB and a **two-level** page table; both levels of the page table are always resident in memory. TLB lookup = 10 ns, memory access = 100 ns. 90% of references hit in the TLB. A fraction p of **all** references cause a page fault (every faulting reference is a TLB miss); the remaining TLB misses find the page resident.\n\nTiming rules:\n- TLB hit: TLB lookup + memory access.\n- TLB miss, page resident: TLB lookup + page-table walk + memory access.\n- Page fault: TLB lookup + page-table walk (which finds the page invalid) + fault service. Then the instruction is **restarted**, and the reference is repeated as a TLB miss with the page resident (the OS does not load the TLB).\n- Fault service: 8 ms if a free frame or a clean victim is used, 20 ms if the victim is dirty; 25% of faults have a dirty victim.\n\nThe effective access time must be **at most 200 ns**. If the fault rate is written as one fault per N references (p = 1/N), what is the **smallest integer N** that meets this?",
+      "answer": {
+        "min": 157146,
+        "max": 157146
+      },
+      "explanation": "**Per-case times.** A walk of a two-level table costs 2 memory accesses = 200 ns.\n\n| Case | Fraction | Time (ns) |\n|---|---|---|\n| TLB hit | 0.9 | 10 + 100 = 110 |\n| TLB miss, resident | 0.1 − p | 10 + 200 + 100 = 310 |\n| Page fault | p | (10 + 200) + S + (10 + 200 + 100) = 520 + S |\n\nAverage service time S = 0.75 × 8 + 0.25 × 20 = 6 + 5 = 11 ms = 11,000,000 ns, so a fault costs 11,000,520 ns.\n\nThe faulting references come **out of** the 10% TLB misses, so the second row is 0.1 − p, not 0.1.\n\n**EAT as a function of p.**\nEAT = 0.9 × 110 + (0.1 − p) × 310 + p × 11,000,520\n = 99 + 31 + p × (11,000,520 − 310)\n = 130 + 11,000,210 p\n\n**Constraint.** 130 + 11,000,210 p ≤ 200 ⟹ p ≤ 70 / 11,000,210 ⟹ N ≥ 11,000,210 / 70 = 157,145.86…\n\nSmallest integer N = **157,146**. Check: N = 157,146 gives EAT ≈ 199.99994 ns ≤ 200, and N = 157,145 gives ≈ 200.0004 ns > 200.\n\nCommon slips: ignoring the restart (N = 157,142), using 0.1 instead of 0.1 − p (N = 157,151), a one-level walk (N = 137,502), or forgetting the dirty victims (S = 8 ms, N = 114,289).",
+      "trap": "Treating the fault as costing only the service time, or forgetting that after a restart the reference pays the TLB miss and the two-level walk again. Also: subtracting nothing from the 10% TLB-miss share."
+    },
+    {
+      "id": "t10-061",
+      "subtopic": "page-faults",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 480,
+      "concepts": [
+        "array layout",
+        "rows straddling pages",
+        "LRU cyclic access"
+      ],
+      "stem": "```c\nint A[100][100];   /* 4-byte int, row-major, A[0][0] at the start of a page */\nfor (j = 0; j < 100; j++)\n    for (i = 0; i < 100; i++)\n        A[i][j] = 0;\n```\nPage size is **1 KB** (1024 bytes). The array gets **39 frames**, initially empty, with **LRU** replacement; code and loop variables never fault. How many page faults does the loop cause?",
+      "answer": {
+        "min": 640,
+        "max": 640
+      },
+      "explanation": "**Layout.** A row is 100 × 4 = 400 bytes, so rows do **not** align with pages. The array occupies 40,000 bytes = pages 0…39 (page 39 holds only bytes 39,936–39,999). Element A[i][j] is at byte 400i + 4j, in page ⌊(400i + 4j) / 1024⌋.\n\n**Which pages does column j touch?** Consecutive elements of a column are 400 bytes apart, so every 1024-byte page from 0 to 38 contains at least two of them: each column visits pages 0, 1, …, 38 in increasing order. Page 39 is reached only if A[99][j] lies in it: 39,600 + 4j ≥ 39,936 ⟺ **j ≥ 84**.\n- Columns 0…83 touch **39 pages** (0–38).\n- Columns 84…99 touch **40 pages** (0–39).\n\n**LRU with 39 frames.**\n- Column 0: 39 compulsory faults. Columns 1…83: the same 39 pages, all resident, so **0 faults**.\n- Column 84: pages 0–38 hit. Page 39 faults (1 fault) and evicts the LRU page. That page is page 0, used at the start of this column.\n- Column 85 onward: the cycle is now 40 pages long with only 39 frames. Under LRU each page needed next is exactly the one just evicted, so **all 40 page visits fault** in each of columns 85…99 (15 columns).\n\nTotal = 39 + 1 + 15 × 40 = 39 + 1 + 600 = **640**.\n\n(With 40 frames the answer would be 40; with 38 frames every column thrashes: 3916.)",
+      "trap": "Assuming every column touches all 40 pages (answer 100 × 40 = 4000 or 40 + 99 × 40), or that 39 frames are enough for the whole loop. Only the last 16 columns reach page 39, and the first of them costs just 1 fault."
+    },
+    {
+      "id": "t10-062",
+      "subtopic": "beladys-anomaly",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "inclusion property",
+        "FIFO",
+        "Belady's anomaly"
+      ],
+      "stem": "Let M(m, t) be the set of pages in memory right after the t-th reference when **FIFO** runs with m frames (initially empty). For the reference string\n\n2, 5, 1, 4, 2, 5, 3, 5, 2, 3, 6, 5, 4, 3\n\nfor how many values of t ∈ {1, …, 14} does the inclusion property **fail**, i.e. M(3, t) ⊄ M(4, t)?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "Run both traces side by side.\n\nFIFO trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | **F** |\n| 2 | 5 | 2 | 5 | − | **F** |\n| 3 | 1 | 2 | 5 | 1 | **F** |\n| 4 | 4 | 4 | 5 | 1 | **F** (out 2) |\n| 5 | 2 | 4 | 2 | 1 | **F** (out 5) |\n| 6 | 5 | 4 | 2 | 5 | **F** (out 1) |\n| 7 | 3 | 3 | 2 | 5 | **F** (out 4) |\n| 8 | 5 | 3 | 2 | 5 | hit |\n| 9 | 2 | 3 | 2 | 5 | hit |\n| 10 | 3 | 3 | 2 | 5 | hit |\n| 11 | 6 | 3 | 6 | 5 | **F** (out 2) |\n| 12 | 5 | 3 | 6 | 5 | hit |\n| 13 | 4 | 3 | 6 | 4 | **F** (out 5) |\n| 14 | 3 | 3 | 6 | 4 | hit |\n\nTotal = **9 faults**.\n\nFIFO trace with 4 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | F4 | Result |\n|---|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | − | **F** |\n| 2 | 5 | 2 | 5 | − | − | **F** |\n| 3 | 1 | 2 | 5 | 1 | − | **F** |\n| 4 | 4 | 2 | 5 | 1 | 4 | **F** |\n| 5 | 2 | 2 | 5 | 1 | 4 | hit |\n| 6 | 5 | 2 | 5 | 1 | 4 | hit |\n| 7 | 3 | 3 | 5 | 1 | 4 | **F** (out 2) |\n| 8 | 5 | 3 | 5 | 1 | 4 | hit |\n| 9 | 2 | 3 | 2 | 1 | 4 | **F** (out 5) |\n| 10 | 3 | 3 | 2 | 1 | 4 | hit |\n| 11 | 6 | 3 | 2 | 6 | 4 | **F** (out 1) |\n| 12 | 5 | 3 | 2 | 6 | 5 | **F** (out 4) |\n| 13 | 4 | 4 | 2 | 6 | 5 | **F** (out 3) |\n| 14 | 3 | 4 | 3 | 6 | 5 | **F** (out 2) |\n\nTotal = **10 faults**.\n\n**Compare the resident sets after each reference:**\n\n| t | M(3, t) | M(4, t) | M(3, t) \\ M(4, t) |\n|---|---|---|---|\n| 1–3 | equal | equal | ∅ |\n| 4 | {1, 4, 5} | {1, 2, 4, 5} | ∅ |\n| 5 | {1, 2, 4} | {1, 2, 4, 5} | ∅ |\n| 6 | {2, 4, 5} | {1, 2, 4, 5} | ∅ |\n| 7 | {2, 3, 5} | {1, 3, 4, 5} | **{2}** |\n| 8 | {2, 3, 5} | {1, 3, 4, 5} | **{2}** |\n| 9 | {2, 3, 5} | {1, 2, 3, 4} | **{5}** |\n| 10 | {2, 3, 5} | {1, 2, 3, 4} | **{5}** |\n| 11 | {3, 5, 6} | {2, 3, 4, 6} | **{5}** |\n| 12 | {3, 5, 6} | {2, 3, 5, 6} | ∅ |\n| 13 | {3, 4, 6} | {2, 4, 5, 6} | **{3}** |\n| 14 | {3, 4, 6} | {3, 4, 5, 6} | ∅ |\n\nInclusion fails at t = 7, 8, 9, 10, 11, 13: **6** instants.\n\nThe extra faults come from these gaps. A reference hits with 3 frames but faults with 4 exactly when it asks for a page in M(3, t − 1) \\ M(4, t − 1): #9 (page 2), #12 (page 5) and #14 (page 3). That is why FIFO gives 9 faults with 3 frames but 10 with 4. A stack algorithm (LRU, OPT) would have M(3, t) ⊆ M(4, t) at every t.",
+      "trap": "Comparing only the fault counts, or stopping at the first violation. The question counts every instant at which some page is resident with 3 frames but not with 4."
+    },
+    {
+      "id": "t10-063",
+      "subtopic": "thrashing",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "working set",
+        "degree of multiprogramming",
+        "paging-disk bottleneck"
+      ],
+      "stem": "A single-CPU system has **600 frames** for user processes, shared **equally** among n identical processes (each gets ⌊600 / n⌋ frames). Each process has a working set of **50 pages**.\n\n- A process holding ≥ 50 frames executes on average 10⁶ memory references between page faults.\n- A process holding < 50 frames executes on average only **5,000** references between faults.\n\nEach memory reference takes 100 ns of CPU time. Every fault is served by a single paging disk, one fault at a time, in **10 ms**. Ignore all other overheads.\n\nWhat is the largest n for which no process runs below its working set, and what is the **upper bound** on CPU utilisation when n is one larger than that?",
+      "options": [
+        "12 and 5%",
+        "12 and 50%",
+        "13 and 5%",
+        "12 and 95%"
+      ],
+      "answer": "A",
+      "explanation": "**Largest n without thrashing.** Each process needs ⌊600 / n⌋ ≥ 50 ⟹ n ≤ 12 (600 / 12 = 50 exactly). With n = 13 each gets ⌊600 / 13⌋ = 46 < 50 frames: every process runs below its working set.\n\n**n = 13: the paging disk is the bottleneck.** The disk can serve at most 1 fault per 10 ms = **100 faults per second**, however many processes wait. Each fault allows a process to run 5,000 references × 100 ns = **0.5 ms** of CPU work before its next fault. So the CPU can do at most\n\n100 faults/s × 0.5 ms = 50 ms of work per second ⟹ utilisation ≤ **5%**.\n\n(For comparison, at n = 12 a process runs 10⁶ × 100 ns = 100 ms between faults, and the disk handles each fault in 10 ms, so the CPU is almost never idle.) Adding the 13th process cuts throughput by a factor of about 20: this is the thrashing cliff.",
+      "option_feedback": [
+        "Correct: 600/12 = 50 frames each fits the working sets; at n = 13 the disk allows 100 faults/s × 0.5 ms = 5% CPU.",
+        "Uses 5 ms instead of 0.5 ms of CPU work per fault (5,000 × 100 ns = 0.5 ms).",
+        "With n = 13, ⌊600/13⌋ = 46 < 50, so the processes are already below their working sets.",
+        "This is roughly the utilisation without thrashing; with 46 frames each, the paging disk caps the CPU at 5%."
+      ],
+      "trap": "Thinking that more processes always keep the CPU busier. Once every process is below its working set, the paging disk's fault rate, not the CPU, limits throughput."
+    },
+    {
+      "id": "t10-064",
+      "subtopic": "thrashing",
+      "also_tests": [
+        "fifo-optimal-lru"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "working-set replacement",
+        "LRU",
+        "reuse distance"
+      ],
+      "stem": "Reference string (t = 1, 2, …, 20):\n\n2, 4, 2, 5, 4, 1, 2, 4, 5, 3, 5, 3, 6, 3, 5, 6, 2, 6, 5, 2\n\nUnder **pure working-set replacement** with window Δ, the reference at time t is a page fault iff its page does **not** occur among the references at times t − Δ, …, t − 1 (memory initially empty).\n\nLet L be the number of page faults under **LRU with 3 frames** (initially empty). What is the **smallest Δ** for which working-set replacement causes **at most L** page faults?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "**Step 1: L.**\n\nLRU trace with 3 frames (F = fault, \"out x\" = page x evicted):\n\n| # | Ref | F1 | F2 | F3 | Result |\n|---|---|---|---|---|---|\n| 1 | 2 | 2 | − | − | **F** |\n| 2 | 4 | 2 | 4 | − | **F** |\n| 3 | 2 | 2 | 4 | − | hit |\n| 4 | 5 | 2 | 4 | 5 | **F** |\n| 5 | 4 | 2 | 4 | 5 | hit |\n| 6 | 1 | 1 | 4 | 5 | **F** (out 2) |\n| 7 | 2 | 1 | 4 | 2 | **F** (out 5) |\n| 8 | 4 | 1 | 4 | 2 | hit |\n| 9 | 5 | 5 | 4 | 2 | **F** (out 1) |\n| 10 | 3 | 5 | 4 | 3 | **F** (out 2) |\n| 11 | 5 | 5 | 4 | 3 | hit |\n| 12 | 3 | 5 | 4 | 3 | hit |\n| 13 | 6 | 5 | 6 | 3 | **F** (out 4) |\n| 14 | 3 | 5 | 6 | 3 | hit |\n| 15 | 5 | 5 | 6 | 3 | hit |\n| 16 | 6 | 5 | 6 | 3 | hit |\n| 17 | 2 | 5 | 6 | 2 | **F** (out 3) |\n| 18 | 6 | 5 | 6 | 2 | hit |\n| 19 | 5 | 5 | 6 | 2 | hit |\n| 20 | 2 | 5 | 6 | 2 | hit |\n\nTotal = **9 faults**.\n\nSo **L = 9**.\n\n**Step 2: working-set faults from reuse gaps.** A re-reference hits iff the gap to the previous use of the same page is ≤ Δ. The 6 distinct pages give 6 compulsory faults; the re-reference gaps are\n\n| t | 3 | 5 | 7 | 8 | 9 | 11 | 12 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |\n|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|\n| page | 2 | 4 | 2 | 4 | 5 | 5 | 3 | 3 | 5 | 6 | 2 | 6 | 5 | 2 |\n| gap | 2 | 3 | 4 | 3 | 5 | 2 | 2 | 2 | 4 | 3 | 10 | 2 | 4 | 3 |\n\n| Δ | gaps > Δ | WS faults |\n|---|---|---|\n| 2 | 9 (all gaps ≥ 3) | 15 |\n| 3 | 5 (4, 5, 4, 10, 4) | 11 |\n| 4 | 2 (5, 10) | **8** |\n\nΔ = 3 gives 11 > 9; Δ = 4 gives 8 ≤ 9. Smallest Δ = **4**.\n\nNote that Δ = 3 is a window of 3 *references*, which can hold fewer than 3 distinct pages. That is why it does worse than LRU with 3 *frames*.",
+      "trap": "Assuming a window of Δ = 3 references behaves like 3 frames. The window often holds repeated pages, so WS(Δ = 3) faults more (11) than LRU(3) (9)."
+    }
+  ]
+}

@@ -22,8 +22,8 @@ backend/app/
 ├── api/
 │   ├── deps.py        # DbSession, CurrentUser, require_role(...), claude_rate_limit / ClaudeRateLimited
 │   ├── router.py      # mounts each route module under /api/v1/<prefix>
-│   └── routes/        # auth, documents, chat, speech, admin, notifications (WebSocket)
-├── models/            # user.py, content.py (Document + DocumentChunk), chat.py, notification.py
+│   └── routes/        # auth, documents, chat, learn, quiz (/learn/quiz), speech, admin, notifications (WebSocket)
+├── models/            # user.py, content.py (Document + DocumentChunk), chat.py, notification.py, quiz.py
 ├── schemas/           # Pydantic request/response shapes, one file per domain
 └── services/          # business logic — see below
 ```
@@ -40,13 +40,20 @@ Routes are thin: validate → call a service → return. When adding a feature: 
 - `document.py` — upload/list/get/delete + permission helpers (`can_view_document`, `can_modify_document`).
 - `chat.py` — session + message persistence (keyed by `chat_type`). `ai_chat.py` — the RAG assistant: retrieve → prompt (per-mode system prompt) → stream → persist with citations + `assistant_meta.mode`.
 - `speech.py` — ElevenLabs Scribe ASR (+ Whisper fallback) and TTS saved under `uploads/audio/` (served at `/audio`, auto-purged). `elevenlabs_agent.py` — conversational-agent signed URLs + transcript fetch.
+- `learn.py` — curated video courses read from `content/learn/` (JSON, cached by mtime; format in `content/learn/README.md`). `get_unit` / `get_lecture` serve the outline and a lecture (transcript + notes deck; frame filenames rewritten to `/learn-media/...`, mounted in `main.py`). `stream_lecture_answer` is the lecture tutor: stateless (the client sends the conversation), grounded in the notes + transcript. Content is authored offline: `scripts/learn_fetch.py` (yt-dlp metadata, transcripts, key frames + contact sheets; needs network and its own pip deps) → notes written per `content/learn/README.md` → `scripts/learn_assemble.py --spec unit_spec.json`.
+- `quiz.py` — Learn quizzes. Bank = JSON in `content/learn/<s>/<u>/quiz/` (`taxonomy.json` + one file per topic; format in `docs/learn-authoring/cs-os/QUIZ.md`), loaded via `learn._load_json` (mtime cache). Modes `practice` / `exam` / `adaptive`; GATE grading (`grade`: MCQ −⅓·marks, MSQ/NAT no negative, NAT = `{min,max}` range). Answers stay hidden until answered (exam: until submitted). Every first answer to an item updates the learner model; exam answers can be changed before submit (score only). `stream_question_help` = AI tutor for an answered question.
+- `adaptive.py` — pure functions, no DB: hierarchical Elo (θ_topic + θ_sub, guessing floor by type, uncertainty K(n)=1/(1+0.05n) with floors, idle decay), item selection (target success 0.70 / warm-up 0.80, weakness-weighted subtopic sampling, ≤2 in a row per subtopic, P-window), spaced review schedule (+1/+3/+7 days, then 15% of days to `GATE_EXAM_DATE`), mastery rule. All constants are at the top with the research in `docs/adaptive-learning-research.md`; heuristic ones are flagged there — tune from logged `quiz_responses` (p_expected vs is_correct) later.
 - `notifications.py` — WebSocket registry + TCP-style outbox. From sync code call `publish_sync(...)`; add new event kinds to `NotificationType` (+ a migration extending the Postgres enum).
 
 ## Models + migrations
 
 `app.models.__init__` re-exports every model and the lifespan imports it so everything is registered. Enums store **values** (`"student"`) via `values_callable`.
 
-Schema history starts at `000000000001_initial_schema` (hand-written: enables `vector`, creates an HNSW index on Postgres, stays SQLite-safe). `000000000002_enable_rls` turns on row-level security for every table. **Any migration that creates a table must also `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on Postgres.** Supabase serves `public` over REST to anyone with the anon key; the backend connects as the table owner, so it bypasses RLS. For changes: edit the model → `alembic revision --autogenerate -m "..."` → **inspect** (autogenerate misses enum-value additions and Postgres-only DDL) → `alembic upgrade head`. The Docker image runs `alembic upgrade head` on every boot.
+Schema history starts at `000000000001_initial_schema` (hand-written: enables `vector`, creates an HNSW index on Postgres, stays SQLite-safe). `000000000002_enable_rls` turns on row-level security for every table; `000000000003_learn_quiz` adds `quiz_attempts`, `quiz_responses`, `learner_skills` (skill_id = subtopic id or `topic:<id>`), `quiz_item_stats` (learned difficulty per `<s>/<u>/<qid>`). **Any migration that creates a table must also `ALTER TABLE ... ENABLE ROW LEVEL SECURITY` on Postgres.** Supabase serves `public` over REST to anyone with the anon key; the backend connects as the table owner, so it bypasses RLS. For changes: edit the model → `alembic revision --autogenerate -m "..."` → **inspect** (autogenerate misses enum-value additions and Postgres-only DDL) → `alembic upgrade head`. The Docker image runs `alembic upgrade head` on every boot.
+
+## Gotcha: timestamps
+
+SQLite returns naive datetimes. Anything the frontend does arithmetic on (e.g. the exam deadline from `started_at`) must be sent with an explicit UTC zone — see `quiz.attempt_summary`.
 
 ## Auth
 

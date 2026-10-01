@@ -1,0 +1,106 @@
+{
+  "topic_id": "T7",
+  "topic": "CPU Scheduling",
+  "hinglish": [
+    {
+      "video_id": "sCpdv8H6bnQ",
+      "title": "Operating System 02 | CPU Scheduling Algorithms | CS & IT | GATE 2025 Crash Course",
+      "channel": "GATE Wallah CSE & DA",
+      "duration_sec": 7253,
+      "views": 85764,
+      "likes": 988,
+      "comments": 26,
+      "upload_date": "20241210",
+      "captions": ["hi(auto)"],
+      "covers": [
+        "scheduling criteria (TAT, WT, RT, throughput)",
+        "preemptive vs non-preemptive",
+        "FCFS + advantages/disadvantages",
+        "SJF + advantages/disadvantages",
+        "SRTF + advantages/disadvantages",
+        "Priority scheduling (preemptive & non-preemptive) + advantages/disadvantages",
+        "Aging",
+        "Round Robin + advantages/disadvantages",
+        "Multilevel Queue scheduling (brief, final ~13 min)"
+      ],
+      "why": "A single ~121-min crash-course lecture by Vishvadeep Gothi (GATE Wallah/PW) that a viewer's own timestamp comment confirms runs through criteria, FCFS, SJF, SRTF, Priority, Aging, Round Robin and finally Multilevel Queue scheduling with Gantt-chart examples for each — by far the most complete single Hinglish video found for this topic (competing channels split the same scope across 9-11 separate uploads). Views (85.7K) are modest next to Gate Smashers' per-algorithm uploads, but comment sentiment is uniformly positive ('concept crystal clear', 'you teach with so much energy') with no reported numerical errors.",
+      "comment_highlights": ["this lecture was very helpful for me Thank u sir", "sir, you teach with so much energy . very interesting to watch", "Thank you sir concept crystal clear"]
+    },
+    {
+      "video_id": "-94WGbrWveI",
+      "title": "L-2.11: Multilevel Feedback Queue Scheduling | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 321,
+      "views": 895066,
+      "likes": 15050,
+      "comments": 239,
+      "upload_date": "20180526",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["Multilevel Feedback Queue scheduling concept and structure"],
+      "why": "Added specifically to close the one real gap left by the GATE Wallah crash course (which stops at plain Multilevel Queue scheduling). Gate Smashers is the most-watched Hindi GATE channel for this whole unit (each individual algorithm video sits at 1-4M views); this MLFQ video alone has 895K views, 15K likes and near-universal praise ('Faith in humanity restored', 'One of the rarest channels to clear OS concepts') with no accuracy complaints in the top comments.",
+      "comment_highlights": ["In morning there is my exam and I am watching here to complete the schedule algorithm in night before exam", "Great personality... I m fan of your teaching sir"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "YxNyJ-CUINc",
+      "title": "All CPU Scheduling Algorithm in 1 Hour -FCFS | SJF | SRTF | Round Robin | Operating System",
+      "channel": "Unify Study",
+      "duration_sec": 3644,
+      "views": 20600,
+      "likes": 455,
+      "comments": 23,
+      "upload_date": "20220203",
+      "captions": ["en(auto)"],
+      "covers": [
+        "scheduling terminologies (arrival/burst/completion/TAT/WT/RT)",
+        "preemptive vs non-preemptive",
+        "FCFS with worked example",
+        "SJF with worked example",
+        "SRTF with worked example",
+        "Round Robin with worked example"
+      ],
+      "why": "The only English-medium video found that bundles terminology, preemption concepts, and worked Gantt-chart examples for FCFS, SJF, SRTF and Round Robin into one sitting (confirmed via its chapter markers). Every fragmented alternative (Neso Academy, Jenny's Lectures) splits these same four algorithms across 4+ separate uploads. View count (20.6K) is lower than the gold-standard channels, and one viewer questioned a completion-time value in the SJF example (1 like, unresolved) — a minor caveat worth a sanity-check, but the rest of the (small) comment section is entirely positive.",
+      "comment_highlights": ["Very clear mam. Every class I learned the subject in new perspective.", "Mam i am confused how the SJF P1 completion time is 8 it should be 7 please explain"]
+    },
+    {
+      "video_id": "yKD3pcFvGmY",
+      "title": "Scheduling Algorithms - Priority Scheduling",
+      "channel": "Neso Academy",
+      "duration_sec": 1031,
+      "views": 301465,
+      "likes": 4154,
+      "comments": 50,
+      "upload_date": "20190925",
+      "captions": ["en(auto)"],
+      "covers": ["Priority scheduling (preemptive & non-preemptive)", "starvation problem", "aging as the solution"],
+      "why": "Neso Academy's Priority Scheduling video conveniently bundles the starvation problem and the aging fix into the same 17-minute video, filling the biggest gap left by the Unify Study pick. Neso is a consistently well-regarded, high-production channel for English GATE prep (301K views, 4.1K likes) with strongly positive comments and zero accuracy complaints found in the top 50.",
+      "comment_highlights": ["Last moment saviour !!", "Wow! I really loved the solution of aging. Very elegant."]
+    },
+    {
+      "video_id": "KfnCimYonD0",
+      "title": "Lec31 Multilevel queues and multilevel feedback queue scheduling | Operating systems",
+      "channel": "Jenny's Lectures CS IT",
+      "duration_sec": 831,
+      "views": 162681,
+      "likes": 2678,
+      "comments": 144,
+      "upload_date": "20190709",
+      "captions": ["en(auto)"],
+      "covers": ["Multilevel Queue scheduling", "Multilevel Feedback Queue scheduling"],
+      "why": "Jenny's Lectures covers MLQ and MLFQ together in a single video (most channels split these into two), closing the last coverage gap for English. It is a highly-regarded English-medium GATE channel (162K views, 2.7K likes, 144 comments, all praise — 'crystal clear', 'helped me get 95% in my OS module') with no reported errors.",
+      "comment_highlights": ["you are requested to plz cover rest syllabus ...Your content is crystal clear", "hi , thanks for all your help , I managed to get 95% for my operating systems module"]
+    }
+  ],
+  "runners_up": [
+    { "video_id": "zFnrUVqtiOY", "title": "L-2.1: Process Scheduling Algorithms (Preemption Vs Non-Preemption) | CPU Scheduling in OS", "channel": "Gate Smashers", "views": 2712600, "reason_rejected": "Extremely popular but only ~1/11th of the syllabus scope per video; picking the full Gate Smashers series would need 9-11 videos, well over the 3-video cap." },
+    { "video_id": "MZdVAVMgNpA", "title": "L-2.3: First Come First Serve(FCFS) CPU Scheduling Algorithm with Example", "channel": "Gate Smashers", "views": 4286322, "reason_rejected": "Highest-viewed FCFS video found (4.3M) but single-algorithm; a comparable-quality single video (GATE Wallah crash course) covers FCFS plus 6 other subtopics." },
+    { "video_id": "JD9Q8jWW6iM", "title": "Operating System 02 : CPU Scheduling Algorithms | CS & IT | GATE 2026 Crash Course", "channel": "GATE Wallah CSE & DA", "views": 49865, "reason_rejected": "Same instructor/format as the chosen sCpdv8H6bnQ (2025 edition) but fewer views/likes and no confirmed chapter breakdown; the 2025 edition was preferred." },
+    { "video_id": "pPAKs7tT8sw", "title": "CPU Scheduling Algorithms (FCFS, SJF, Round Robin) | Learn Coding", "channel": "Learn Coding", "views": 863152, "reason_rejected": "High views and covers FCFS/SJF/SRTF/RR in one video, but its only available transcript is auto-detected as Hindi ('hi'), suggesting mixed/Hindi delivery despite the English title — too risky to classify as an English pick." },
+    { "video_id": "WYo1SpUh9FI", "title": "FCFS(First Come First Serve) CPU Scheduling Algorithm with example | Operating System", "channel": "Jenny's Lectures CS IT", "views": 1363682, "reason_rejected": "Confirmed English audio and very high views, but single-algorithm; including it plus the needed SJF/SRTF/Priority/RR/MLQ/MLFQ videos from Jenny's would exceed the 3-video cap." },
+    { "video_id": "GS6yIngO4eg", "title": "FCFS scheduling Algorithm | Convoy Effect | Process Scheduling | OS", "channel": "Sudhakar Atchala", "views": 408429, "reason_rejected": "Nicely bundles FCFS + Convoy Effect, but choosing it would have displaced one of the three picks needed for broader (SJF/SRTF/RR/Priority/MLQ/MLFQ) coverage; convoy effect is a smaller-weight subtopic by comparison." },
+    { "video_id": "hBPYP0ZEvS8", "title": "L-2.10: Multi Level Queue Scheduling | Operating System", "channel": "Gate Smashers", "views": 1078476, "reason_rejected": "Excellent MLQ video, but not needed for the Hinglish picks since the chosen GATE Wallah crash course already ends with a Multilevel Queue Scheduling segment." },
+    { "video_id": "Z3vC63y63Rc", "title": "Round Robin Scheduling | CPU Scheduling | Operating System | Target GATE 2024", "channel": "GATE Wallah (English)", "views": 608, "reason_rejected": "English-dubbed GATE Wallah content exists but each session has under 3,000 views/comments, far too little audience validation." }
+  ],
+  "coverage_gaps": "Hinglish: the GATE Wallah crash course's Multilevel Queue segment is brief (~13 min) and 'convoy effect' as a named term was not independently transcript-verified (only inferred from the 'FCFS advantages/disadvantages' chapter). English: 'convoy effect' as an explicitly named term was not confirmed in any of the three picks (FCFS is taught via Unify Study without a dedicated convoy-effect segment); the Unify Study video's view count (20.6K) is much lower than the other picks so it has thinner community vetting, and one unresolved viewer comment questioned a single SJF completion-time value in that video."
+}

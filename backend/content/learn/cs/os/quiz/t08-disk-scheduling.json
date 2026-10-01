@@ -1,0 +1,1622 @@
+{
+ "topic_id": "t08-disk-scheduling",
+ "questions": [
+  {
+   "id": "t08-001",
+   "subtopic": "disk-structure",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "cylinder",
+    "track",
+    "surface"
+   ],
+   "stem": "On a magnetic disk with several platters, what is a **cylinder**?",
+   "options": [
+    "One concentric ring of sectors on a single surface",
+    "A single platter together with both of its recording surfaces",
+    "The set of tracks, one on each surface, that lie at the same arm position",
+    "A contiguous run of sectors that can be transferred in one rotation"
+   ],
+   "answer": "C",
+   "explanation": "The read/write heads of all surfaces are mounted on one arm assembly, so they move together. At a given arm position, each surface has one track under its head. The set of these tracks, one per surface at the same radius, is a **cylinder**. Data in one cylinder can be read without moving the arm, which is why file systems try to keep related blocks in the same or nearby cylinders.",
+   "option_feedback": [
+    "That is a track, not a cylinder.",
+    "A platter is a physical disk. A cylinder cuts across all platters.",
+    "Correct. All heads move together, so the tracks under them at one arm position form a cylinder.",
+    "That describes at most a track's worth of data, not the cylinder geometry."
+   ]
+  },
+  {
+   "id": "t08-002",
+   "subtopic": "disk-structure",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "DMA",
+    "interrupt"
+   ],
+   "stem": "A disk controller uses **DMA** to transfer one 4 KB block from the disk into main memory. During a normal transfer, when is the CPU interrupted?",
+   "options": [
+    "After every byte is transferred",
+    "After every word is transferred",
+    "Never: the CPU polls the DMA controller until the transfer ends",
+    "Once, after the entire block has been transferred"
+   ],
+   "answer": "D",
+   "explanation": "With DMA the CPU only sets up the transfer: memory address, byte count, direction and device. The DMA controller then moves every word between the device and memory by itself, stealing bus cycles if needed. When the whole count has been transferred, it raises **one interrupt** to signal completion. Per-byte or per-word interrupts are what interrupt-driven I/O does. Repeatedly polling a status register is programmed I/O.",
+   "option_feedback": [
+    "That is interrupt-driven I/O at byte granularity, which is exactly what DMA avoids.",
+    "Still per-unit interrupts. DMA removes these.",
+    "Polling is programmed I/O. A DMA controller signals completion with an interrupt.",
+    "Correct. The CPU programs the controller once and is interrupted once at the end."
+   ]
+  },
+  {
+   "id": "t08-003",
+   "subtopic": "disk-structure",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "programmed I/O",
+    "polling",
+    "busy waiting"
+   ],
+   "stem": "In which I/O technique does the CPU **busy-wait**, repeatedly reading the device's status register until the device is ready for the next byte?",
+   "options": [
+    "Programmed I/O",
+    "Interrupt-driven I/O",
+    "Direct memory access (DMA)",
+    "Memory-mapped I/O"
+   ],
+   "answer": "A",
+   "explanation": "In **programmed I/O** (polling), the CPU itself checks the status register in a loop and moves each byte, so CPU time is wasted while the device is slow. Interrupt-driven I/O lets the CPU do other work until the device interrupts. DMA also hands the data movement to a separate controller. Memory-mapped I/O is a way of *addressing* device registers (as memory locations). It is not a transfer strategy and can be combined with any of the three.",
+   "option_feedback": [
+    "Correct. Polling the status register in a loop is busy waiting.",
+    "The CPU is notified by an interrupt, so it does not spin.",
+    "The DMA controller moves the data. The CPU is free until the completion interrupt.",
+    "This is an addressing scheme for device registers. Polling, interrupts or DMA can all be used with it."
+   ]
+  },
+  {
+   "id": "t08-004",
+   "subtopic": "disk-structure",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "CAV",
+    "bit density",
+    "zoned recording"
+   ],
+   "stem": "A disk rotates at **constant angular velocity (CAV)**, and every track has the **same number of sectors**. Which of the following statements are true?",
+   "options": [
+    "Outer tracks store bits less densely than inner tracks",
+    "Every track has the same capacity in bytes",
+    "The data transfer rate under the head is higher on outer tracks",
+    "Zoned recording increases capacity by placing more sectors on outer tracks"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "D"
+   ],
+   "explanation": "Under CAV with a fixed number of sectors per track:\n\n- Every track holds the same number of bytes, but outer tracks are longer, so bits are packed **less densely** on outer tracks (A, B true).\n- One rotation takes the same time on every track and passes the same number of sectors under the head, so the transfer rate is the **same** on every track (C false).\n- Modern disks use **zoned bit recording**: outer zones get more sectors per track to use the extra length, which raises capacity (D true). Under that scheme, outer tracks do transfer faster.",
+   "option_feedback": [
+    "True. Same number of bits over a longer circumference means lower density.",
+    "True. Same sectors per track and same sector size give the same bytes per track.",
+    "False under this scheme. Each rotation reads the same number of sectors on every track.",
+    "True. That is exactly why zoned recording exists."
+   ],
+   "trap": "Assuming outer tracks are always faster. They are only faster with zoned recording, not with plain CAV."
+  },
+  {
+   "id": "t08-005",
+   "subtopic": "disk-structure",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "disk capacity",
+    "surfaces"
+   ],
+   "stem": "A disk has **4 platters**, and both surfaces of each platter are used for recording. Each surface has 2048 tracks, each track has 512 sectors, and each sector holds 1 KB (1 KB = 1024 bytes). What is the capacity of the disk?",
+   "options": [
+    "4 GB",
+    "8 GB",
+    "16 GB",
+    "1 GB"
+   ],
+   "answer": "B",
+   "explanation": "Number of surfaces = 4 platters × 2 = **8**.\n\nCapacity = surfaces × tracks/surface × sectors/track × bytes/sector\n= 8 × 2048 × 512 × 1024 = 2³ × 2¹¹ × 2⁹ × 2¹⁰ = 2³³ bytes = **8 GB** (GiB).",
+   "option_feedback": [
+    "This counts one surface per platter. The stem says both surfaces are used.",
+    "Correct: 2³³ bytes.",
+    "This counts 4 surfaces per platter.",
+    "This drops a factor of 8, for example by counting only one surface in total."
+   ],
+   "trap": "Forgetting that a double-sided platter contributes two surfaces."
+  },
+  {
+   "id": "t08-006",
+   "subtopic": "disk-structure",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "CHS",
+    "LBA"
+   ],
+   "stem": "A disk uses CHS addressing with **16 heads** (surfaces) and **63 sectors per track**. Cylinders and heads are numbered from 0, sectors within a track from **1**, and logical block addresses (LBA) from 0. Blocks are numbered by sector within a track first, then by head within a cylinder, then by cylinder.\n\nWhat is the LBA of the sector at (cylinder 5, head 3, sector 10)?",
+   "answer": {
+    "min": 5238,
+    "max": 5238
+   },
+   "explanation": "Use LBA = (C × heads + H) × sectors_per_track + (S − 1).\n\n- Sectors in one cylinder = 16 × 63 = 1008\n- Tracks before (5, 3, ·) = 5 × 16 + 3 = 83, i.e. 83 × 63 = 5229 sectors\n- Offset within the track = 10 − 1 = 9 (sectors start at 1)\n\nLBA = 5229 + 9 = **5238**.",
+   "trap": "Using S instead of S − 1. Sectors are 1-based, so that gives 5239."
+  },
+  {
+   "id": "t08-007",
+   "subtopic": "disk-structure",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "LBA",
+    "CHS",
+    "address conversion"
+   ],
+   "stem": "A disk has **10 surfaces** and **100 sectors per track**. Cylinders, heads and sectors are all numbered from 0. Logical blocks are laid out sector-first, then head, then cylinder. Which (cylinder, head, sector) holds logical block **12345**?",
+   "options": [
+    "(123, 4, 5)",
+    "(12, 4, 45)",
+    "(12, 3, 45)",
+    "(12, 3, 46)"
+   ],
+   "answer": "C",
+   "explanation": "Sectors per cylinder = 10 × 100 = 1000.\n\n- Cylinder = ⌊12345 / 1000⌋ = 12, remainder 345\n- Head = ⌊345 / 100⌋ = 3, remainder 45\n- Sector = 45\n\nSo the block is at **(12, 3, 45)**. Check: (12 × 10 + 3) × 100 + 45 = 12345 ✓",
+   "option_feedback": [
+    "This divides by 100 to get the cylinder. That treats one track as a cylinder and gets the heads/sectors order wrong.",
+    "Off by one in the head number. Heads are 0-based here.",
+    "Correct.",
+    "Off by one in the sector. That would be right only if sectors started at 1."
+   ]
+  },
+  {
+   "id": "t08-008",
+   "subtopic": "disk-structure",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "double buffering",
+    "copy semantics",
+    "speed mismatch"
+   ],
+   "stem": "Which of the following statements about **buffering** in the I/O subsystem are true?",
+   "options": [
+    "Double buffering lets a device fill one buffer while the process empties the other",
+    "Buffering helps cope with a speed mismatch between the producer and consumer of a data stream",
+    "With even a single buffer, neither the device nor the process ever has to wait",
+    "Copying data into a kernel buffer during write() lets the application reuse its own buffer immediately"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "D"
+   ],
+   "explanation": "- **A, true.** With double buffering, the device fills one buffer while the process consumes the other, so the two can overlap.\n- **B, true.** Buffers smooth out speed mismatches, such as a slow network feeding a fast disk, and transfer-size mismatches.\n- **C, false.** A single buffer still makes the producer wait while the consumer is using that buffer. Waiting is reduced, not removed, and if one side is always slower, the other will wait no matter how many buffers there are.\n- **D, true.** Copying a user's data into a kernel buffer during `write()` keeps *copy semantics*: the application may change its own buffer right after the call returns.",
+   "option_feedback": [
+    "True. This is the purpose of double buffering.",
+    "True. Speed mismatch is the classic reason for buffering.",
+    "False. With one buffer, filling and emptying cannot overlap.",
+    "True. This is how the kernel provides copy semantics."
+   ]
+  },
+  {
+   "id": "t08-009",
+   "subtopic": "disk-structure",
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "zoned recording",
+    "LBA",
+    "CHS",
+    "spare sectors"
+   ],
+   "stem": "A disk uses **zoned recording** and has **4 surfaces** (heads 0–3):\n\n| Zone | Cylinders | Sectors per track |\n|---|---|---|\n| 0 | 0–99 | 50 |\n| 1 | 100–299 | 40 |\n| 2 | 300–499 | 25 |\n\nOn every track the **highest-numbered sector is a reserved spare** and gets no logical block address. Sectors within a track are numbered from **1**; cylinders, heads and logical block addresses (LBAs) from 0. LBAs are assigned sector-first, then head, then cylinder, skipping the spares.\n\nWhich (cylinder, head, sector) holds **LBA 30000**?",
+   "options": [
+    "(162, 2, 1)",
+    "(166, 2, 26)",
+    "(166, 2, 27)",
+    "(66, 2, 27)"
+   ],
+   "answer": "C",
+   "explanation": "Usable sectors per track (one spare removed): zone 0 = 49, zone 1 = 39, zone 2 = 24.\n\n**Which zone?** Zone 0 holds 100 cylinders × 4 heads × 49 = **19 600** LBAs (0 – 19 599). 30000 ≥ 19 600, so the block is in zone 1, at offset 30000 − 19 600 = **10 400** into the zone.\n\n**Cylinder.** One zone-1 cylinder holds 4 × 39 = 156 LBAs. 10 400 = 66 × 156 + 104, so cylinder = 100 + 66 = **166**, offset 104 within it.\n\n**Head and sector.** 104 = 2 × 39 + 26, so head = **2**, offset 26 within the track, which is sector 26 + 1 = **27** (sectors start at 1).\n\nAnswer: **(166, 2, 27)**. Check: 19 600 + (66 × 4 + 2) × 39 + 26 = 19 600 + 10 374 + 26 = 30 000 ✓",
+   "option_feedback": [
+    "Ignores the spare sectors (uses 50 and 40 per track).",
+    "Forgets that sectors are numbered from 1.",
+    "Correct.",
+    "Forgets to add the zone's first cylinder (100)."
+   ],
+   "trap": "Ignoring the spare sector on each track, which shifts the result to (162, 2, 1)."
+  },
+  {
+   "id": "t08-010",
+   "subtopic": "disk-structure",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "DMA overhead",
+    "cycle stealing",
+    "block size"
+   ],
+   "stem": "A disk delivers data by **DMA** at a sustained **20 MB/s** (1 MB = 10⁶ bytes, 1 KB = 10³ bytes), moving fixed-size blocks back to back. The CPU runs at **500 MHz**. For each block, the CPU spends **1200 clock cycles** setting up the transfer and **800 clock cycles** handling the completion interrupt. The DMA controller moves data in **4-byte words** by **cycle stealing**, and each stolen memory cycle stalls the CPU for **1 ns**.\n\nWhat is the **smallest** block size, as a whole number of KB, for which the CPU loses **at most 1 %** of its time to this I/O?",
+   "answer": {
+    "min": 16,
+    "max": 16
+   },
+   "explanation": "The CPU loses time in two ways. Work per second of streaming.\n\n**Cycle stealing (does not depend on block size).** 20 × 10⁶ / 4 = 5 × 10⁶ words/s, each stalling the CPU 1 ns → 5 ms per second = **0.5 %**.\n\n**Per-block overhead.** (1200 + 800) cycles / 500 MHz = **4 µs** per block.\n\nThe budget left for per-block overhead is 1 % − 0.5 % = 0.5 % = 5 ms per second, so at most 5 ms / 4 µs = **1250 blocks/s**.\n\nBlock size ≥ (20 × 10⁶ B/s) / 1250 = 16 000 B = **16 KB**.\n\nCheck: 16 KB → 1250 blocks/s → 5 ms + 5 ms = 1 % ✓. 15 KB → 1333.3 blocks/s → 5.33 ms + 5 ms = 1.03 % ✗.",
+   "trap": "Ignoring the cycle-stealing stall, which leaves the whole 1 % for per-block overhead and gives 8 KB."
+  },
+  {
+   "id": "t08-011",
+   "subtopic": "disk-structure",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "polling",
+    "interrupt-driven I/O",
+    "FIFO overflow",
+    "overhead crossover"
+   ],
+   "stem": "A device receives bytes at a steady rate of **r bytes/s** into a **16-byte hardware FIFO**. If the FIFO is full when a byte arrives, the byte is lost. The OS can drain it in two ways:\n\n- **Interrupt-driven:** one interrupt per byte, costing **2 µs** of CPU time (including reading the byte).\n- **Polling:** the CPU polls at a fixed rate. Each poll costs **0.5 µs**, plus **0.1 µs per byte** read out of the FIFO. The poll rate must be high enough that **no byte is ever lost**, and for responsiveness the CPU must poll **at least 1000 times per second** in any case. The OS uses the lowest poll rate that meets both requirements.\n\nWhat is the **smallest integer r** for which polling uses **strictly less** CPU time per second than interrupt-driven I/O?",
+   "answer": {
+    "min": 264,
+    "max": 264
+   },
+   "explanation": "**Interrupt-driven cost:** 2r µs per second.\n\n**Polling rate.** The FIFO fills in 16/r seconds, so the CPU must poll at least r/16 times per second; it must also poll at least 1000 times per second. So the poll rate is p = **max(1000, r/16)**.\n\n**Polling cost:** 0.5p + 0.1r µs per second (every byte is read once, whatever the poll rate).\n\n**Case 1: r ≤ 16 000** (p = 1000). Cost = 500 + 0.1r. Polling is cheaper when 500 + 0.1r < 2r, i.e. 1.9r > 500, i.e. r > 263.16. This lies inside case 1, so the crossover is at **r = 264**.\n\n**Case 2: r > 16 000** (p = r/16). Cost = r/32 + 0.1r = 0.13125r < 2r, so polling stays cheaper. There is no second crossover.\n\nCheck: r = 263 → polling 526.3 µs vs interrupts 526 µs (interrupts win). r = 264 → 526.4 µs vs 528 µs (polling wins). Answer **264**.\n\nAt low rates the fixed 1000 polls/s dominate, so interrupts are better; once bytes arrive often enough, the per-byte interrupt cost loses.",
+   "trap": "Using only the overflow bound r/16 for the poll rate (polling then always wins, giving 1), or forgetting the 0.1 µs per byte read cost (giving 251)."
+  },
+  {
+   "id": "t08-012",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "rotational latency",
+    "access time"
+   ],
+   "stem": "In a disk access, what is **rotational latency**?",
+   "options": [
+    "Time to move the arm to the correct cylinder",
+    "Time for the desired sector to rotate under the read/write head",
+    "Time for the sector's bits to pass under the head",
+    "Time the request waits in the device queue"
+   ],
+   "answer": "B",
+   "explanation": "Disk access time = seek time + rotational latency + transfer time (+ controller overhead).\n\n- **Seek time:** move the arm to the correct cylinder.\n- **Rotational latency:** wait for the desired sector to rotate under the head. On average this is half a rotation.\n- **Transfer time:** the time for the sector(s) to pass under the head.",
+   "option_feedback": [
+    "That is seek time.",
+    "Correct.",
+    "That is transfer time.",
+    "That is queueing delay, which is not part of the access time."
+   ]
+  },
+  {
+   "id": "t08-013",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "seek time",
+    "disk scheduling goal"
+   ],
+   "stem": "Disk scheduling algorithms such as SSTF, SCAN and LOOK are designed mainly to reduce which component of disk access time?",
+   "options": [
+    "Rotational latency",
+    "Transfer time",
+    "Seek time",
+    "Controller overhead"
+   ],
+   "answer": "C",
+   "explanation": "These algorithms reorder pending requests by **cylinder number** to cut total arm movement, which means they reduce **seek time**. They know nothing about the angular position of sectors, so they do not directly reduce rotational latency. Transfer time depends only on rotation speed and the amount of data.",
+   "option_feedback": [
+    "Cylinder-based scheduling does not consider angular position. Rotational optimization is a different technique.",
+    "Fixed by rpm and the amount of data. Reordering cannot change it.",
+    "Correct. They minimize head (arm) movement.",
+    "Fixed per request and unaffected by ordering."
+   ]
+  },
+  {
+   "id": "t08-014",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "rotational latency",
+    "rpm"
+   ],
+   "stem": "A disk spins at **7200 rpm**. What is its average rotational latency in milliseconds? Give the answer correct to two decimal places.",
+   "answer": {
+    "min": 4.16,
+    "max": 4.17
+   },
+   "explanation": "One rotation = 60 s / 7200 = 8.333 ms.\n\nOn average the desired sector is half a rotation away, so the average rotational latency = 8.333 / 2 = **4.17 ms** (4.1667).",
+   "trap": "Using a full rotation (8.33 ms) as the average latency."
+  },
+  {
+   "id": "t08-015",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "transfer time",
+    "rpm"
+   ],
+   "stem": "A disk spins at **6000 rpm** and has **400 sectors per track**. How long does it take to transfer one sector once its start is under the head?",
+   "options": [
+    "25 µs",
+    "12.5 µs",
+    "0.25 ms",
+    "50 µs"
+   ],
+   "answer": "A",
+   "explanation": "One rotation = 60 / 6000 s = 10 ms.\n\nOne sector passes in 1/400 of a rotation = 10 ms / 400 = 0.025 ms = **25 µs**.",
+   "option_feedback": [
+    "Correct.",
+    "This uses half a rotation (the average latency) as the base.",
+    "This divides by 40 instead of 400.",
+    "This assumes 200 sectors per track, or one rotation = 20 ms."
+   ]
+  },
+  {
+   "id": "t08-016",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 50,
+   "concepts": [
+    "rpm",
+    "rotational latency",
+    "seek time"
+   ],
+   "stem": "A disk's rotation speed is **doubled** from 5400 rpm to 10 800 rpm. The arm mechanism and the track format are unchanged. Which quantities **halve**?",
+   "options": [
+    "Average rotational latency",
+    "Time to transfer one sector",
+    "Average seek time",
+    "Number of bytes stored on one track"
+   ],
+   "answer": [
+    "A",
+    "B"
+   ],
+   "explanation": "- Average rotational latency = ½ × rotation time, and rotation time halves, so it **halves**.\n- Time to transfer one sector = rotation time / sectors per track, so it **halves** too.\n- Seek time depends on the arm actuator, not the spindle, so it is **unchanged**.\n- Bytes per track depend on the format, so this is **unchanged** too. The data rate doubles, but capacity does not change.",
+   "option_feedback": [
+    "Halves. It is half of a rotation, which is now twice as fast.",
+    "Halves. Each sector passes under the head in half the time.",
+    "Unchanged. Seeking is arm motion, not spindle speed.",
+    "Unchanged. The format is the same. Only the data rate doubles."
+   ],
+   "trap": "Assuming every timing component, including seek, scales with rpm."
+  },
+  {
+   "id": "t08-017",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "data transfer rate",
+    "track capacity"
+   ],
+   "stem": "A disk spins at **12 000 rpm** and each track holds **512 sectors of 512 bytes**. What is the disk's data transfer rate (the rate at which bits pass under the head) in MB/s? (1 KB = 1024 bytes, 1 MB = 1024 KB)",
+   "answer": {
+    "min": 50,
+    "max": 50
+   },
+   "explanation": "Bytes per track = 512 × 512 = 262 144 B = 256 KB.\n\nRotations per second = 12 000 / 60 = 200, so one rotation takes 5 ms.\n\nOne track's worth of data passes per rotation:\n\nRate = 256 KB × 200 /s = 51 200 KB/s = **50 MB/s**.",
+   "trap": "Using rotations per minute directly, or using latency (half a rotation) instead of a full rotation."
+  },
+  {
+   "id": "t08-018",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 75,
+   "concepts": [
+    "access time",
+    "rotational latency",
+    "transfer time"
+   ],
+   "stem": "A disk has an average seek time of **5 ms**, spins at **10 000 rpm** and has **600 sectors per track**. The controller adds **0.2 ms** of overhead per request. What is the average time to read one randomly placed sector?",
+   "options": [
+    "8.01 ms",
+    "11.21 ms",
+    "8.20 ms",
+    "8.21 ms"
+   ],
+   "answer": "D",
+   "explanation": "- Rotation time = 60 / 10 000 s = 6 ms, so average latency = **3 ms**\n- Transfer of one sector = 6 ms / 600 = **0.01 ms**\n- Access time = seek + latency + transfer + overhead\n  = 5 + 3 + 0.01 + 0.2 = **8.21 ms**",
+   "option_feedback": [
+    "This leaves out the controller overhead.",
+    "This uses a full rotation (6 ms) as the latency.",
+    "This leaves out the 0.01 ms transfer time.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t08-019",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "track skew",
+    "head switch",
+    "rotational delay"
+   ],
+   "stem": "A disk spins at **6000 rpm**, has **50 sectors per track** and **2 surfaces** (heads 0 and 1). A file fills exactly 4 whole tracks, read in this order: (cylinder 10, head 0), (10, 1), (11, 0), (11, 1). Each track is read from its first logical sector all the way round.\n\nSwitching heads within a cylinder takes **0.5 ms**. Moving from (10, 1) to (11, 0) takes **1.5 ms** in total (the adjacent-cylinder seek includes the head switch).\n\nTo avoid missed revolutions, the first logical sector of each track is **skewed**: shifted forward by a whole number of sectors relative to the first sector of the previous track. The smallest skew that works is used for a head switch, and separately the smallest skew that works for a cylinder switch.\n\nAt time 0 the head is at the start of the file's first sector. What is the total time in ms to read the whole file?",
+   "answer": {
+    "min": 42.8,
+    "max": 42.8
+   },
+   "explanation": "Rotation = 60 / 6000 s = 10 ms; one sector passes in 10 / 50 = **0.2 ms**.\n\nAfter reading a full track, the head is back at the angular position where that track's first sector began. If the next track's first sector is skewed by s sectors, it arrives 0.2s ms later. To catch it, 0.2s must be **at least** the switch time:\n\n- Head switch: 0.2s ≥ 0.5 → s ≥ 2.5 → **s = 3**, so the wait is 0.6 ms\n- Cylinder switch: 0.2s ≥ 1.5 → s ≥ 7.5 → **s = 8**, so the wait is 1.6 ms\n\nTotal = 4 tracks × 10 ms + 0.6 + 1.6 + 0.6 = **42.8 ms**.\n\nWithout skew, every switch misses the first sector and costs a full extra revolution: 40 + 3 × 10 = 70 ms.",
+   "trap": "Rounding the skew down (2 or 7 sectors): the first sector has already passed, so each switch costs a whole revolution. Using the cylinder skew (8) for every switch gives 44.8 ms."
+  },
+  {
+   "id": "t08-020",
+   "subtopic": "seek-and-rotational-time",
+   "also_tests": [
+    "fcfs-sstf"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "rotational position",
+    "seek time model",
+    "service order"
+   ],
+   "stem": "A disk spins at **6000 rpm** with **100 sectors per track**, numbered 0–99; each sector passes under the head in 0.1 ms, and sector numbers line up on every cylinder. Seeking d cylinders takes **(1 + 0.1·d) ms** for d > 0, and the disk keeps rotating during a seek. A sector can be read only from its start, and reading it takes 0.1 ms.\n\nAt time 0 the head is on cylinder **50**, exactly at the **start of sector 0**. Three one-sector requests are pending:\n\n| Request | Cylinder | Sector |\n|---|---|---|\n| P | 54 | 70 |\n| Q | 38 | 25 |\n| R | 56 | 15 |\n\nThe scheduler may serve the requests in **any order**. What is the **minimum** time, in ms, until all three have been read?",
+   "answer": {
+    "min": 11.6,
+    "max": 11.6
+   },
+   "explanation": "Work in units of 0.1 ms (one sector). One revolution = 100 units, and at time t the head is over angular position t mod 100. A seek of d cylinders takes 10 + d units. Arriving at time a, the wait for sector s is (s − a) mod 100, then the read takes 1.\n\n**Nearest cylinder first (P, R, Q):**\n- P: seek 4 → t = 14; wait to 70 → 70; read → 71\n- R: seek 2 → 83; wait to 15 (next revolution) → 115; read → 116\n- Q: seek 18 → 144; wait to 25 → 225; read → **226** (22.6 ms)\n\n**Best order (Q, P, R):**\n- Q: seek 12 → t = 22; wait 3 → 25; read → 26\n- P: seek 16 → 52; wait 18 → 70; read → 71\n- R: seek 2 → 83; wait 32 → 115; read → **116** (11.6 ms)\n\nAll six orders:\n\n| Order | Finish (ms) |\n|---|---|\n| P Q R | 21.6 |\n| P R Q | 22.6 |\n| **Q P R** | **11.6** |\n| Q R P | 17.1 |\n| R P Q | 22.6 |\n| R Q P | 27.1 |\n\nMinimum = **11.6 ms**. Q is the farthest cylinder, but the head reaches it just before sector 25 and then reaches P just before sector 70. Ordering by seek distance alone wastes most of a revolution. This is the idea behind shortest-positioning-time-first scheduling.",
+   "trap": "Ordering by seek distance (SSTF), which gives 22.6 ms, or using the average rotational latency instead of the actual sector positions."
+  },
+  {
+   "id": "t08-021",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "sequential access",
+    "access time"
+   ],
+   "stem": "A disk has an average seek time of **6 ms**, spins at **10 000 rpm** and has **500 sectors per track**. A 2000-sector file is stored **contiguously** on 4 full adjacent tracks. Reading begins with one average seek. Moving to each later adjacent track takes negligible seek time, but on each track the head must still wait an **average rotational latency** before reading the whole track.\n\nWhat is the total time in ms to read the file?",
+   "answer": {
+    "min": 42,
+    "max": 42
+   },
+   "explanation": "Rotation = 6 ms, average latency = 3 ms, and reading a full track takes one rotation = 6 ms.\n\n- First track: seek + latency + read = 6 + 3 + 6 = **15 ms**\n- Each of the other 3 tracks: latency + read = 3 + 6 = **9 ms**, so 27 ms\n\nTotal = 15 + 27 = **42 ms**.\n\nCompare this with about 18 s if the same 2000 sectors were scattered randomly. That difference is why contiguous allocation and seek-reducing scheduling matter.",
+   "trap": "Paying the average seek again on every track (60 ms), or leaving out latency on the later tracks (33 ms)."
+  },
+  {
+   "id": "t08-022",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "rotational latency",
+    "zero-latency read",
+    "expected value"
+   ],
+   "stem": "A disk spins at **6000 rpm** (one revolution = 10 ms) and has **100 sectors per track**. A request reads **40 contiguous sectors** on one track. After the seek, the head lands at a uniformly random angular position on that track. Treat positions as continuous (ignore partial-sector effects).\n\nThe drive has **zero-latency (read-on-arrival)** firmware:\n- If the head lands inside the requested run, it starts reading immediately, reads to the end of the run, and picks up the skipped beginning of the run when that comes round again.\n- If it lands outside the run, it waits for the run's first sector and then reads all 40.\n\nWhat is the expected time, in ms, from landing until all 40 sectors have been read?",
+   "answer": {
+    "min": 8.2,
+    "max": 8.2
+   },
+   "explanation": "Measure in sectors (0.1 ms each). Let u be the distance from the start of the run to the landing point, in the direction of rotation. u is uniform on [0, 100), and the run occupies [0, 40).\n\n**Lands inside the run (u < 40, probability 0.4).** It reads from u to 40 (40 − u sectors), the 60 sectors outside the run then pass, and it reads from 0 to u (u sectors). Total = (40 − u) + 60 + u = **100 sectors**, exactly one revolution (10 ms), whatever u is.\n\n**Lands outside the run (40 ≤ u < 100, probability 0.6).** It waits 100 − u sectors, which is uniform on (0, 60] with mean 30, then reads 40. Mean = 70 sectors = **7 ms**.\n\nE = 0.4 × 10 + 0.6 × 7 = **8.2 ms**.\n\nFor comparison, an ordinary drive waits half a revolution on average and then reads: 5 + 4 = 9 ms. Zero-latency firmware helps, but far less than the naive \"no latency at all\" (4 ms), because a landing inside the run still costs a full revolution.",
+   "trap": "Assuming zero-latency reads remove all waiting (4 ms), or that a landing inside the run reads only the remaining part. The skipped beginning still has to come round again."
+  },
+  {
+   "id": "t08-023",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "average seek distance",
+    "probability"
+   ],
+   "stem": "The head position and the cylinder of the next request are independent and **uniformly distributed** over [0, N] (treat cylinders as continuous). What is the expected seek distance?",
+   "options": [
+    "N/2",
+    "N/4",
+    "N/3",
+    "2N/3"
+   ],
+   "answer": "C",
+   "explanation": "For independent X, Y ~ U[0, N]:\n\nE|X − Y| = (1/N²) ∫₀ᴺ∫₀ᴺ |x − y| dy dx = (2/N²) ∫₀ᴺ (x²/2) dx = (2/N²)(N³/6) = **N/3**.\n\nThis is why a disk's 'average seek time' is often quoted as the time to seek about one third of the full stroke.",
+   "option_feedback": [
+    "This would be the average if one end were fixed at 0, i.e. E|X| for a head parked at an edge.",
+    "This underestimates. It is what you get for a head fixed at the middle (N/4).",
+    "Correct.",
+    "This is the expected value of max(X, Y), not of the distance."
+   ],
+   "trap": "Answering N/2 because the request is 'on average halfway across the disk'."
+  },
+  {
+   "id": "t08-024",
+   "subtopic": "seek-and-rotational-time",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "effective transfer rate",
+    "block size",
+    "overhead amortization"
+   ],
+   "stem": "A disk has an average seek time of **4 ms**, spins at **10 000 rpm** and has **1000 sectors per track**. A file is read in blocks of k contiguous sectors, and each block is placed at a random location, so it pays one average seek and one average rotational latency. Within a block, ignore any track- or cylinder-switch delays.\n\nWhat is the **smallest** k for which the effective data rate is **at least 80 %** of the media transfer rate?",
+   "answer": {
+    "min": 4667,
+    "max": 4667
+   },
+   "explanation": "Rotation = 6 ms, so average latency = 3 ms. Per-block overhead = 4 + 3 = **7 ms**.\n\nTransfer time per sector = 6 / 1000 = 0.006 ms, so a block's transfer time = 0.006k ms.\n\nEffective rate / media rate = transfer / (transfer + overhead):\n\n0.006k / (0.006k + 7) ≥ 0.8 ⇒ 0.006k ≥ 0.8 × 0.006k + 5.6 ⇒ 0.0012k ≥ 5.6 ⇒ k ≥ 4666.67\n\nSo **k = 4667**. Check k = 4666: 27.996 / 34.996 = 0.79998 < 0.8, which fails.\n\nThe point: to get most of the media rate, each block must take about 4× the positioning overhead, here roughly 4.7 tracks.",
+   "trap": "Rounding 4666.67 down, or using a full rotation as latency."
+  },
+  {
+   "id": "t08-025",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "starvation",
+    "SSTF"
+   ],
+   "stem": "Which disk scheduling algorithm can cause **starvation** of requests that are far from the current head position?",
+   "options": [
+    "FCFS",
+    "SSTF",
+    "SCAN",
+    "C-SCAN"
+   ],
+   "answer": "B",
+   "explanation": "**SSTF** always serves the pending request closest to the head. If new requests keep arriving near the head, a request at a distant cylinder can be postponed indefinitely. FCFS serves strictly in arrival order. SCAN and C-SCAN sweep the full disk, so every request is reached within about one or two sweeps.",
+   "option_feedback": [
+    "Arrival order guarantees every request is eventually served.",
+    "Correct. Greedy nearest-first can postpone far requests forever.",
+    "The sweeping head reaches every cylinder within a bounded time.",
+    "Bounded waiting: every cylinder is visited each cycle."
+   ]
+  },
+  {
+   "id": "t08-026",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "FCFS",
+    "fairness"
+   ],
+   "stem": "Which of the following are true of **FCFS** disk scheduling?",
+   "options": [
+    "It is free of starvation",
+    "It minimizes total head movement for any request queue",
+    "It may cause large back-and-forth arm swings",
+    "It requires sorting the request queue by cylinder number"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "FCFS serves requests strictly in arrival order (A). That makes it fair and starvation-free, but it makes no attempt to reduce arm movement, so the head can swing wildly between far-apart cylinders (C). It is not optimal (B false), and it is the simplest scheme, with no sorting (D false).",
+   "option_feedback": [
+    "True. Every request is served in order of arrival.",
+    "False. It ignores cylinder positions completely.",
+    "True. Consecutive requests may be at opposite ends of the disk.",
+    "False. FCFS just uses a FIFO queue."
+   ]
+  },
+  {
+   "id": "t08-027",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "FCFS",
+    "head movement"
+   ],
+   "stem": "The disk head is at cylinder **70**. The request queue, in arrival order, is:\n\n`30, 110, 45, 160, 20`\n\nWhat is the total head movement (in cylinders) under **FCFS**?",
+   "options": [
+    "190",
+    "400",
+    "230",
+    "440"
+   ],
+   "answer": "D",
+   "explanation": "FCFS serves the requests in queue order: 70 → 30 → 110 → 45 → 160 → 20\n\n| Step | Move | Cylinders |\n|---|---|---|\n| 1 | 70 → 30 | 40 |\n| 2 | 30 → 110 | 80 |\n| 3 | 110 → 45 | 65 |\n| 4 | 45 → 160 | 115 |\n| 5 | 160 → 20 | 140 |\n| | **Total** | **440** |",
+   "option_feedback": [
+    "This is SSTF (70 → 45 → 30 → 20 → 110 → 160). FCFS cannot reorder.",
+    "This leaves out the first move 70 → 30 (40 cylinders).",
+    "This is LOOK moving up (70 → 110 → 160, then down to 20). FCFS cannot reorder.",
+    "Correct: 40 + 80 + 65 + 115 + 140 = 440."
+   ]
+  },
+  {
+   "id": "t08-028",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "SSTF"
+   ],
+   "stem": "The disk head is at cylinder **100**. Pending requests are for cylinders `75, 130, 90, 160`. Under **SSTF**, which request is served **first**?",
+   "options": [
+    "75",
+    "130",
+    "90",
+    "160"
+   ],
+   "answer": "C",
+   "explanation": "The distances from 100 are |75 − 100| = 25, |130 − 100| = 30, |90 − 100| = **10** and |160 − 100| = 60. SSTF picks the minimum, which is **90**.",
+   "option_feedback": [
+    "Distance 25, but 90 is closer.",
+    "Distance 30. SSTF does not prefer the upward direction.",
+    "Correct. It is the closest, at distance 10.",
+    "The farthest request."
+   ]
+  },
+  {
+   "id": "t08-029",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "SSTF",
+    "head movement"
+   ],
+   "stem": "The disk head is at cylinder **90** of a disk with cylinders 0–199. Pending requests:\n\n`150, 40, 95, 12, 180, 70, 125`\n\nWhat is the total head movement (in cylinders) under **SSTF**?",
+   "answer": {
+    "min": 256,
+    "max": 256
+   },
+   "explanation": "At each step, pick the nearest pending request.\n\n- From 90: 95 (5)\n- From 95: 70 (25) beats 125 (30)\n- From 70: 40 (30) beats 125 (55)\n- From 40: 12 (28) beats 125 (85)\n- From 12: only higher requests remain, so 125, 150, 180\n\nOrder: 90 → 95 → 70 → 40 → 12 → 125 → 150 → 180\n\n| Step | Move | Cylinders |\n|---|---|---|\n| 1 | 90 → 95 | 5 |\n| 2 | 95 → 70 | 25 |\n| 3 | 70 → 40 | 30 |\n| 4 | 40 → 12 | 28 |\n| 5 | 12 → 125 | 113 |\n| 6 | 125 → 150 | 25 |\n| 7 | 150 → 180 | 30 |\n| | **Total** | **256** |",
+   "trap": "At 95, picking 125 (30) over 70 (25), which changes the whole tail of the schedule."
+  },
+  {
+   "id": "t08-030",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "SSTF",
+    "service order"
+   ],
+   "stem": "The disk head is at cylinder **55**. Pending requests:\n\n`20, 100, 60, 85, 10, 150`\n\nUnder **SSTF**, which request is served **fourth**?",
+   "options": [
+    "150",
+    "20",
+    "100",
+    "10"
+   ],
+   "answer": "A",
+   "explanation": "- From 55: 60 (5)\n- From 60: 85 (25) beats 20 (40)\n- From 85: 100 (15)\n- From 100: 150 (50) vs 20 (80), so **150**\n\nFull order: 55 → 60 → 85 → 100 → 150 → 20 → 10. The fourth request served is **150**.",
+   "option_feedback": [
+    "Correct. After 60, 85 and 100, the nearer remaining request is 150 (50 versus 80 to 20).",
+    "From 100, 20 is 80 away, but 150 is only 50 away.",
+    "100 is served third.",
+    "10 is served last."
+   ]
+  },
+  {
+   "id": "t08-031",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "SSTF",
+    "optimal schedule",
+    "case analysis",
+    "tie-breaking"
+   ],
+   "stem": "The disk head is at cylinder **50** of a disk with cylinders 0–199. Pending requests are for cylinders **20, 62, 90** and one more cylinder **x**, where x is an integer in 0–199 different from 20, 50, 62 and 90. The scheduler uses **SSTF**, breaking ties in favour of the **lower-numbered** cylinder. No new requests arrive.\n\nFor how many values of x is SSTF's total head movement equal to the **minimum possible** total head movement over all service orders?",
+   "answer": {
+    "min": 15,
+    "max": 15
+   },
+   "explanation": "**Optimal schedule.** With all requests on a line, an optimal order goes to one extreme and then sweeps to the other. Its cost is min[(h − lo) + (hi − lo), (hi − h) + (hi − lo)], where lo and hi are the lowest and highest requests. So SSTF is optimal exactly when it sweeps toward the **correct** extreme first and turns back only once.\n\n**Case x < 20** (lo = x, hi = 90). From 50, 62 is nearest (12; 20 and x are ≥ 30 away). From 62, 90 (28) beats 20 (42). Then 20, then x. SSTF goes **up first**: cost 40 + (90 − x). Going up first is optimal iff 90 − 50 ≤ 50 − x, i.e. **x ≤ 10**. That gives x = 0 … 10: **11 values**.\n\n**Case 20 < x < 50** (lo = 20, hi = 90). Down first costs 30 + 70 = 100; up first costs 40 + 70 = 110. So SSTF must go **down first** and reach 20 before 62.\n- SSTF picks x first only if 50 − x ≤ 12, i.e. x ≥ 38. At x = 38 there is a 12–12 tie with 62, and it goes to the lower cylinder, 38.\n- From x it must pick 20 over 62: x − 20 ≤ 62 − x, i.e. x ≤ 41. At x = 41 there is a 21–21 tie, and it goes to 20.\n- Then 20 → 62 → 90, total 100 ✓. That gives x = 38, 39, 40, 41: **4 values**.\n- For 21 ≤ x ≤ 37 SSTF goes to 62 first (110). For 42 ≤ x ≤ 49 it goes x → 62 → 90 → 20 (more than 100).\n\n**Case x > 50** (lo = 20, hi ≥ 90). Going up first costs (hi − 50) ≥ 40 > 30 extra, so the optimal schedule goes down first. But from 50, SSTF always goes up first (62, or x, is nearer than 20). It is **never** optimal.\n\nTotal = 11 + 4 = **15**.",
+   "trap": "Checking only one range of x, or ignoring the tie rule at x = 38 and x = 41 (ties to the higher cylinder would give 13)."
+  },
+  {
+   "id": "t08-032",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "SSTF",
+    "tie-breaking"
+   ],
+   "stem": "The disk head is at cylinder **100**. Pending requests: `80, 120, 60, 150, 30`. The scheduler uses **SSTF** and breaks ties in favour of the **lower-numbered cylinder**. What is the total head movement?",
+   "options": [
+    "170",
+    "200",
+    "190",
+    "160"
+   ],
+   "answer": "C",
+   "explanation": "From 100, both 80 and 120 are 20 away. The tie goes to the lower cylinder, **80**.\n\n- From 80: 60 (20) beats 120 (40)\n- From 60: 30 (30) beats 120 (60)\n- From 30: 120 (90), then 150 (30)\n\nPath: 100 → 80 → 60 → 30 → 120 → 150, total = 20 + 20 + 30 + 90 + 30 = **190**.\n\nIf the tie had gone to 120: 100 → 120 → 150 → 80 → 60 → 30 gives 170. One tie decision changes the answer by 20, which is why GATE questions state the tie rule.",
+   "option_feedback": [
+    "This breaks the first tie toward the higher cylinder (120).",
+    "Arithmetic slip. Recompute each leg.",
+    "Correct.",
+    "Not reachable under SSTF with either tie rule."
+   ],
+   "trap": "Ignoring the stated tie rule at the first step."
+  },
+  {
+   "id": "t08-033",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "FCFS",
+    "head movement",
+    "maximisation"
+   ],
+   "stem": "The disk head is at cylinder **95**. Five requests are for cylinders **0, 20, 140, 150, 170**. They will be served **FCFS**, but their arrival order is not known.\n\nOver all 5! = 120 possible arrival orders, what is the **maximum** possible total head movement?",
+   "answer": {
+    "min": 645,
+    "max": 645
+   },
+   "explanation": "**Upper bound by counting gap crossings.** Sort all six positions: 0, 20, **95** (head), 140, 150, 170. Total movement = Σ (length of each gap between neighbouring positions) × (number of times the head crosses it).\n\n- Each crossing into the side of a gap that does **not** contain the head visits at least one new request there. If that side has m requests, there are at most m entries and m exits: at most **2m** crossings.\n- The path has only 5 moves, so no gap is crossed more than **5** times.\n\n| Gap | Length | Requests on far side | Max crossings | Contribution |\n|---|---|---|---|---|\n| 0–20 | 20 | {0} | 2 | 40 |\n| 20–95 | 75 | {0, 20} | 4 | 300 |\n| 95–140 | 45 | {140, 150, 170} | min(6, 5) = 5 | 225 |\n| 140–150 | 10 | {150, 170} | 4 | 40 |\n| 150–170 | 20 | {170} | 2 | 40 |\n\nBound = 40 + 300 + 225 + 40 + 40 = **645**.\n\n**The bound is reached.** Alternate sides on every move: 95 → 150 → 0 → 170 → 20 → 140 = 55 + 150 + 170 + 150 + 120 = **645**.\n\nSo the maximum is **645**.\n\nGoing to the farthest request each time does **not** maximise the total here: 95 → 0 → 170 → 20 → 150 → 140 = 95 + 170 + 150 + 130 + 10 = 555. Its last move is tiny, because both remaining requests sit on the same side.",
+   "trap": "Building the order greedily by always moving to the farthest remaining request, which gives 555."
+  },
+  {
+   "id": "t08-034",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "SSTF",
+    "starvation",
+    "optimality"
+   ],
+   "stem": "Which of the following statements about **SSTF** disk scheduling are true?",
+   "options": [
+    "SSTF always produces the minimum possible total head movement",
+    "SSTF can starve a request at a distant cylinder",
+    "SSTF is the disk-scheduling counterpart of shortest-job-first",
+    "For any request queue, SSTF's total head movement is never more than FCFS's"
+   ],
+   "answer": [
+    "B",
+    "C"
+   ],
+   "explanation": "- **A, false.** SSTF is greedy and need not be optimal. Example: head 50, queue 45, 58, 66, 76, 0. SSTF goes 45, 58, 66, 76, 0 = 112 cylinders, but serving 58, 66, 76, 45, 0 needs only 26 + 76 = 102.\n- **B, true.** A steady stream of requests near the head keeps beating a far request, so it can starve.\n- **C, true.** It is the disk counterpart of shortest-job-first: always pick the 'cheapest' next request.\n- **D, false.** With the same example, if requests arrived in the order 58, 66, 76, 45, 0, FCFS would give 102, which is less than SSTF's 112.",
+   "option_feedback": [
+    "False. Greedy choices can be globally suboptimal.",
+    "True. Nearby arrivals can postpone it indefinitely.",
+    "True. It always serves the request with the least seek next.",
+    "False. If the arrival order happens to be a good order, FCFS can beat SSTF."
+   ],
+   "trap": "Believing 'shortest seek first' means 'least total seek'."
+  },
+  {
+   "id": "t08-035",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 270,
+   "concepts": [
+    "SSTF",
+    "starvation",
+    "dynamic arrivals"
+   ],
+   "stem": "Under **SSTF**, the head is at cylinder **100** at time t = 0. Moving one cylinder takes **1 ms**, and service time is negligible. At t = 0 the pending requests are for cylinders **20** and **110**. More requests arrive later:\n\n| Arrival time (ms) | Cylinder |\n|---|---|\n| 8 | 104 |\n| 12 | 112 |\n| 20 | 95 |\n| 30 | 120 |\n\nThe scheduler picks its next target only when the head reaches its current target. At that moment, it chooses the closest request among those that have **already arrived**.\n\nAt what time (in ms) is the request for cylinder **20** served?",
+   "answer": {
+    "min": 166,
+    "max": 166
+   },
+   "explanation": "Decision points:\n\n| Decision time | Head at | Pending (arrived) | Choice | Arrives at |\n|---|---|---|---|---|\n| 0 | 100 | 20, 110 | 110 (10) | t = 10 |\n| 10 | 110 | 20, 104 | 104 (6) | t = 16 |\n| 16 | 104 | 20, 112 | 112 (8) | t = 24 |\n| 24 | 112 | 20, 95 | 95 (17) | t = 41 |\n| 41 | 95 | 20, 120 | 120 (25) vs 20 (75), so 120 | t = 66 |\n| 66 | 120 | 20 | 20 (100) | t = **166** |\n\nThe request for 20 was pending from t = 0 but was served **fifth**, at **166 ms**. That is SSTF starvation in action: each new request near the head beat it. A continuing stream of nearby arrivals could postpone it indefinitely.",
+   "trap": "Considering a request before its arrival time, or moving to 20 at t = 41 by comparing against 120 before it has arrived."
+  },
+  {
+   "id": "t08-036",
+   "subtopic": "fcfs-sstf",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "SSTF",
+    "optimal schedule",
+    "greedy"
+   ],
+   "stem": "The disk head is at cylinder **50**. Pending requests: `45, 58, 66, 76, 0`. Let X be the total head movement under **SSTF**, and Y the **minimum possible** total head movement over all service orders. No new requests arrive. Find X − Y.",
+   "answer": {
+    "min": 10,
+    "max": 10
+   },
+   "explanation": "**SSTF:** 50 → 45 → 58 → 66 → 76 → 0. From 45 the nearest is 58 (13), not 0 (45).\n\nX = 5 + 13 + 8 + 10 + 76 = **112**.\n\n**Optimal:** with all requests on a line, an optimal schedule sweeps fully to one extreme and then to the other:\n\n- Go right first: (76 − 50) + (76 − 0) = 26 + 76 = 102\n- Go left first: (50 − 0) + (76 − 0) = 50 + 76 = 126\n\nY = **102**.\n\nX − Y = 112 − 102 = **10**. SSTF's small first step to 45 forces it to cover 45 → 76 → 0 later, a total detour of 10 cylinders.",
+   "trap": "Assuming SSTF is optimal, which gives 0."
+  },
+  {
+   "id": "t08-037",
+   "subtopic": "scan-c-scan",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 20,
+   "concepts": [
+    "SCAN",
+    "elevator"
+   ],
+   "stem": "Which disk scheduling algorithm is also called the **elevator algorithm**?",
+   "options": [
+    "FCFS",
+    "SSTF",
+    "C-LOOK",
+    "SCAN"
+   ],
+   "answer": "D",
+   "explanation": "In **SCAN**, the arm sweeps from one end of the disk to the other, serving requests as it passes, then reverses, like a lift going up and down a building.",
+   "option_feedback": [
+    "No sweeping. It is pure arrival order.",
+    "Greedy nearest-first, no fixed sweep.",
+    "A circular variant: it serves in one direction only and jumps back.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t08-038",
+   "subtopic": "scan-c-scan",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 50,
+   "concepts": [
+    "C-SCAN",
+    "uniform wait"
+   ],
+   "stem": "Which of the following are true of **C-SCAN** (circular SCAN)?",
+   "options": [
+    "It serves requests only while the head moves in one direction",
+    "Its return seek is never counted in total head movement",
+    "It gives more uniform waiting times than SCAN",
+    "It reverses as soon as no requests remain in the current direction"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "C-SCAN serves requests while moving in **one direction only**. On reaching the end, it returns to the other end without serving anything on the way back (A). Every cylinder is therefore visited once per cycle at roughly the same spacing, which makes waiting times more **uniform** than SCAN's (C). The return seek is real arm motion. Whether it is *counted* in 'total head movement' is a convention, so it is not always ignored (B false). It does not reverse at the last request; that is C-LOOK (D false).",
+   "option_feedback": [
+    "True.",
+    "False. Counting the return is a convention the question must state.",
+    "True. Cylinders at the ends are not at a disadvantage.",
+    "False. That describes LOOK or C-LOOK. C-SCAN goes all the way to the end cylinder."
+   ]
+  },
+  {
+   "id": "t08-039",
+   "subtopic": "scan-c-scan",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "SCAN",
+    "head movement"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **100**, moving toward **higher** cylinders. Pending requests: `30, 150, 60, 180`. Under **SCAN**, the head goes all the way to the last cylinder (199) before reversing. What is the total head movement?",
+   "options": [
+    "230",
+    "268",
+    "280",
+    "199"
+   ],
+   "answer": "B",
+   "explanation": "Path: 100 → 150 → 180 → 199 → 60 → 30\n\nMovement = (199 − 100) + (199 − 30) = 99 + 169 = **268**.",
+   "option_feedback": [
+    "This is LOOK: it reverses at 180 instead of going to 199.",
+    "Correct.",
+    "This sweeps down to 0 first and then up to 180, ignoring the stated direction.",
+    "Only the travel from 0 to 199. This is not the path taken."
+   ],
+   "trap": "Reversing at the last request (LOOK behaviour) when the question says SCAN goes to the end."
+  },
+  {
+   "id": "t08-040",
+   "subtopic": "scan-c-scan",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "C-SCAN",
+    "service order"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **120**, moving toward **higher** cylinders. Pending requests: `40, 150, 100, 190, 20`. In what order are they served under **C-SCAN**?",
+   "options": [
+    "150, 190, 20, 40, 100",
+    "150, 190, 100, 40, 20",
+    "100, 150, 190, 20, 40",
+    "150, 190, 40, 20, 100"
+   ],
+   "answer": "A",
+   "explanation": "C-SCAN serves upward only: 150, 190, then on to 199, jumps to 0, and serves upward again: 20, 40, 100.\n\nPath: 120 → 150 → 190 → 199 → 0 → 20 → 40 → 100. Service order: **150, 190, 20, 40, 100**.",
+   "option_feedback": [
+    "Correct.",
+    "This is SCAN/LOOK order: it serves on the way back down.",
+    "100 is below the head, and the head is moving up.",
+    "After the jump to 0, the head moves upward, so 20 comes before 40."
+   ]
+  },
+  {
+   "id": "t08-041",
+   "subtopic": "scan-c-scan",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "C-SCAN",
+    "return seek"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **60**, moving toward **higher** cylinders. Pending requests:\n\n`20, 90, 170, 45, 130, 10`\n\nUnder **C-SCAN**, the head goes to cylinder 199, returns to cylinder 0, and continues upward. **Count the return seek (199 → 0)** in the head movement. What is the total head movement?",
+   "answer": {
+    "min": 383,
+    "max": 383
+   },
+   "explanation": "Path: 60 → 90 → 130 → 170 → 199 → 0 → 10 → 20 → 45\n\n- Upward sweep: 199 − 60 = 139\n- Return: 199 − 0 = 199 (counted)\n- Second upward sweep: 45 − 0 = 45\n\nTotal = 139 + 199 + 45 = **383**.",
+   "trap": "Forgetting the return (gives 184) or stopping at 170 instead of 199."
+  },
+  {
+   "id": "t08-042",
+   "subtopic": "scan-c-scan",
+   "difficulty": 5,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "C-SCAN",
+    "return seek",
+    "working backwards",
+    "case analysis"
+   ],
+   "stem": "A disk has cylinders 0–199 and uses **C-SCAN** with the head moving toward **higher** cylinders. The head always travels to cylinder 199. If any request lies below its starting position, it then returns to cylinder 0 and continues upward to serve those requests. The return seek 199 → 0 **is counted** in head movement.\n\nPending requests: `15, 45, 110, 160`. The head started at an integer cylinder h that is not one of the request cylinders, and the total head movement was **380** cylinders.\n\nWhich values of h are possible?",
+   "options": [
+    "63 only",
+    "33 and 63",
+    "33, 63, 128 and 178",
+    "128 and 178"
+   ],
+   "answer": "C",
+   "explanation": "Total movement = (199 − h) + [199 + L], where L is the **highest request below h**. The bracket is present only if some request lies below h.\n\nL depends on where h lies, so check every interval:\n\n| Range of h | L | Total | Solve total = 380 | In range? |\n|---|---|---|---|---|\n| h < 15 | none | 199 − h ≤ 199 | impossible | no |\n| 15 < h < 45 | 15 | 413 − h | h = 33 | yes |\n| 45 < h < 110 | 45 | 443 − h | h = 63 | yes |\n| 110 < h < 160 | 110 | 508 − h | h = 128 | yes |\n| h > 160 | 160 | 558 − h | h = 178 | yes |\n\nCheck h = 178: 178 → 199 (21) → 0 (199) → 15 → 45 → 110 → 160 (160) = 380 ✓\n\nAll four values are possible: **33, 63, 128 and 178**. As h moves up one interval, the start loses distance but L gains exactly enough to make up for it.",
+   "option_feedback": [
+    "Only solves the case 45 < h < 110.",
+    "Misses the cases where h is above 110.",
+    "Correct: each interval of h gives one consistent value.",
+    "Misses the cases where h is below 110."
+   ],
+   "trap": "Assuming one formula holds for every h. The highest request below h changes from interval to interval, and every interval gives a solution."
+  },
+  {
+   "id": "t08-043",
+   "subtopic": "scan-c-scan",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "SCAN",
+    "direction"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **120**, moving toward **cylinder 0**. Pending requests: `150, 40, 90, 185, 10, 130`. Under **SCAN** (the head goes to cylinder 0 before reversing), what is the total head movement?",
+   "options": [
+    "285",
+    "268",
+    "319",
+    "305"
+   ],
+   "answer": "D",
+   "explanation": "Path: 120 → 90 → 40 → 10 → 0 → 130 → 150 → 185\n\nMovement = (120 − 0) + (185 − 0) = 120 + 185 = **305**.",
+   "option_feedback": [
+    "This is LOOK: it reverses at 10 instead of going to 0.",
+    "This goes up to 199 first and then down to 10, ignoring the stated direction.",
+    "This sweeps all the way to 0 and then to 199. SCAN reverses at 0 but only goes as far as the highest request (185) on the way up.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t08-044",
+   "subtopic": "scan-c-scan",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "SCAN",
+    "response time"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **80** at time 0, moving toward **higher** cylinders. Pending requests (all present at time 0): `30, 100, 150, 50`. The disk uses **SCAN**, going to cylinder 199 before reversing. The head moves **1 cylinder per ms**, and serving each request keeps the head stationary for **2 ms**. Reversing takes no extra time.\n\nAt what time (in ms) does service of the request for cylinder **30** complete?",
+   "answer": {
+    "min": 296,
+    "max": 296
+   },
+   "explanation": "Path: 80 → 100 → 150 → 199 → 50 → 30\n\n| Event | Time (ms) |\n|---|---|\n| reach 100 (20 cyl) | 20, served until 22 |\n| reach 150 (50 cyl) | 72, served until 74 |\n| reach 199 (49 cyl) | 123 |\n| reach 50 (149 cyl) | 272, served until 274 |\n| reach 30 (20 cyl) | 294, served until **296** |\n\nCheck: movement 119 + 169 = 288 ms, plus 4 services × 2 ms = 8 ms, gives 296 ms.",
+   "trap": "Leaving out the service time of earlier requests, or of request 30 itself (294)."
+  },
+  {
+   "id": "t08-045",
+   "subtopic": "scan-c-scan",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "SCAN",
+    "C-SCAN",
+    "waiting time"
+   ],
+   "stem": "Which of the following statements comparing **SCAN** and **C-SCAN** are true?",
+   "options": [
+    "SCAN serves requests in both directions of arm motion; C-SCAN serves in only one",
+    "Under SCAN, a request at an end cylinder that arrives just after the head leaves may wait for nearly two full sweeps",
+    "C-SCAN removes the starvation that SCAN suffers from",
+    "With the return seek counted, C-SCAN always gives less total head movement than SCAN"
+   ],
+   "answer": [
+    "A",
+    "B"
+   ],
+   "explanation": "- **A, true.** That is the defining difference between the two.\n- **B, true.** Suppose a request at cylinder 0 arrives just after a downward sweep has left it. The head must travel all the way to the top and back again, nearly two full sweeps. A request in the middle is visited about every half cycle. This unevenness is what C-SCAN fixes.\n- **C, false.** Neither SCAN nor C-SCAN starves requests, because every cylinder is visited each sweep.\n- **D, false.** With the return counted, C-SCAN's movement is (end − head) + (end − 0) + (highest low request − 0). SCAN's is (end − head) + (end − lowest request). C-SCAN's is never smaller.",
+   "option_feedback": [
+    "True.",
+    "True. The ends are disadvantaged under SCAN.",
+    "False. SCAN has no starvation to remove. C-SCAN improves the uniformity of waits.",
+    "False. It is never less, and usually more."
+   ],
+   "trap": "Thinking C-SCAN exists to reduce head movement. It exists to make waiting times uniform."
+  },
+  {
+   "id": "t08-046",
+   "subtopic": "scan-c-scan",
+   "difficulty": 4,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "SCAN",
+    "C-SCAN",
+    "worst-case waiting time"
+   ],
+   "stem": "A disk has cylinders 0–199, and the head moves at **1 cylinder per ms**. Service time is negligible. The load is heavy, so the head always sweeps the full width:\n\n- **SCAN:** 0 → 199 → 0 → …, serving in both directions.\n- **C-SCAN:** 0 → 199 serving, then returns 199 → 0 without serving. The return also takes 1 ms per cylinder (199 ms).\n\nThe **worst-case wait** at cylinder c is the time from a request's arrival at c until it is served, when it arrives just after the head has passed c. Take this as exactly the time until the head next serves c.\n\nWhich of the following are true?",
+   "options": [
+    "Under SCAN, the worst-case wait at cylinder 50 is 100 ms",
+    "Under SCAN, the worst-case wait at cylinder 0 is 398 ms",
+    "Under C-SCAN, the worst-case wait is 398 ms at every cylinder",
+    "Averaged over all 200 cylinders, the worst-case wait under C-SCAN is smaller than under SCAN"
+   ],
+   "answer": [
+    "B",
+    "C"
+   ],
+   "explanation": "**SCAN.** If the head has just passed c moving up, it goes to 199 and comes back: 2(199 − c). If it has just passed c moving down, it goes to 0 and comes back: 2c. Worst case = **2 · max(c, 199 − c)**.\n- c = 50: max(50, 149) = 149 → **298 ms**. 100 ms is only the moving-down case, so A is false.\n- c = 0: the head leaves 0 going up → 199 + 199 = **398 ms**. B is true.\n\n**C-SCAN.** Just after the head passes c (going up): (199 − c) up, 199 back, c up again = **398 ms** for every c. C is true.\n\n**Average.** For SCAN, max(c, 199 − c) averages 149.5 over c = 0…199, so the average worst-case wait is **299 ms**. That is less than C-SCAN's 398 ms, so D is false.\n\nC-SCAN makes waiting **uniform** across cylinders, which helps the edge cylinders. It does not make waits shorter overall: with a slow return, the middle cylinders get worse.",
+   "option_feedback": [
+    "False. 100 ms (2 × 50) is only the case where the head just passed going down. The worst case is 2 × 149 = 298 ms.",
+    "True. The head leaves 0 upward and needs 199 + 199 ms to come back.",
+    "True. (199 − c) + 199 + c = 398 for every c.",
+    "False. SCAN averages 299 ms. C-SCAN is uniform at 398 ms, not smaller."
+   ],
+   "trap": "Believing C-SCAN shortens worst-case waits. It only equalises them; with the return counted it is worse on average."
+  },
+  {
+   "id": "t08-047",
+   "subtopic": "scan-c-scan",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 300,
+   "concepts": [
+    "SCAN",
+    "dynamic arrivals",
+    "response time"
+   ],
+   "stem": "A disk has cylinders 0–199 and uses **SCAN**: the head always travels to the end cylinder (0 or 199) before reversing. At time 0 the head is at cylinder **100**, moving toward **higher** cylinders, at **1 cylinder per ms**. Service time is negligible. A request is served the first time the head passes its cylinder **after** the request has arrived.\n\nAt time 0, requests for **150** and **40** are pending. More requests arrive:\n\n| Arrival (ms) | Cylinder |\n|---|---|\n| 20 | 110 |\n| 60 | 190 |\n| 120 | 170 |\n| 150 | 185 |\n\nAt what time (in ms) is the **last** of these six requests served?",
+   "answer": {
+    "min": 483,
+    "max": 483
+   },
+   "explanation": "Head position: up from 100 at 1 cyl/ms, so it is at 100 + t until it reaches 199 at t = 99. After that it moves down, at 199 − (t − 99).\n\n| Request | Arrives | Head then at | Served when |\n|---|---|---|---|\n| 150 | 0 | 100 ↑ | t = 50 |\n| 110 | 20 | 120 ↑ (already passed) | on the way down: t = 99 + 89 = **188** |\n| 190 | 60 | 160 ↑ | t = 90 |\n| 170 | 120 | 178 ↓ (ahead) | t = 99 + 29 = **128** |\n| 185 | 150 | 148 ↓ (behind) | next upward sweep |\n| 40 | 0 | n/a | t = 99 + 159 = **258** |\n\nAfter 40, SCAN still continues to 0 (t = 99 + 199 = 298), reverses, and climbs to 185: t = 298 + 185 = **483**.\n\nThe last request served is 185, at **483 ms**.",
+   "trap": "Reversing at 40 instead of continuing to 0 (gives 403), or serving 185 on the downward pass even though it arrived after the head had passed it."
+  },
+  {
+   "id": "t08-048",
+   "subtopic": "scan-c-scan",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "SCAN",
+    "C-SCAN",
+    "mean waiting time",
+    "fly-back time"
+   ],
+   "stem": "Model a disk as continuous cylinders **0 to 200**. The head moves at **1 cylinder per ms**, and the load is heavy enough that the head always sweeps the full width. Each request arrives at a uniformly random time and at a uniformly random cylinder, independently. Its waiting time is the time until the head next passes its cylinder **while serving**. Service time is negligible.\n\n- **SCAN:** sweeps 0 → 200 → 0 → …, serving in both directions.\n- **C-SCAN:** sweeps 0 → 200 serving, then flies back to 0 without serving. The fly-back takes **R ms**.\n\nFor what value of R do SCAN and C-SCAN give the **same mean waiting time**? Give the answer in ms, correct to two decimal places.",
+   "answer": {
+    "min": 66.66,
+    "max": 66.67
+   },
+   "explanation": "**C-SCAN.** Every cylinder is served once per cycle of 200 + R ms. A random arrival waits a uniform time in [0, 200 + R), so the mean wait = **(200 + R)/2**.\n\n**SCAN.** The cycle is 400 ms, but cylinder c is passed at **uneven** gaps: 2(200 − c) and 2c alternately. A random arrival lands in a gap of length g with probability g/400 and then waits g/2 on average:\n\nE[wait | c] = [(2(200 − c))² + (2c)²] / (2 × 400) = [(200 − c)² + c²] / 200\n\nAverage over c uniform on [0, 200]:\n\n(1/200) ∫₀²⁰⁰ [(200 − c)² + c²]/200 dc = (2 × 200³/3) / 200² = **400/3 ≈ 133.33 ms**.\n\nThis is longer than the naive 100 ms (\"a cylinder is passed every 200 ms on average\"), because arrivals are more likely to land in the long gap.\n\n**Equate:** (200 + R)/2 = 400/3 → R = 800/3 − 200 = 200/3 ≈ **66.67 ms**.\n\nSo C-SCAN matches SCAN's mean waiting time only if its fly-back is at least 3× faster than a sweep. With the return at sweep speed (R = 200), C-SCAN's mean wait is 200 ms.",
+   "trap": "Taking SCAN's mean wait as 100 ms (half the average 200 ms between visits), which gives R = 0. The uneven gaps make SCAN's mean wait 133.33 ms."
+  },
+  {
+   "id": "t08-049",
+   "subtopic": "look-c-look",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "LOOK",
+    "SCAN"
+   ],
+   "stem": "How does **LOOK** differ from **SCAN**?",
+   "options": [
+    "LOOK reverses at the last pending request in the current direction instead of going to the end cylinder",
+    "LOOK serves requests only in one direction",
+    "LOOK always serves the nearest request next",
+    "LOOK serves requests in arrival order"
+   ],
+   "answer": "A",
+   "explanation": "Both sweep back and forth, serving requests on the way. SCAN always travels to the physical end cylinder before reversing. **LOOK** looks ahead and reverses as soon as there are no more pending requests in the current direction, which saves the useless trip to the edge.",
+   "option_feedback": [
+    "Correct.",
+    "That is C-SCAN / C-LOOK.",
+    "That is SSTF.",
+    "That is FCFS."
+   ]
+  },
+  {
+   "id": "t08-050",
+   "subtopic": "look-c-look",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 25,
+   "concepts": [
+    "C-LOOK"
+   ],
+   "stem": "Under **C-LOOK**, with the head moving toward higher cylinders, what happens after the head serves the highest-numbered pending request?",
+   "options": [
+    "It reverses and serves requests on the way down",
+    "It continues to the last cylinder, then jumps to cylinder 0",
+    "It jumps to the lowest-numbered pending request and resumes serving upward",
+    "It stays idle until a request arrives above it"
+   ],
+   "answer": "C",
+   "explanation": "C-LOOK is the LOOK version of C-SCAN. It serves upward only. After the highest pending request, it does not go to the last cylinder and does not serve on the way down. It jumps straight back to the **lowest pending request** and resumes the upward sweep from there.",
+   "option_feedback": [
+    "That is LOOK.",
+    "That is C-SCAN.",
+    "Correct.",
+    "Not a standard behaviour. Pending lower requests would starve."
+   ]
+  },
+  {
+   "id": "t08-051",
+   "subtopic": "look-c-look",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "LOOK",
+    "head movement"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **70**, moving toward **higher** cylinders. Pending requests: `20, 110, 45, 160, 90`. What is the total head movement under **LOOK**?",
+   "options": [
+    "308",
+    "140",
+    "190",
+    "230"
+   ],
+   "answer": "D",
+   "explanation": "Path: 70 → 90 → 110 → 160 → 45 → 20\n\nMovement = (160 − 70) + (160 − 20) = 90 + 140 = **230**.",
+   "option_feedback": [
+    "This is SCAN: it goes to 199 first.",
+    "This counts only the downward run (160 → 20).",
+    "This sweeps down to 20 first, ignoring the stated direction.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t08-052",
+   "subtopic": "look-c-look",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "C-LOOK",
+    "direction toward 0"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **100**, moving toward **lower** cylinders. Pending requests: `30, 150, 70, 180, 10`. In what order are they served under **C-LOOK**?",
+   "options": [
+    "70, 30, 10, 150, 180",
+    "70, 30, 10, 180, 150",
+    "150, 180, 70, 30, 10",
+    "70, 150, 30, 180, 10"
+   ],
+   "answer": "B",
+   "explanation": "C-LOOK keeps serving in the current direction only (downward): 70, 30, 10. It then jumps to the **highest** pending request (180) and continues downward: 150.\n\nPath: 100 → 70 → 30 → 10 → 180 → 150. Order: **70, 30, 10, 180, 150**.",
+   "option_feedback": [
+    "This is LOOK: it reverses and serves upward.",
+    "Correct.",
+    "This goes up first, ignoring the stated direction.",
+    "Looks like SSTF from 70. It is not a sweep."
+   ],
+   "trap": "After the jump, serving upward. When the sweep direction is toward 0, the jump goes to the highest request and continues downward."
+  },
+  {
+   "id": "t08-053",
+   "subtopic": "look-c-look",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "C-LOOK",
+    "return jump"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **55**, moving toward **higher** cylinders. Pending requests:\n\n`10, 70, 130, 25, 180, 40, 95`\n\nUnder **C-LOOK**, **count the return jump** from the highest request to the lowest request in the head movement. What is the total head movement?",
+   "answer": {
+    "min": 325,
+    "max": 325
+   },
+   "explanation": "Path: 55 → 70 → 95 → 130 → 180 → 10 → 25 → 40\n\n- Upward: 180 − 55 = 125\n- Jump 180 → 10: 170 (counted)\n- Upward: 40 − 10 = 30\n\nTotal = 125 + 170 + 30 = **325**.",
+   "trap": "Leaving out the counted jump (gives 155), or jumping to cylinder 0 as C-SCAN would."
+  },
+  {
+   "id": "t08-054",
+   "subtopic": "look-c-look",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "LOOK",
+    "service order"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **140**, moving toward **lower** cylinders. Pending requests: `175, 20, 60, 190, 100, 155`. The disk uses **LOOK**. Which of the following are correct?",
+   "options": [
+    "Total head movement is 290",
+    "155 is served before 20",
+    "The last request served is 190",
+    "SCAN (going to cylinder 0) would give the same total head movement"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "Path: 140 → 100 → 60 → 20 → 155 → 175 → 190\n\nMovement = (140 − 20) + (190 − 20) = 120 + 170 = **290** (A true).\n\n155 is served only after the reversal at 20 (B false). The last request served is 190 (C true).\n\nSCAN would go down to 0: 140 + 190 = **330**, not 290 (D false).",
+   "option_feedback": [
+    "True.",
+    "False. The head is moving down, so 155 is behind it.",
+    "True. 190 is the farthest request in the upward run.",
+    "False. SCAN gives 330. The extra 40 is the trip 20 → 0 → 20."
+   ]
+  },
+  {
+   "id": "t08-055",
+   "subtopic": "look-c-look",
+   "also_tests": [
+    "fcfs-sstf",
+    "scan-c-scan"
+   ],
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "algorithm comparison",
+    "LOOK",
+    "SSTF"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **50**, moving toward **higher** cylinders. Pending requests, in arrival order: `10, 95, 30, 150, 180, 60`. SCAN goes to the end cylinder before reversing. Which algorithm gives the **least** total head movement?",
+   "options": [
+    "LOOK",
+    "SSTF",
+    "SCAN",
+    "FCFS"
+   ],
+   "answer": "B",
+   "explanation": "| Algorithm | Path | Movement |\n|---|---|---|\n| FCFS | 50 → 10 → 95 → 30 → 150 → 180 → 60 | 460 |\n| SSTF | 50 → 60 → 30 → 10 → 95 → 150 → 180 | 230 |\n| SCAN ↑ | 50 → 60 → 95 → 150 → 180 → 199 → 30 → 10 | 338 |\n| LOOK ↑ | 50 → 60 → 95 → 150 → 180 → 30 → 10 | 300 |\n\nSSTF wins. It takes 60 (10 away). From there, 30 (30 away) beats 95 (35 away), so it clears the low end and then sweeps up once: 10 + 50 + 170 = 230. LOOK is forced upward first and must come back down the long way: 130 + 170 = 300.",
+   "option_feedback": [
+    "LOOK must honour the upward direction: 300.",
+    "Correct: 230.",
+    "Going to 199 first costs 338.",
+    "Arrival order zigzags: 460."
+   ],
+   "trap": "Assuming LOOK always beats SSTF. The fixed initial direction can make it pay for the long side twice."
+  },
+  {
+   "id": "t08-056",
+   "subtopic": "look-c-look",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "C-LOOK",
+    "LOOK",
+    "average response time",
+    "fly-back cost"
+   ],
+   "stem": "A disk has cylinders 0–199. The head is at **100**, moving toward **lower** cylinders. Pending requests (all present at time 0): `120, 30, 85, 160, 45, 195`. Head movement costs **0.2 ms per cylinder**, and service time is negligible. Compare:\n\n- **LOOK:** reverses at the last request in its direction.\n- **C-LOOK:** after the lowest request, flies back to the **highest** pending request in a fixed **J ms** (whatever the distance), then continues downward.\n\nWhat is the **largest** J (in ms) for which C-LOOK's **average response time** (time from 0 until a request is served, averaged over the six requests) is no worse than LOOK's? Give the answer correct to two decimal places.",
+   "answer": {
+    "min": 18.33,
+    "max": 18.34
+   },
+   "explanation": "**LOOK:** 100 → 85 → 45 → 30 → 120 → 160 → 195\n\n| Request | Cylinders from start | Served at (ms) |\n|---|---|---|\n| 85 | 15 | 3 |\n| 45 | 55 | 11 |\n| 30 | 70 | 14 |\n| 120 | 70 + 90 = 160 | 32 |\n| 160 | 200 | 40 |\n| 195 | 235 | 47 |\n\nSum = **147**.\n\n**C-LOOK:** 100 → 85 → 45 → 30 ⇒ 195 → 160 → 120\n\n| Request | Served at (ms) |\n|---|---|\n| 85, 45, 30 | 3, 11, 14 |\n| 195 | 14 + J |\n| 160 | 14 + J + 7 = 21 + J |\n| 120 | 21 + J + 8 = 29 + J |\n\nSum = 28 + 64 + 3J = **92 + 3J**.\n\nC-LOOK is no worse when 92 + 3J ≤ 147, i.e. J ≤ 55/3 = **18.33 ms**.\n\nComparing only the time to finish everything gives a different threshold: 29 + J ≤ 47 → J ≤ 18. The two criteria disagree because the fly-back delays three requests at once.",
+   "trap": "Comparing finishing times (giving 18) instead of average response time, or charging the fly-back per cylinder."
+  },
+  {
+   "id": "t08-057",
+   "subtopic": "look-c-look",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "LOOK",
+    "initial direction"
+   ],
+   "stem": "A disk uses **LOOK**. The head is at **60** and may start in **either** direction. The controller picks the initial direction that minimizes total head movement. Pending requests: `10, 75, 90, 140, 25`. What is the resulting total head movement?",
+   "options": [
+    "180",
+    "210",
+    "130",
+    "260"
+   ],
+   "answer": "A",
+   "explanation": "- Start upward: 60 → 140 → 10 = (140 − 60) + (140 − 10) = 80 + 130 = **210**\n- Start downward: 60 → 10 → 140 = (60 − 10) + (140 − 10) = 50 + 130 = **180**\n\nThe minimum is **180** (downward first).\n\nGeneral rule: LOOK covers (max − min) once, plus the distance to whichever extreme is visited first. So it should go first toward the **nearer** extreme: here 10, at distance 50, versus 140, at distance 80.",
+   "option_feedback": [
+    "Correct.",
+    "This starts upward, toward the farther extreme.",
+    "Only the span max − min. The head still has to reach one extreme first.",
+    "This counts both extremes twice."
+   ],
+   "trap": "Heading toward the closest request (75) instead of the closer extreme."
+  },
+  {
+   "id": "t08-058",
+   "subtopic": "look-c-look",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "LOOK",
+    "C-LOOK",
+    "SCAN"
+   ],
+   "stem": "Which of the following statements are true for the same starting head position, initial direction and request queue (no new arrivals), with requests on both sides of the head?",
+   "options": [
+    "LOOK's total head movement is never more than SCAN's",
+    "C-LOOK's total head movement with the jump counted is never more than LOOK's",
+    "If no request lies behind the head (opposite to its direction), LOOK and C-LOOK give the same movement",
+    "LOOK can starve requests at the extreme cylinders, like SSTF"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- **A, true.** LOOK's path is SCAN's path with the useless trip to the end cylinder cut off, so it is never longer.\n- **B, false.** LOOK (moving up) costs (max − h) + (max − min). C-LOOK with the jump counted costs (max − h) + (max − min) + (highest request below h − min). That is **≥ LOOK**.\n- **C, true.** With no requests behind the head, there is no reversal or jump, so both paths are identical.\n- **D, false.** LOOK still sweeps, so every pending request is reached within one cycle. Only SSTF-style greedy choice causes starvation.",
+   "option_feedback": [
+    "True. It drops the extra trip to the end.",
+    "False. C-LOOK's counted jump makes it at least as long as LOOK.",
+    "True. Neither reverses nor jumps.",
+    "False. Bounded waiting holds for sweep algorithms."
+   ],
+   "trap": "Assuming the circular variants reduce movement. They trade movement for more uniform waiting."
+  },
+  {
+   "id": "t08-059",
+   "subtopic": "look-c-look",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "C-LOOK",
+    "dynamic arrivals",
+    "fly-back",
+    "reversal decision"
+   ],
+   "stem": "A disk has cylinders 0–199 and uses **C-LOOK** in the upward direction. The head moves up at **1 cylinder per ms**, serving requests as it reaches them. When no **already-arrived** request lies above the head, it flies back to the **lowest already-arrived pending** request. The fly-back takes a fixed **10 ms**, and its target is fixed when it starts: requests arriving during a fly-back are considered only after it lands. Service time is negligible.\n\nAt time 0 the head is at cylinder **100**, and requests for **130, 40, 70** are pending. More requests arrive:\n\n| Arrival (ms) | Cylinder |\n|---|---|\n| 20 | 125 |\n| 25 | 150 |\n| 40 | 90 |\n| 55 | 20 |\n| 65 | 60 |\n| 100 | 160 |\n\nAt what time (in ms) is the request for cylinder **20** served?",
+   "answer": {
+    "min": 190,
+    "max": 190
+   },
+   "explanation": "Head position on an upward sweep from cylinder c₀ at time t₀: c₀ + (t − t₀).\n\n| Time | Head | Event |\n|---|---|---|\n| 20 | 120 ↑ | 125 arrives (ahead) |\n| 25 | 125 | serve 125; 150 arrives (ahead) |\n| 30 | 130 | serve 130; 150 is still ahead, so keep going up |\n| 40 | 140 ↑ | 90 arrives (below the head) |\n| 50 | 150 | serve 150; nothing above. Pending: 40, 70, 90 → fly back to **40** |\n| 55 | flying | 20 arrives; it cannot change this fly-back's target |\n| 60 | 40 | land, serve 40, sweep up |\n| 65 | 45 ↑ | 60 arrives (ahead) |\n| 80 | 60 | serve 60 |\n| 90 | 70 | serve 70 |\n| 100 | 80 ↑ | 160 arrives (ahead) |\n| 110 | 90 | serve 90; 160 is still ahead |\n| 180 | 160 | serve 160; nothing above. Pending: 20 → fly back |\n| **190** | 20 | serve 20 |\n\nThe request for 20 is served at **190 ms**, 135 ms after it arrived. It arrived just after a fly-back had started, so it had to wait for the whole next sweep.",
+   "trap": "Re-targeting the fly-back to 20 when it arrives (giving 60), flying back at t = 30 without noticing that 150 has already arrived, or ending the second sweep at 90 without 160 (giving 120)."
+  },
+  {
+   "id": "t08-060",
+   "subtopic": "look-c-look",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 300,
+   "concepts": [
+    "LOOK",
+    "dynamic arrivals"
+   ],
+   "stem": "A disk uses **LOOK**: the head reverses at a cylinder only when **no request that has already arrived** lies further in its current direction. At time 0 the head is at cylinder **100**, moving toward **higher** cylinders, at **1 cylinder per ms**. Service time is negligible, and a request is served when the head reaches its cylinder after the request's arrival.\n\nAt time 0, requests for **130** and **60** are pending. More requests arrive:\n\n| Arrival (ms) | Cylinder |\n|---|---|\n| 20 | 90 |\n| 25 | 160 |\n| 50 | 140 |\n| 135 | 70 |\n| 150 | 175 |\n\nAt what time (in ms) is the **last** request served?",
+   "answer": {
+    "min": 275,
+    "max": 275
+   },
+   "explanation": "| Time | Head | Event |\n|---|---|---|\n| 20 | 120 ↑ | 90 arrives (behind) |\n| 25 | 125 ↑ | 160 arrives (ahead) |\n| 30 | 130 | serve 130. 160 is still ahead, so keep going up |\n| 50 | 150 ↑ | 140 arrives (behind) |\n| 60 | 160 | serve 160. Nothing pending above, so **reverse** |\n| 80 | 140 ↓ | serve 140 |\n| 130 | 90 ↓ | serve 90 |\n| 135 | 85 ↓ | 70 arrives (ahead) |\n| 150 | 70 ↓ | serve 70. 175 arrives (behind) |\n| 160 | 60 | serve 60. Nothing pending below, so **reverse** |\n| 275 | 175 | serve 175 |\n\nThe last request (175) is served at **275 ms**. There are two reversals in total. Note that 160 arrived *before* the head reached 130, so LOOK did not reverse at 130.",
+   "trap": "Reversing at 130 because 160 was not in the initial queue, or treating 175 as ahead at t = 150."
+  },
+  {
+   "id": "t08-061",
+   "subtopic": "disk-structure",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "sector interleaving",
+    "controller overhead",
+    "rotation time"
+   ],
+   "stem": "A disk spins at **5000 rpm** and has **24 sectors per track**. After reading a sector, the controller needs **0.8 ms** to copy it to memory and cannot read another sector during that time (it has a one-sector buffer).\n\nTo avoid missing sectors, the track is **interleaved** with factor k: logical sector i is stored in physical slot **(i × k) mod 24**, for i = 0 … 23. k must give every logical sector its own slot.\n\nAt time 0 the head is at the start of logical sector 0. Using the **smallest usable k**, how long (in ms) does it take to read all 24 logical sectors in logical order? Count until the last sector has passed under the head, and ignore its final copy.",
+   "answer": {
+    "min": 58,
+    "max": 58
+   },
+   "explanation": "Rotation = 60 / 5000 s = **12 ms**; one slot passes in 12 / 24 = **0.5 ms**.\n\n**Timing condition.** If logical sector i starts at time t, it ends at t + 0.5 and the controller is busy until t + 1.3. Logical i + 1 starts k slots after i, at t + 0.5k. So 0.5k ≥ 1.3, i.e. k ≥ 2.6. **Timing alone requires k ≥ 3.**\n\n**Layout condition.** i → (i × k) mod 24 gives every sector its own slot only if gcd(k, 24) = 1.\n- k = 3: slots 0, 3, …, 21, then logical 8 lands on slot 0 again ✗\n- k = 4: gcd 4 ✗\n- k = 5: gcd 1 ✓\n\nSo **k = 5**.\n\n**Time.** Logical sector 23 starts 23 × 5 slots after logical 0, at 23 × 2.5 = 57.5 ms, and ends at **58 ms**. That is about 4.8 revolutions.\n\nCompare k = 1, with no interleaving: every next sector is missed and costs an extra revolution, so 23 × 12.5 + 0.5 = 288 ms.",
+   "trap": "Taking k = 3 from the timing condition alone (giving 35 ms). With 24 slots, a factor of 3 maps two logical sectors to the same slot."
+  },
+  {
+   "id": "t08-062",
+   "subtopic": "look-c-look",
+   "difficulty": 5,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "LOOK",
+    "C-LOOK",
+    "arm stickiness",
+    "optimality"
+   ],
+   "stem": "A disk has cylinders 0–199. **SCAN** goes to the end cylinder before reversing. **C-LOOK** jumps from the last request in its direction to the farthest request on the other side, and the jump **is counted** in head movement. Unless stated otherwise, the request queue is fixed (no new arrivals), and the comparisons use the same start cylinder and initial direction.\n\nWhich of the following statements are true?",
+   "options": [
+    "If new requests keep arriving for the cylinder under the head, and each is served before the head moves on, LOOK can postpone a request at another cylinder indefinitely",
+    "C-LOOK's total head movement can be larger than SCAN's for the same queue",
+    "If every pending request lies behind the head (opposite to its direction of motion), LOOK and C-LOOK give the same total head movement",
+    "For a fixed queue, LOOK started in the better of the two directions always achieves the minimum possible total head movement over all service orders"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "D"
+   ],
+   "explanation": "- **A, true.** This is **arm stickiness**. If requests keep arriving for the current cylinder and each is served on arrival, the head never moves on. LOOK, SCAN and SSTF all suffer from it. N-step SCAN and FSCAN freeze the queue for each sweep to prevent it.\n- **B, true.** Head 100 moving up, requests 10, 90, 199. SCAN: 100 → 199 → 10 = 99 + 189 = **288**. C-LOOK: 100 → 199, jump to 10, up to 90 = 99 + 189 + 80 = **368**. The C-LOOK jump covers the same span as SCAN's return, and then C-LOOK has to climb again.\n- **C, false.** Head 100 moving up, requests 20, 50, 80. LOOK reverses at once: 100 → 80 → 50 → 20 = **80**. C-LOOK jumps to the lowest and climbs: 100 → 20 (80), then 50, 80 (60) = **140**.\n- **D, true.** For requests on a line, an optimal order goes to one extreme and then to the other, costing min(h − lo, hi − h) + (hi − lo). Some order must reach both lo and hi, and whichever it reaches first, it still has to cross from there to the other extreme. LOOK in the better direction is exactly that path.",
+   "option_feedback": [
+    "True. Arm stickiness: repeated requests at the current cylinder can monopolise the arm.",
+    "True. Example: head 100 up, queue 10, 90, 199 gives SCAN 288 and C-LOOK 368.",
+    "False. With all requests behind the head, LOOK simply reverses, but C-LOOK jumps to the far end and sweeps back (80 vs 140 in the example).",
+    "True. The optimal static schedule is a single turn at the nearer extreme, which is LOOK in the better direction."
+   ],
+   "trap": "Assuming that, with no requests ahead, C-LOOK behaves like LOOK. It still jumps to the far end and sweeps the same way, so it moves more."
+  },
+  {
+   "id": "t08-063",
+   "subtopic": "disk-structure",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "interrupt-driven I/O",
+    "DMA",
+    "CPU overhead"
+   ],
+   "stem": "A device transfers data at a steady **40 KB/s** (1 KB = 1000 bytes). Two designs are compared:\n\n- **Interrupt-driven I/O:** one interrupt per byte, and each interrupt costs the CPU **5 µs**.\n- **DMA:** data moves in **1000-byte blocks**, and the CPU spends a total of **100 µs per block** (setting up the transfer plus handling the completion interrupt). Ignore any slowdown from memory-cycle stealing.\n\nBy what **factor** does DMA reduce the fraction of CPU time spent on this device? (Give interrupt-driven fraction ÷ DMA fraction.)",
+   "answer": {
+    "min": 50,
+    "max": 50
+   },
+   "explanation": "Work per second of transfer:\n\n**Interrupt-driven:** 40 000 bytes/s → 40 000 interrupts/s × 5 µs = 200 000 µs = 0.2 s of CPU per second, so **20%**.\n\n**DMA:** 40 000 / 1000 = 40 blocks/s × 100 µs = 4000 µs = 0.004 s per second, so **0.4%**.\n\nFactor = 20% / 0.4% = **50**.\n\nDMA wins because the CPU pays a fixed cost per **block** instead of per **byte**, even though each DMA event is 20 times more expensive than one byte interrupt.",
+   "trap": "Comparing the per-event costs (100 µs vs 5 µs) and concluding that DMA is 20 times worse, without accounting for 1000 bytes per DMA event."
+  },
+  {
+   "id": "t08-064",
+   "subtopic": "disk-structure",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "zoned bit recording",
+    "disk capacity",
+    "CAV"
+   ],
+   "stem": "A disk has 1000 cylinders, numbered 0 (outermost) to 999 (innermost), and uses **zoned bit recording**:\n\n| Zone | Cylinders | Sectors per track |\n|---|---|---|\n| Outer | 0–299 | 1000 |\n| Middle | 300–699 | 800 |\n| Inner | 700–999 | 600 |\n\nWithout zoning, every track would have to use the sector count that fits on the **innermost** zone (600 sectors per track). The number of surfaces and the sector size are the same in both formats.\n\nBy what **percentage** does zoning increase the disk's capacity? Give the answer correct to two decimal places.",
+   "answer": {
+    "min": 33.32,
+    "max": 33.34
+   },
+   "explanation": "Surfaces and sector size multiply both capacities equally, so compare **sectors per surface**.\n\n**Zoned:**\n\n| Zone | Tracks | Sectors/track | Sectors |\n|---|---|---|---|\n| Outer | 300 | 1000 | 300 000 |\n| Middle | 400 | 800 | 320 000 |\n| Inner | 300 | 600 | 180 000 |\n| **Total** | 1000 | | **800 000** |\n\n**Unzoned:** 1000 tracks × 600 = **600 000** sectors.\n\nIncrease = (800 000 − 600 000) / 600 000 = 1/3 = **33.33%**.\n\nWithout zoning, the inner tracks set the bit density, which wastes length on the outer tracks. Zoning recovers some of it.",
+   "trap": "Counting the middle zone as 300 cylinders (700 − 300 = 400, not 300), or dividing by the zoned capacity and getting 25%."
+  }
+ ]
+}

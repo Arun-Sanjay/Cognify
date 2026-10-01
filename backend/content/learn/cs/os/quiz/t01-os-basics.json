@@ -1,0 +1,1362 @@
+{
+ "topic_id": "t01-os-basics",
+ "questions": [
+  {
+   "id": "t01-001",
+   "subtopic": "types-of-os",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "multiprogramming",
+    "CPU utilization"
+   ],
+   "stem": "The primary objective of a **multiprogramming** operating system is to",
+   "options": [
+    "Allow several users to interact with the computer at the same time",
+    "Maximise CPU utilisation by switching to another job whenever the running job waits for I/O",
+    "Guarantee that every job finishes before a fixed deadline",
+    "Spread the computation over several machines connected by a network"
+   ],
+   "answer": "B",
+   "explanation": "Multiprogramming keeps several jobs in memory so that when the running job waits for I/O the CPU is switched to another job. The goal is to **keep the CPU busy**, i.e. maximise CPU utilisation. Short interactive response time is the goal of *time-sharing* (multitasking), which is built on top of multiprogramming by adding time-slice preemption.",
+   "option_feedback": [
+    "That is time-sharing (interactive multi-user); multiprogramming alone has no interactivity requirement.",
+    "Correct — overlap one job's I/O with another job's CPU use.",
+    "That describes a hard real-time system.",
+    "That describes a distributed OS."
+   ],
+   "trap": "Confusing multiprogramming (CPU utilisation) with time-sharing (response time)."
+  },
+  {
+   "id": "t01-002",
+   "subtopic": "types-of-os",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "real-time OS",
+    "hard vs soft deadline"
+   ],
+   "stem": "Which property defines a **hard real-time** operating system?",
+   "options": [
+    "It maximises average throughput of jobs",
+    "It gives real-time tasks higher priority, but an occasional missed deadline is acceptable",
+    "Critical tasks are guaranteed to complete within their deadlines; a missed deadline counts as failure",
+    "It supports a large number of simultaneous interactive users"
+   ],
+   "answer": "C",
+   "explanation": "In a hard real-time system a missed deadline is a system failure (e.g. airbag controller, pacemaker), so the OS must *guarantee* that critical tasks complete within their deadlines — timing must be bounded and predictable. Soft real-time systems only give critical tasks priority; an occasional miss degrades quality but is tolerated (e.g. video streaming). High throughput and many interactive users are not the defining goals.",
+   "option_feedback": [
+    "Throughput is a batch/multiprogramming metric; real-time cares about predictability, not average throughput.",
+    "That is soft real-time.",
+    "Correct — guaranteed, bounded response is the defining property.",
+    "That is time-sharing."
+   ]
+  },
+  {
+   "id": "t01-003",
+   "subtopic": "types-of-os",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "time-sharing",
+    "preemption",
+    "response time"
+   ],
+   "stem": "A multiprogrammed batch system is converted into a **time-sharing** system. Which mechanism must be added?",
+   "options": [
+    "A timer that preempts the running job after a fixed time slice",
+    "Keeping more than one job in main memory at the same time",
+    "Spooling of card-reader input to disk",
+    "Grouping jobs with similar requirements into batches"
+   ],
+   "answer": "A",
+   "explanation": "A multiprogrammed batch system switches jobs only when the running job blocks (e.g. for I/O). A CPU-bound job could then hold the CPU for a long time, giving terrible response to interactive users. Time-sharing adds a **timer interrupt** that preempts the running process after a time quantum, so every user gets the CPU frequently and response time stays small. Multiple jobs in memory already exist in multiprogramming; spooling and offline job batching are batch-era techniques.",
+   "option_feedback": [
+    "Correct — time-slice preemption is what turns multiprogramming into time-sharing.",
+    "Already present in any multiprogrammed system.",
+    "Spooling overlaps I/O of different jobs; it does not provide interactive response.",
+    "That is the batch idea itself, not what time-sharing adds."
+   ],
+   "trap": "Thinking 'multiple jobs in memory' is what distinguishes time-sharing."
+  },
+  {
+   "id": "t01-004",
+   "subtopic": "types-of-os",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "distributed OS",
+    "loosely coupled"
+   ],
+   "stem": "Which statement correctly describes a **distributed operating system**?",
+   "options": [
+    "Several processors share a common memory and a common clock",
+    "A single processor rapidly switches among many interactive users",
+    "Jobs are collected offline and executed one after another without user interaction",
+    "Processors with their own local memory and clock communicate over a network, and the failure of one node need not stop the rest"
+   ],
+   "answer": "D",
+   "explanation": "A distributed system is a collection of *loosely coupled* processors, each with its own local memory and clock, communicating over a network. A distributed OS makes them appear as one system and gives resource sharing, computation speed-up, reliability (one node failing does not stop the others) and communication. Processors sharing one memory and one clock are a *tightly coupled* multiprocessor; a single CPU switching between users is time-sharing.",
+   "option_feedback": [
+    "That is a tightly coupled (shared-memory) multiprocessor.",
+    "That is time-sharing on a uniprocessor.",
+    "That is a batch system.",
+    "Correct — loosely coupled, message-passing, improved reliability."
+   ]
+  },
+  {
+   "id": "t01-005",
+   "subtopic": "types-of-os",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "batch OS",
+    "multiprogramming"
+   ],
+   "stem": "Which of the following statements about a simple (uniprogrammed) **batch** operating system are correct?",
+   "options": [
+    "Users do not interact with their job while it runs",
+    "While one job waits for I/O, the CPU executes another job in memory",
+    "Jobs with similar requirements are grouped together to reduce set-up time",
+    "Response time for each user is typically a few seconds or less"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- **A — true.** Jobs are submitted (originally on cards/tape) and run without the user interacting with them.\n- **B — false.** A uniprogrammed batch system keeps one job in memory; the CPU idles while that job does I/O. Overlapping is what multiprogramming adds.\n- **C — true.** Grouping jobs with similar needs (e.g. all FORTRAN jobs) reduced set-up time — the origin of the name.\n- **D — false.** Turnaround in batch systems is long (hours); short response time is a time-sharing goal.",
+   "option_feedback": [
+    "Correct — no interaction during execution.",
+    "That is multiprogramming, not a simple batch system.",
+    "Correct — batching similar jobs reduces set-up overhead.",
+    "Batch turnaround is long; small response time is a time-sharing property."
+   ]
+  },
+  {
+   "id": "t01-006",
+   "subtopic": "types-of-os",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "multiprogramming",
+    "CPU utilization",
+    "probabilistic model"
+   ],
+   "stem": "In a multiprogramming system each process spends 80% of its time waiting for I/O. Assume the processes wait independently of one another and the CPU is busy whenever at least one process is not waiting for I/O. With **4** such processes in memory, what is the CPU utilisation, in percent (correct to two decimal places)?",
+   "answer": {
+    "min": 59.04,
+    "max": 59.04
+   },
+   "explanation": "The CPU is idle only when **all** processes are waiting for I/O at the same time.\n\n- P(one process waiting) = p = 0.8\n- P(all 4 waiting) = 0.8⁴ = 0.4096\n- CPU utilisation = 1 − pⁿ = 1 − 0.4096 = 0.5904 = **59.04%**",
+   "trap": "Using 1 − 0.8 × 4 or 4 × 0.2 = 80% (adding instead of using the independent-idle probability)."
+  },
+  {
+   "id": "t01-007",
+   "subtopic": "types-of-os",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "real-time OS",
+    "hard vs soft deadline"
+   ],
+   "stem": "Which of the following systems should be built on a **hard** real-time operating system?",
+   "options": [
+    "A video-streaming player that should display 30 frames per second",
+    "An automobile airbag controller",
+    "A monthly payroll run processed overnight",
+    "An anti-lock braking (ABS) controller"
+   ],
+   "answer": [
+    "B",
+    "D"
+   ],
+   "explanation": "Hard real-time = missing a deadline causes failure or danger; the OS must guarantee bounded response.\n\n- **A — soft.** A late video frame causes a glitch, not a failure.\n- **B — hard.** Airbag deployment must happen within milliseconds of the crash being sensed.\n- **C — not real-time at all** in the usual sense; a payroll batch run has no tight deadline.\n- **D — hard.** An anti-lock braking controller missing its control deadline can cause an accident.",
+   "option_feedback": [
+    "Soft real-time — occasional misses are tolerable.",
+    "Correct — a missed deadline is catastrophic.",
+    "A batch job; no real-time requirement.",
+    "Correct — a safety-critical control loop."
+   ]
+  },
+  {
+   "id": "t01-008",
+   "subtopic": "types-of-os",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "time-sharing",
+    "round robin",
+    "response time",
+    "context switch"
+   ],
+   "stem": "A time-sharing system runs **10** CPU-bound processes in round-robin order. Every process always uses its full time quantum of q ms, and each context switch takes **2 ms**. The designers require that, from the moment a process's quantum ends, the process gets the CPU again within **200 ms**. What is the **largest** integer value of q (in ms) that satisfies this requirement?",
+   "answer": {
+    "min": 20,
+    "max": 20
+   },
+   "explanation": "After process P₁'s quantum ends, the CPU does:\n\n```\nswitch → P2 runs q → switch → P3 runs q → … → P10 runs q → switch → P1\n```\n\n- Quanta of other processes: 9 × q\n- Context switches: P1→P2, P2→P3, …, P9→P10, P10→P1 = **10** switches = 20 ms\n\nWaiting time = 9q + 20 ≤ 200 → 9q ≤ 180 → q ≤ 20.\n\nLargest q = **20 ms**.",
+   "trap": "Counting 10 quanta instead of 9 (10q + 20 ≤ 200 → q = 18) — P1's own next quantum starts, it does not need to finish, within the bound."
+  },
+  {
+   "id": "t01-009",
+   "subtopic": "types-of-os",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 210,
+   "concepts": [
+    "degree of multiprogramming",
+    "CPU utilization",
+    "memory sizing"
+   ],
+   "stem": "A machine has **1024 MB** of main memory. The OS permanently occupies **256 MB** and every user process needs exactly **128 MB**; as many processes as fit are kept in memory. Each process spends **80%** of its time waiting for I/O, independently of the others, and the CPU is idle only when every process in memory is waiting.\n\nMemory can be added only in **256 MB modules**. What is the **minimum** amount of memory (in MB) that must be added so that CPU utilisation becomes **at least 90%**?",
+   "answer": {
+    "min": 768,
+    "max": 768
+   },
+   "explanation": "**Current state.** User memory = 1024 − 256 = 768 MB → n = 768 / 128 = 6 processes → utilisation = 1 − 0.8⁶ = 1 − 0.2621 = 73.79%.\n\n**Processes needed.** 1 − 0.8ⁿ ≥ 0.9 ⇔ 0.8ⁿ ≤ 0.1.\n\n| n | 0.8ⁿ | utilisation |\n|---|---|---|\n| 10 | 0.1074 | 89.26% |\n| 11 | 0.0859 | 91.41% |\n\n(n ≥ log 0.1 / log 0.8 = 10.32 → n = 11.)\n\n**Memory needed.** 256 + 11 × 128 = 1664 MB → at least 1664 − 1024 = 640 MB more.\n\n**Module granularity.** 640 MB is not a multiple of 256 MB: 2 modules (512 MB) give 1536 MB → 10 processes → 89.26% (not enough); 3 modules (768 MB) give 1792 MB → 12 processes → 93.13%.\n\nMinimum addition = **768 MB**.",
+   "trap": "Stopping at 640 MB (ignoring the 256 MB module size), or rounding n = 10.32 down to 10 and answering 512 MB."
+  },
+  {
+   "id": "t01-010",
+   "subtopic": "types-of-os",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 270,
+   "concepts": [
+    "multiprogramming",
+    "CPU utilization",
+    "I/O overlap"
+   ],
+   "stem": "Three jobs are loaded at time 0 in a **multiprogrammed** system with one CPU and **one** I/O device. Each job does CPU, then I/O, then CPU:\n\n| Job | CPU burst | I/O burst | CPU burst |\n|---|---|---|---|\n| J1 | 10 | 30 | 10 |\n| J2 | 20 | 20 | 10 |\n| J3 | 10 | 10 | 20 |\n\n(times in ms). The CPU is scheduled FCFS, **non-preemptive**, with initial ready-queue order J1, J2, J3; a job returning from I/O joins the tail of the ready queue. The I/O device serves requests FCFS, one at a time. Ignore all overheads. What is the CPU utilisation (in percent, correct to two decimal places) over the interval from time 0 until all three jobs finish?",
+   "answer": {
+    "min": 88.88,
+    "max": 88.89
+   },
+   "explanation": "Trace both resources:\n\n| Time | CPU | I/O device | Events |\n|---|---|---|---|\n| 0–10 | J1 | idle | J1 → I/O at 10 |\n| 10–30 | J2 | J1 (10–40) | J2 wants I/O at 30, device busy → queued |\n| 30–40 | J3 | J1 | at 40: J1's I/O done (J1 ready), J3 wants I/O → queued behind J2 |\n| 40–50 | J1 | J2 (40–60) | J1 finishes at 50 |\n| 50–60 | **idle** | J2 | nothing ready |\n| 60–70 | J2 | J3 (60–70) | J2 finishes at 70; J3's I/O done at 70 |\n| 70–90 | J3 | idle | J3 finishes at 90 |\n\n- Total CPU work = (10+10) + (20+10) + (10+20) = 80 ms\n- Elapsed time = 90 ms\n- Utilisation = 80 / 90 = 0.8889 → **88.89%**\n\n(For comparison, uniprogrammed batch would take 50 + 50 + 40 = 140 ms → 80/140 = 57.14%.)",
+   "trap": "Assuming J3's I/O can run in parallel with J2's (only one I/O device) — that gives a shorter schedule and a higher utilisation."
+  },
+  {
+   "id": "t01-011",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "mode bit",
+    "dual-mode operation"
+   ],
+   "stem": "In the dual-mode convention used by Silberschatz–Galvin, the hardware **mode bit** is",
+   "options": [
+    "1 in kernel mode and 0 in user mode",
+    "0 in both modes; only a separate privilege register changes",
+    "0 in kernel mode and 1 in user mode",
+    "1 in both modes; it is toggled only during interrupts"
+   ],
+   "answer": "C",
+   "explanation": "The mode bit indicates the current mode: **0 = kernel (monitor/supervisor) mode, 1 = user mode**. At boot the hardware starts in kernel mode; the OS sets the bit to 1 before handing control to a user program; any trap or interrupt sets it back to 0.",
+   "option_feedback": [
+    "Reversed.",
+    "A single bit that never changes could not distinguish the two modes.",
+    "Correct.",
+    "The bit must differ between the two modes."
+   ]
+  },
+  {
+   "id": "t01-012",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "privileged instruction"
+   ],
+   "stem": "A **privileged instruction** is one that",
+   "options": [
+    "can be executed in user mode only after the process requests permission through a system call",
+    "can be executed only in kernel mode; attempting it in user mode causes a trap to the OS",
+    "is executed faster because it bypasses the cache",
+    "is any instruction that accesses main memory"
+   ],
+   "answer": "B",
+   "explanation": "Privileged instructions (e.g. I/O instructions, loading the timer, disabling interrupts, changing memory-protection registers) may be executed **only in kernel mode**. If a user-mode program tries to execute one, the hardware does not execute it; it traps to the OS, which normally terminates the program.",
+   "option_feedback": [
+    "A system call runs the OS's code in kernel mode; it never lets the user program itself execute a privileged instruction.",
+    "Correct.",
+    "Privilege has nothing to do with speed or caching.",
+    "Ordinary loads/stores are unprivileged (protected by base/limit or paging instead)."
+   ]
+  },
+  {
+   "id": "t01-013",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "trap",
+    "interrupt",
+    "exception"
+   ],
+   "stem": "Which statement correctly distinguishes a **trap** (software interrupt / exception) from a hardware **interrupt**?",
+   "options": [
+    "A trap is raised by an I/O device; an interrupt is raised by the running program",
+    "A trap leaves the CPU in user mode; an interrupt switches it to kernel mode",
+    "A trap can be ignored by the OS; an interrupt cannot",
+    "A trap is synchronous with the executing instruction (e.g. system call, divide-by-zero); an interrupt is asynchronous, raised by hardware such as a timer or disk"
+   ],
+   "answer": "D",
+   "explanation": "A trap is **synchronous**: it is caused by the instruction currently executing — a system-call instruction, a divide-by-zero, an invalid memory access, a page fault. A hardware interrupt is **asynchronous**: raised by a device (disk controller, timer) independently of the instruction stream. Both switch the CPU to kernel mode and transfer control through the interrupt/trap vector.",
+   "option_feedback": [
+    "Reversed.",
+    "Both traps and interrupts enter kernel mode.",
+    "The OS must handle both; neither is 'ignorable' by definition.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t01-014",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "privileged instruction"
+   ],
+   "stem": "Which of the following operations should be **privileged** (allowed only in kernel mode)?",
+   "options": [
+    "Turn off interrupts",
+    "Issue a trap (system-call) instruction",
+    "Modify entries in the device-status table",
+    "Read the time-of-day clock"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- **A — privileged.** If a user program could turn off interrupts it could stop the timer and keep the CPU forever.\n- **B — not privileged.** The trap / syscall instruction is precisely how a user program *asks* to enter the kernel; it must be executable in user mode.\n- **C — privileged.** The device-status table is kernel data; corrupting it would break I/O for every process.\n- **D — not privileged.** Reading the time-of-day clock harms nobody (setting it, or setting the timer, is privileged).",
+   "option_feedback": [
+    "Correct — must be privileged.",
+    "The trap instruction is the user's legitimate gateway into the kernel.",
+    "Correct — kernel data structure.",
+    "Reading is harmless; *setting* the clock/timer is privileged."
+   ],
+   "trap": "Marking 'issue a trap instruction' as privileged — then no program could ever make a system call."
+  },
+  {
+   "id": "t01-015",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "system call",
+    "mode switch",
+    "trap"
+   ],
+   "stem": "Arrange the events of a `read()` system call in the order they occur:\n\n1. The kernel looks up the system-call number in the system-call table and runs the handler.\n2. The library wrapper places the system-call number and arguments in registers.\n3. A return-from-trap instruction sets the mode bit to user and resumes the program.\n4. The trap instruction switches the mode bit to kernel and jumps through the trap vector.",
+   "options": [
+    "2 → 4 → 1 → 3",
+    "4 → 2 → 1 → 3",
+    "2 → 1 → 4 → 3",
+    "2 → 4 → 3 → 1"
+   ],
+   "answer": "A",
+   "explanation": "1. **2** — the user-space wrapper (e.g. glibc `read`) loads the call number and arguments into registers.\n2. **4** — it executes the trap / `syscall` instruction: hardware saves state, sets mode bit = 0 (kernel) and jumps to the fixed trap-handler entry point.\n3. **1** — the trap handler indexes the system-call table with the number and runs `sys_read`.\n4. **3** — the handler places the return value in a register and executes return-from-trap, restoring mode bit = 1.\n\nOrder: **2 → 4 → 1 → 3**.",
+   "option_feedback": [
+    "Correct.",
+    "Arguments must be set up before the trap; after the trap the user code no longer runs.",
+    "The table lookup happens in the kernel, i.e. after the trap.",
+    "The handler runs before returning to user mode."
+   ]
+  },
+  {
+   "id": "t01-016",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "mode switch",
+    "system call",
+    "interrupt",
+    "page fault"
+   ],
+   "stem": "While running, a user process does the following (in some order): calls the library function `strlen()` twice, calls `write()` three times, takes **one** timer interrupt while executing user code, and takes **one** page fault in user code. Every kernel entry returns to the same process in user mode, no kernel entry is nested inside another, and `strlen()` is implemented entirely in user space. What is the **total** number of mode switches (count user→kernel and kernel→user separately)?",
+   "answer": {
+    "min": 10,
+    "max": 10
+   },
+   "explanation": "Only events that enter the kernel cause mode switches:\n\n| Event | Kernel entries |\n|---|---|\n| `strlen()` × 2 | 0 (pure user-space library code) |\n| `write()` × 3 | 3 (system calls) |\n| timer interrupt | 1 |\n| page fault | 1 (exception) |\n| **Total** | **5** |\n\nEach entry is a user→kernel switch followed by a kernel→user switch: 5 × 2 = **10**.",
+   "trap": "Counting `strlen()` calls as kernel entries, or forgetting that interrupts and page faults also switch modes."
+  },
+  {
+   "id": "t01-017",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "mode switch",
+    "trap",
+    "interrupt",
+    "library call"
+   ],
+   "stem": "A process is executing in **user mode**. Which of the following events cause the CPU to switch to **kernel mode**?",
+   "options": [
+    "The process touches a page that is not in memory",
+    "The process calls `strlen()` from the C library",
+    "The timer interrupt fires",
+    "The process executes an integer division by zero"
+   ],
+   "answer": [
+    "A",
+    "C",
+    "D"
+   ],
+   "explanation": "- **A — yes.** A page fault is an exception (trap); the kernel's page-fault handler runs.\n- **B — no.** `strlen()` is ordinary library code that runs entirely in user mode.\n- **C — yes.** A timer interrupt is a hardware interrupt; the CPU enters kernel mode to run the handler (and maybe the scheduler).\n- **D — yes.** Integer division by zero raises an exception that is delivered to the kernel (which then usually sends SIGFPE to the process).",
+   "option_feedback": [
+    "Correct — page fault is a trap.",
+    "Pure user-space function; no mode switch.",
+    "Correct — hardware interrupt.",
+    "Correct — arithmetic exception."
+   ],
+   "trap": "Assuming every library call enters the kernel."
+  },
+  {
+   "id": "t01-018",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 210,
+   "concepts": [
+    "mode switch",
+    "context switch",
+    "nested interrupt",
+    "blocking system call"
+   ],
+   "stem": "On a uniprocessor, process **A** (in user mode) calls `read()` on a disk file whose data is not cached, so A blocks. The following then happens, in order:\n\n1. The kernel dispatches process **B**, which had earlier been preempted in user mode, so B resumes in user mode.\n2. B calls `getpid()`, which returns immediately.\n3. While B is in user mode, the **disk interrupt** for A's read arrives; the handler copies the data, marks A ready, and returns to B (no preemption).\n4. B calls `write()`. While the kernel is executing this `write()`, a **timer interrupt** arrives; its handler requests a reschedule. When the `write()` work is complete, the kernel switches to **A** instead of returning to B, and A returns from `read()` to user mode.\n\nCounting from the moment A executes the trap for `read()` until A is back in user mode, how many **mode switches** (user→kernel and kernel→user counted separately) and how many **context switches** occur? Assume no other interrupts or exceptions.",
+   "options": [
+    "10 mode switches, 2 context switches",
+    "8 mode switches, 2 context switches",
+    "8 mode switches, 6 context switches",
+    "6 mode switches, 2 context switches"
+   ],
+   "answer": "B",
+   "explanation": "Track the CPU mode at each step:\n\n| Step | Transition | Mode switches |\n|---|---|---|\n| A traps for `read()` | U → K | 1 |\n| A blocks; kernel switches to B, B resumes in user mode | K → U | 1 |\n| B: `getpid()` enter / return | U → K → U | 2 |\n| Disk interrupt while B in user mode, return to B | U → K → U | 2 |\n| B: `write()` trap | U → K | 1 |\n| Timer interrupt **while already in kernel mode** | K → K | 0 |\n| Kernel switches to A; A returns to user mode | K → U | 1 |\n| **Total** | | **8** |\n\n**Context switches** (changing which process owns the CPU): A → B when A blocks, and B → A at the end of `write()` = **2**. System calls and interrupts that return to the same process are mode switches only.",
+   "option_feedback": [
+    "Counts the timer interrupt as two extra switches; it arrived while the CPU was already in kernel mode, so there is no mode change.",
+    "Correct: 8 mode switches (nested timer adds none) and 2 context switches (A→B, B→A).",
+    "Treats every kernel entry as a context switch; getpid, the disk interrupt and the timer all return to (or stay with) the same process.",
+    "Omits the disk interrupt's U→K→U pair; a hardware interrupt arriving in user mode always switches to kernel mode."
+   ],
+   "trap": "Counting an interrupt that arrives in kernel mode as a mode switch, or equating mode switches with context switches."
+  },
+  {
+   "id": "t01-019",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 5,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "dual-mode operation",
+    "privileged instruction",
+    "interrupt vector",
+    "timer"
+   ],
+   "stem": "Start from a correct uniprocessor design: a mode bit, privileged I/O and timer-setting instructions, base/limit memory protection (the interrupt vector and all kernel data lie outside every user process's base/limit range), and a periodic **non-maskable** timer interrupt. Each design below changes **exactly one** thing. In which designs can a malicious user-mode program either **execute its own code in kernel mode** or **prevent the OS from ever regaining the CPU**?",
+   "options": [
+    "The `syscall` instruction sets the mode bit to kernel and jumps to an address taken from a general-purpose register chosen by the caller; the OS's intended entry point checks the call number before doing anything.",
+    "An instruction that only clears the mode bit to *user* mode (and does nothing else) may be executed in user mode.",
+    "The instruction that loads the base and limit registers is not privileged.",
+    "User programs may mask all **device** interrupts (disk, network, keyboard); the timer interrupt still cannot be masked or reprogrammed from user mode."
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "Judge each change by asking: *can user code get kernel mode at an address it chooses, or stop the timer from reaching the OS?*\n\n- **A — broken.** The OS's check lives *at* the intended entry point, but the caller chooses the jump target. It loads the address of its own function and executes `syscall`: the CPU enters kernel mode and runs user-supplied code with full privilege. Kernel entry must always go to an OS-fixed address (trap vector).\n- **B — safe.** The instruction can only move from kernel to user. Executed in user mode it changes nothing; there is no way to *raise* privilege with it.\n- **C — broken.** User code widens its own base/limit to cover the interrupt vector, overwrites the timer entry with the address of its own routine, and waits: on the next timer interrupt the hardware enters kernel mode and jumps to user-written code. (It could equally rewrite kernel data.)\n- **D — safe for this question.** Masking device interrupts may delay I/O, but the timer is non-maskable and cannot be reprogrammed, so the kernel still regains the CPU periodically and the user never runs in kernel mode.\n\nAnswer: **A, C**.",
+   "option_feedback": [
+    "Correct: a caller-chosen kernel entry address lets user code run in kernel mode; the check never executes if the jump skips it.",
+    "Safe: lowering privilege from user to user is a no-op; only instructions that can raise privilege or change protection must be privileged.",
+    "Correct: unprivileged base/limit loading lets the program overwrite the interrupt vector, so the next timer interrupt runs its code in kernel mode.",
+    "Safe: the non-maskable, non-programmable timer still returns control to the OS, and nothing here grants kernel mode."
+   ],
+   "trap": "Marking B because 'every mode-changing instruction must be privileged', and missing A because the OS 'checks the call number' — the check is bypassed by choosing a different entry address."
+  },
+  {
+   "id": "t01-020",
+   "subtopic": "system-calls",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "system call",
+    "library function"
+   ],
+   "stem": "Which of the following, in a UNIX/Linux C program, is a **system call** rather than a pure library function?",
+   "options": [
+    "`printf()`",
+    "`strlen()`",
+    "`read()`",
+    "`malloc()`"
+   ],
+   "answer": "C",
+   "explanation": "`read()` is a thin wrapper that traps directly into the kernel (`sys_read`). `printf()` and `malloc()` are C-library functions that work mostly in user space and *may* call system calls internally (`write()`, `brk()`/`mmap()`) only when needed; `strlen()` never enters the kernel.",
+   "option_feedback": [
+    "Library function; it buffers and eventually calls `write()`.",
+    "Pure user-space function.",
+    "Correct — a system call.",
+    "Library allocator; it occasionally calls `brk()`/`mmap()`."
+   ],
+   "trap": "Calling `printf`/`malloc` system calls because they sometimes use one internally."
+  },
+  {
+   "id": "t01-021",
+   "subtopic": "system-calls",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "parameter passing",
+    "system call"
+   ],
+   "stem": "Which of the following is **not** a standard way of passing parameters from a user program to the OS during a system call?",
+   "options": [
+    "Placing them in CPU registers",
+    "Storing them in a block in memory and passing the block's address in a register",
+    "Pushing them onto the stack",
+    "Writing them into the interrupt vector table"
+   ],
+   "answer": "D",
+   "explanation": "The three standard methods (Silberschatz) are: (1) in **registers**; (2) in a **block/table in memory** whose address is passed in a register (Linux, Solaris use this for many parameters); (3) **pushed onto the stack** by the program and popped by the OS. The interrupt vector holds handler addresses set by the OS; user programs cannot write it and it is not a parameter channel.",
+   "option_feedback": [
+    "Standard method — fastest when there are few parameters.",
+    "Standard method — used when there are more parameters than registers.",
+    "Standard method.",
+    "Correct — the interrupt vector is kernel-protected and holds handler addresses, not arguments."
+   ]
+  },
+  {
+   "id": "t01-022",
+   "subtopic": "system-calls",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "system call categories",
+    "information maintenance"
+   ],
+   "stem": "Using the standard classification of system calls, `getpid()`, `alarm()` and `sleep()` belong to which category?",
+   "options": [
+    "Process control",
+    "Information maintenance",
+    "Communication",
+    "Device management"
+   ],
+   "answer": "B",
+   "explanation": "Silberschatz groups system calls into: process control (`fork`, `exit`, `wait`), file management (`open`, `read`, `close`), device management (`ioctl`), **information maintenance** (`getpid`, `alarm`, `sleep`, get/set time), communication (`pipe`, `shmget`, `mmap`) and protection (`chmod`, `umask`, `chown`). Getting the process id and setting timers are information maintenance.",
+   "option_feedback": [
+    "Process control covers creating/terminating/waiting for processes (`fork`, `exit`, `wait`).",
+    "Correct.",
+    "Communication covers pipes, shared memory, message passing.",
+    "Device management covers `ioctl`, device read/write."
+   ]
+  },
+  {
+   "id": "t01-023",
+   "subtopic": "system-calls",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "system call number",
+    "system call table"
+   ],
+   "stem": "When a user program executes the trap instruction for a system call, how does the kernel know **which** service is being requested?",
+   "options": [
+    "The system-call number passed in a register is used as an index into the system-call table",
+    "Each system call uses a different hardware interrupt line",
+    "The kernel reads the name of the library function from the user stack",
+    "The kernel inspects the return address to find which library function called it"
+   ],
+   "answer": "A",
+   "explanation": "Each system call has a number. The library wrapper places it in a designated register (e.g. `eax`/`rax` on x86) before the trap; the kernel's single system-call entry point uses it as an index into the **system-call table**, which holds pointers to the handler functions. There is not a separate interrupt vector per system call, and the kernel does not parse the function name.",
+   "option_feedback": [
+    "Correct.",
+    "All system calls normally share one trap vector; the number selects the service.",
+    "Names do not exist at run time in the kernel's view.",
+    "The return address only tells where to resume."
+   ]
+  },
+  {
+   "id": "t01-024",
+   "subtopic": "system-calls",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "system call",
+    "mode switch",
+    "blocking"
+   ],
+   "stem": "Which of the following statements about system calls are correct?",
+   "options": [
+    "A system call involves a switch from user mode to kernel mode",
+    "Every function in the C standard library invokes at least one system call",
+    "Every system call causes a context switch to a different process",
+    "A blocking call such as `read()` on an empty pipe can move the caller to the waiting (blocked) state"
+   ],
+   "answer": [
+    "A",
+    "D"
+   ],
+   "explanation": "- **A — true.** A system call traps into the kernel, switching the mode bit to kernel mode.\n- **B — false.** Many library functions (`strlen`, `memcpy`, `abs`) never enter the kernel.\n- **C — false.** A mode switch is not a context switch. A short call like `getpid()` returns to the same process; a context switch happens only if the call blocks or the scheduler decides to preempt.\n- **D — true.** `read()` on an empty pipe (with writers still open) blocks: the caller moves to the waiting state until data arrives.",
+   "option_feedback": [
+    "Correct.",
+    "Many library functions run purely in user space.",
+    "Confuses mode switch with context switch.",
+    "Correct."
+   ],
+   "trap": "Equating a mode switch with a context switch."
+  },
+  {
+   "id": "t01-025",
+   "subtopic": "system-calls",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 50,
+   "concepts": [
+    "exec",
+    "process image replacement"
+   ],
+   "stem": "Assume `stdout` is a terminal (line-buffered) and `execlp` succeeds. What does this program print?\n\n```c\n#include <stdio.h>\n#include <unistd.h>\nint main(void) {\n    printf(\"A\\n\");\n    execlp(\"echo\", \"echo\", \"B\", NULL);\n    printf(\"C\\n\");\n    return 0;\n}\n```",
+   "options": [
+    "A, B and C (each on its own line)",
+    "A then B",
+    "A then C",
+    "Only B"
+   ],
+   "answer": "B",
+   "explanation": "- `printf(\"A\\n\")` — the newline flushes the line-buffered terminal output, so **A** appears.\n- `execlp` **replaces** the process image with `/bin/echo`; on success it never returns, so the code after it (printing C) no longer exists.\n- `echo B` prints **B**.\n\nOutput: `A` then `B`. `C` would be printed only if `execlp` failed.",
+   "option_feedback": [
+    "exec does not return on success; the `printf(\"C\\n\")` code is gone.",
+    "Correct.",
+    "That happens only if execlp fails.",
+    "A was already flushed to the terminal before exec (newline + line buffering)."
+   ],
+   "trap": "Expecting exec to behave like a function call that returns."
+  },
+  {
+   "id": "t01-026",
+   "subtopic": "system-calls",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "read/write system calls",
+    "counting system calls"
+   ],
+   "stem": "A 10 000-byte file is copied with the code below. Assume both `open` calls succeed, every `read` returns min(512, bytes remaining) and every `write` writes all `n` bytes. Ignore any system calls made during program start-up and exit. How many system calls does this fragment make in total?\n\n```c\nint in  = open(\"src\", O_RDONLY);\nint out = open(\"dst\", O_WRONLY | O_CREAT | O_TRUNC, 0644);\nchar buf[512];\nssize_t n;\nwhile ((n = read(in, buf, 512)) > 0)\n    write(out, buf, n);\nclose(in);\nclose(out);\n```",
+   "answer": {
+    "min": 45,
+    "max": 45
+   },
+   "explanation": "10 000 = 19 × 512 + 272.\n\n| Call | Count | Why |\n|---|---|---|\n| `open` | 2 | |\n| `read` returning data | 20 | 19 full blocks + one of 272 bytes |\n| `read` returning 0 (EOF) | 1 | the loop needs it to terminate |\n| `write` | 20 | one per successful read |\n| `close` | 2 | |\n| **Total** | **45** | |",
+   "trap": "Forgetting the final `read` that returns 0, or using ⌈10000/512⌉ = 20 without counting it (giving 44)."
+  },
+  {
+   "id": "t01-027",
+   "subtopic": "system-calls",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "system call overhead",
+    "buffering",
+    "work backwards"
+   ],
+   "stem": "A program writes **1 000 000 bytes** to a file. Every `write()` system call costs a fixed **5 µs** of trap/return and kernel overhead plus **1 ns per byte** copied into the kernel.\n\n- Version U calls `write()` directly with 100 bytes each time.\n- Version B first copies every byte into a user-space buffer of **S** bytes (cost **0.5 ns per byte**), calls `write()` with the whole buffer each time it becomes full, and makes one final `write()` for any bytes left at the end.\n\nWhat is the **smallest** integer S for which version U's total time is **at least 20 times** version B's total time (B's total = its system-call time plus its user-space copying time)?",
+   "answer": {
+    "min": 4762,
+    "max": 4762
+   },
+   "explanation": "**Version U.** 1 000 000 / 100 = 10 000 calls → 10 000 × 5 µs = 50 ms fixed + 1 000 000 × 1 ns = 1 ms copy → **51 ms**.\n\n**Version B** with buffer S makes k = ⌈1 000 000 / S⌉ calls (the last one may be partial):\n\n- fixed: 5k µs\n- kernel copy: 1 000 000 × 1 ns = 1000 µs (does not shrink with buffering)\n- user copy: 1 000 000 × 0.5 ns = 500 µs\n\nRequirement: 51 000 ≥ 20 × (5k + 1500) → 5k + 1500 ≤ 2550 → k ≤ 210.\n\n⌈1 000 000 / S⌉ ≤ 210 ⇔ S ≥ 1 000 000 / 210 = 4761.9… → S = **4762**.\n\nCheck: S = 4762 → 4762 × 210 = 1 000 020 ≥ 10⁶, so k = 210 and B = 2550 µs (ratio exactly 20). S = 4761 → 4761 × 210 = 999 810 < 10⁶, so k = 211 and B = 2555 µs (ratio 19.96).",
+   "trap": "Dropping the per-byte kernel copy or the user-space copy (each changes the bound), or using floor instead of ceiling for the number of calls and answering 4761."
+  },
+  {
+   "id": "t01-028",
+   "subtopic": "system-calls",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 100,
+   "concepts": [
+    "exec",
+    "file descriptors",
+    "process attributes"
+   ],
+   "stem": "A process calls `execve()` successfully. Which of the following are **preserved** in the new program image?",
+   "options": [
+    "The process ID",
+    "Open file descriptors that are not marked close-on-exec",
+    "The values of global variables of the old program",
+    "Signal handlers installed with `signal()`/`sigaction()` (pointing to functions in the old program)"
+   ],
+   "answer": [
+    "A",
+    "B"
+   ],
+   "explanation": "`exec` replaces the *program*, not the *process*.\n\n- **A — preserved.** The PID (and parent PID) stay the same; it is the same process.\n- **B — preserved.** Open file descriptors stay open across exec unless marked close-on-exec — this is how a shell sets up redirection before exec'ing a command.\n- **C — not preserved.** Text, data, heap and stack are replaced by those of the new program.\n- **D — not preserved.** Signals whose disposition was a user handler are reset to default, because the handler function's code no longer exists (ignored signals stay ignored).",
+   "option_feedback": [
+    "Correct — same process, new program.",
+    "Correct — the basis of shell I/O redirection.",
+    "The whole address space is replaced.",
+    "Caught signals are reset to SIG_DFL; the handler code is gone."
+   ],
+   "trap": "Thinking exec creates a new process (new PID)."
+  },
+  {
+   "id": "t01-029",
+   "subtopic": "system-calls",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "exec",
+    "stdio buffering",
+    "fork",
+    "wait"
+   ],
+   "stem": "Assume `stdout` is a terminal (**line-buffered**), `fork` and `execlp` succeed, and `printf` output is not flushed except by a newline, a full buffer, or normal process exit.\n\n```c\n#include <stdio.h>\n#include <unistd.h>\n#include <sys/wait.h>\nint main(void) {\n    printf(\"hello \");\n    if (fork() == 0) {\n        execlp(\"echo\", \"echo\", \"child\", NULL);\n    } else {\n        wait(NULL);\n        printf(\"parent\\n\");\n    }\n    return 0;\n}\n```\n\nWhat appears on the terminal?",
+   "options": [
+    "`hello child` then `hello parent`",
+    "`child` then `hello parent`",
+    "`hello child` then `parent`",
+    "`hello parent` then `child`"
+   ],
+   "answer": "B",
+   "explanation": "1. `printf(\"hello \")` has no newline, so `\"hello \"` sits in the parent's **user-space** stdio buffer — nothing is printed yet.\n2. `fork()` copies the whole address space, so the child also has `\"hello \"` in its buffer.\n3. The child calls `execlp`. exec **discards** the old address space without flushing stdio buffers, so the child's copy of `\"hello \"` is lost. `echo` prints `child\\n`.\n4. The parent was blocked in `wait(NULL)` until the child (now `echo`) exits — so `child` is printed first.\n5. Parent appends `parent\\n` to its buffer, which now holds `hello parent\\n`; the newline flushes it.\n\nOutput:\n```\nchild\nhello parent\n```",
+   "option_feedback": [
+    "Assumes the child's buffered \"hello \" survives exec; exec discards it.",
+    "Correct.",
+    "Assumes \"hello \" was printed before fork; it was still in the buffer.",
+    "wait() makes the parent print only after the child has finished."
+   ],
+   "trap": "Treating printf as if it wrote immediately, and forgetting that exec throws away unflushed user-space buffers."
+  },
+  {
+   "id": "t01-030",
+   "subtopic": "fork",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "fork return value"
+   ],
+   "stem": "On success, what does `fork()` return?",
+   "options": [
+    "The child's PID in the child and 0 in the parent",
+    "0 in both processes",
+    "The parent's PID in the child and the child's PID in the parent",
+    "0 in the child and the child's PID in the parent"
+   ],
+   "answer": "D",
+   "explanation": "`fork()` is called once and returns **twice**: in the **child** it returns **0**, and in the **parent** it returns the **child's PID** (a positive number). It returns −1 (in the parent only, no child created) on failure. This is how code distinguishes parent from child.",
+   "option_feedback": [
+    "Reversed.",
+    "Then neither could tell which one it is.",
+    "The child gets 0 (it can call `getppid()` for its parent's PID).",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t01-031",
+   "subtopic": "fork",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "fork",
+    "address space"
+   ],
+   "stem": "Immediately after a successful `fork()`, the child process has",
+   "options": [
+    "A separate copy of the parent's address space, starting execution at the point where fork() returns",
+    "The same address space as the parent, so writes to variables are visible to both",
+    "A fresh address space loaded from the program file, starting at main()",
+    "A copy of the address space but the same PID as the parent"
+   ],
+   "answer": "A",
+   "explanation": "The child receives a (logical) **copy** of the parent's address space — code, data, heap, stack — and copies of its open file descriptors. Modern systems implement this lazily with **copy-on-write**, but semantically it is a separate copy: later writes by one process are not seen by the other. The child gets its own new PID and starts executing at the return from `fork()`, not at `main`.",
+   "option_feedback": [
+    "Correct.",
+    "That describes threads, not fork.",
+    "That is what exec does.",
+    "The child always gets a new, unique PID."
+   ]
+  },
+  {
+   "id": "t01-032",
+   "subtopic": "fork",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "fork counting",
+    "process tree"
+   ],
+   "stem": "How many times is `x` printed when this program runs? (Assume all forks succeed.)\n\n```c\nint main(void) {\n    fork();\n    fork();\n    fork();\n    printf(\"x\\n\");\n    return 0;\n}\n```",
+   "answer": {
+    "min": 8,
+    "max": 8
+   },
+   "explanation": "Each `fork()` doubles the number of processes executing the following code:\n\n1 → 2 → 4 → 8.\n\nAll 8 processes execute `printf`, so `x` is printed **8** times (2³).",
+   "trap": "Answering 7 — that is the number of *child* processes created, not the number of printers."
+  },
+  {
+   "id": "t01-033",
+   "subtopic": "fork",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "fork in loop",
+    "child process count"
+   ],
+   "stem": "How many **child** processes are created by the following code (not counting the original process)? Assume all forks succeed.\n\n```c\nfor (int i = 0; i < 5; i++)\n    fork();\n```",
+   "answer": {
+    "min": 31,
+    "max": 31
+   },
+   "explanation": "Every process alive at the start of an iteration forks once, so the population doubles per iteration: after 5 iterations there are 2⁵ = 32 processes. Excluding the original: 32 − 1 = **31** children.",
+   "trap": "Answering 32 (total processes) or 5 (one per iteration)."
+  },
+  {
+   "id": "t01-034",
+   "subtopic": "fork",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "fork",
+    "separate address spaces",
+    "wait"
+   ],
+   "stem": "What does this program print? Assume `fork()` succeeds and output appears immediately.\n\n```c\nint x = 5;\nint main(void) {\n    if (fork() == 0) {\n        x += 5;\n        printf(\"%d \", x);\n    } else {\n        wait(NULL);\n        x -= 2;\n        printf(\"%d \", x);\n    }\n    return 0;\n}\n```",
+   "options": [
+    "10 8",
+    "3 10",
+    "10 3",
+    "8 10"
+   ],
+   "answer": "C",
+   "explanation": "Parent and child have **separate copies** of `x`, both starting at 5.\n\n- Child: x = 5 + 5 = **10**, prints `10`.\n- Parent: waits for the child to finish, then x = 5 − 2 = **3**, prints `3`.\n\nBecause of `wait()`, the order is fixed: `10 3`.",
+   "option_feedback": [
+    "Assumes the child's change to x is visible to the parent (shared memory).",
+    "wait() forces the parent to print after the child.",
+    "Correct.",
+    "Shared-variable assumption and wrong order."
+   ],
+   "trap": "Treating the global x as shared between parent and child."
+  },
+  {
+   "id": "t01-035",
+   "subtopic": "fork",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "fork",
+    "file descriptors",
+    "getppid"
+   ],
+   "stem": "After a successful `fork()`, which of the following statements are true?",
+   "options": [
+    "The child's open file descriptors refer to the same open-file entries as the parent's, so they share the file offset",
+    "`getpid()` returns the same value in parent and child",
+    "In the child, `getppid()` returns the parent's PID (while the parent is still running)",
+    "A write by the child to a global variable is visible to the parent"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- **A — true.** The child's descriptors are copies that point to the **same open-file table entries**, so they share the file offset: if the child reads 10 bytes, the parent's next read starts 10 bytes later.\n- **B — false.** The child gets a new, unique PID.\n- **C — true.** The child's parent PID is the parent's PID (while the parent is alive; an orphan is re-parented, e.g. to `init`).\n- **D — false.** Each process has its own copy of the address space (copy-on-write); writes are private.",
+   "option_feedback": [
+    "Correct — shared open-file description, shared offset.",
+    "PIDs are unique.",
+    "Correct.",
+    "Address spaces are separate after fork."
+   ],
+   "trap": "Assuming separate address spaces imply separate file offsets."
+  },
+  {
+   "id": "t01-036",
+   "subtopic": "fork",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "fork in loop",
+    "printf counting"
+   ],
+   "stem": "How many `*` characters are printed by this code? Assume all forks succeed and output is **unbuffered** (each `printf` appears immediately).\n\n```c\nfor (int i = 0; i < 3; i++) {\n    fork();\n    printf(\"*\\n\");\n}\n```",
+   "answer": {
+    "min": 14,
+    "max": 14
+   },
+   "explanation": "In iteration i, the processes alive before the fork double and then **each** prints once.\n\n| i | processes after fork | `*` printed |\n|---|---|---|\n| 0 | 2 | 2 |\n| 1 | 4 | 4 |\n| 2 | 8 | 8 |\n\nTotal = 2 + 4 + 8 = **14** (= 2ⁿ⁺¹ − 2 with n = 3).",
+   "trap": "Answering 8 (only the final processes) or 7 (number of children)."
+  },
+  {
+   "id": "t01-037",
+   "subtopic": "fork",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "fork with &&",
+    "short-circuit evaluation"
+   ],
+   "stem": "How many processes exist in total (including the original) after this statement completes? Assume all forks succeed.\n\n```c\nif (fork() && fork())\n    fork();\n```",
+   "answer": {
+    "min": 4,
+    "max": 4
+   },
+   "explanation": "`&&` short-circuits: the second operand is evaluated only if the first is non-zero (i.e. only in the parent).\n\n- P: 1st fork → P gets child PID (true), child **C1** gets 0 → C1's condition is false, C1 skips the rest.\n- P: 2nd fork → P gets true, child **C2** gets 0 → false, C2 skips the body.\n- P: condition true → body `fork()` creates **C3**.\n\nProcesses: P, C1, C2, C3 = **4**.",
+   "trap": "Ignoring short-circuit evaluation and doubling at every fork (8)."
+  },
+  {
+   "id": "t01-038",
+   "subtopic": "fork",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 75,
+   "concepts": [
+    "fork with ||",
+    "short-circuit evaluation"
+   ],
+   "stem": "How many times is `\"hi\"` printed? Assume all forks succeed.\n\n```c\nint main(void) {\n    fork() || fork();\n    printf(\"hi\\n\");\n    return 0;\n}\n```",
+   "options": [
+    "2",
+    "3",
+    "4",
+    "6"
+   ],
+   "answer": "B",
+   "explanation": "`||` evaluates its right operand only if the left is 0 (i.e. only in the **child** of the first fork).\n\n- P: 1st fork → P gets non-zero → `||` is already true, skip 2nd fork. Child **C1** gets 0.\n- C1: evaluates 2nd fork → C1 and its child **C2**.\n\nProcesses: P, C1, C2 → `hi` printed **3** times.",
+   "option_feedback": [
+    "Only counts the first fork.",
+    "Correct.",
+    "Ignores short-circuiting (both forks executed by everyone).",
+    "Not a reachable count for two forks."
+   ],
+   "trap": "Forgetting that the parent short-circuits on `||` while the child does not."
+  },
+  {
+   "id": "t01-039",
+   "subtopic": "fork",
+   "also_tests": [
+    "system-calls"
+   ],
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "fork",
+    "exec",
+    "wait"
+   ],
+   "stem": "Assume `fork` and `execl` succeed, `/bin/echo` prints its argument followed by a newline, and output appears immediately. What is printed?\n\n```c\nint main(void) {\n    pid_t p = fork();\n    if (p == 0) {\n        execl(\"/bin/echo\", \"echo\", \"X\", NULL);\n        printf(\"Y\\n\");\n    } else {\n        wait(NULL);\n        printf(\"Z\\n\");\n    }\n    printf(\"W\\n\");\n    return 0;\n}\n```",
+   "options": [
+    "X Z W",
+    "X Y W Z W",
+    "X W Z W",
+    "Z W X"
+   ],
+   "answer": "A",
+   "explanation": "- **Child:** `execl` succeeds, replacing the child's program with `echo`, which prints `X` and exits. The `printf(\"Y\")` and the final `printf(\"W\")` belonged to the old image and never run in the child.\n- **Parent:** `wait(NULL)` blocks until the child exits, then prints `Z`, then falls through to print `W`.\n\nOutput (order fixed by `wait`): `X`, `Z`, `W`.",
+   "option_feedback": [
+    "Correct.",
+    "Y and W run in the child only if exec fails.",
+    "After a successful exec, the child never reaches the final printf.",
+    "wait() makes the parent print after the child finishes."
+   ],
+   "trap": "Letting the child continue to the common `printf(\"W\")` after exec."
+  },
+  {
+   "id": "t01-040",
+   "subtopic": "fork",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 150,
+   "concepts": [
+    "fork with && and ||",
+    "short-circuit evaluation",
+    "operator precedence"
+   ],
+   "stem": "How many processes exist in total (including the original) after this statement completes? Assume all forks succeed.\n\n```c\nfork() && fork() || fork();\n```",
+   "answer": {
+    "min": 5,
+    "max": 5
+   },
+   "explanation": "`&&` binds tighter than `||`, so the expression is `(fork() && fork()) || fork()`. Label the forks f1, f2, f3.\n\n- **P**: f1 → P (non-zero), child **C1** (0).\n  - P: f2 → P (non-zero): `&&` true → `||` short-circuits; P done. Child **C2** (0): `&&` false → evaluates f3 → C2 and new child **C3**.\n  - C1: `&&` false (f2 skipped) → evaluates f3 → C1 and new child **C4**.\n\n| Process | f1 | f2 | f3 |\n|---|---|---|---|\n| P | ≠0 | ≠0 | — |\n| C1 | 0 | — | ≠0 |\n| C2 | ≠0 (inherited) | 0 | ≠0 |\n| C3 | ≠0 | 0 | 0 |\n| C4 | 0 | — | 0 |\n\nTotal = **5** processes.",
+   "trap": "Parsing it as fork() && (fork() || fork()) or ignoring short-circuiting (8)."
+  },
+  {
+   "id": "t01-041",
+   "subtopic": "fork",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 180,
+   "concepts": [
+    "fork in loop",
+    "variables after fork",
+    "combinatorics"
+   ],
+   "stem": "Consider the program below (assume all forks succeed). How many processes print the value **2**?\n\n```c\nint main(void) {\n    int n = 0;\n    for (int i = 0; i < 4; i++) {\n        if (fork() == 0)\n            n++;\n    }\n    printf(\"%d\\n\", n);\n    return 0;\n}\n```",
+   "answer": {
+    "min": 6,
+    "max": 6
+   },
+   "explanation": "Every process forks in every remaining iteration, so 2⁴ = 16 processes print. At each fork the **child** gets n + 1 and the parent keeps n; both continue looping.\n\nSo each final process corresponds to a 4-step path, choosing \"parent\" or \"child\" at each of the 4 forks, and its n = number of \"child\" steps on its path.\n\nNumber printing 2 = C(4, 2) = **6**.\n\nCheck: the distribution is C(4,k) = 1, 4, 6, 4, 1 for n = 0…4, which sums to 16 ✓.",
+   "trap": "Thinking only newly created children increment n once and stop — or that n is shared."
+  },
+  {
+   "id": "t01-042",
+   "subtopic": "fork",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "fork in loop",
+    "short-circuit evaluation",
+    "printf counting"
+   ],
+   "stem": "Output is **unbuffered** (each `printf` appears immediately) and every `fork()` succeeds. How many lines in total (`A` lines plus `B` lines) are printed?\n\n```c\nint main(void) {\n    for (int i = 0; i < 2; i++) {\n        if (fork() && fork())\n            printf(\"A\\n\");\n        else\n            fork();\n    }\n    printf(\"B\\n\");\n    return 0;\n}\n```",
+   "answer": {
+    "min": 31,
+    "max": 31
+   },
+   "explanation": "**One iteration, starting from one process P:**\n\n- 1st `fork()`: P gets a PID (true); child C1 gets 0 → `&&` is false (2nd fork skipped) → C1 takes the `else` and forks → C1 and C1′.\n- 2nd `fork()` (only P): P gets true → P prints `A`; child C2 gets 0 → `else` → C2 forks → C2 and C2′.\n\nSo each process entering an iteration leaves it as **5** processes (P, C1, C1′, C2, C2′), and exactly **one** of them (P) printed `A`.\n\n| Iteration | processes entering | `A` printed | processes leaving |\n|---|---|---|---|\n| i = 0 | 1 | 1 | 5 |\n| i = 1 | 5 | 5 | 25 |\n\n- `A` lines = 1 + 5 = 6\n- `B` lines = one per final process = 25\n\nTotal = 6 + 25 = **31** (checked by running the program: 6 × A, 25 × B).",
+   "trap": "Treating the `else` branch as doing nothing extra (giving 3 processes per iteration), or forgetting that the children created in iteration 0 run iteration 1 too."
+  },
+  {
+   "id": "t01-043",
+   "subtopic": "fork",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 390,
+   "concepts": [
+    "fork in loop",
+    "variables after fork",
+    "conditional loop exit"
+   ],
+   "stem": "Every `fork()` succeeds. What is the **sum** of all the values printed by all processes?\n\n```c\nint main(void) {\n    int x = 1;\n    for (int i = 1; i <= 3; i++) {\n        if (fork() == 0)\n            x = 3 * x;\n        else\n            x = x + i;\n        if (x > 5)\n            break;\n    }\n    printf(\"%d\\n\", x);\n    return 0;\n}\n```",
+   "answer": {
+    "min": 57,
+    "max": 57
+   },
+   "explanation": "Each process carries its own copy of `x` and `i`. At every fork the **child** triples x and the **parent** adds i; any process whose x exceeds 5 leaves the loop **and stops forking**.\n\n| Process | path | i = 1 | i = 2 | i = 3 | prints |\n|---|---|---|---|---|---|\n| P | parent, parent, parent | 2 | 4 | 7 (exit loop) | 7 |\n| C3 | child of P at i = 3 | | | 12 | 12 |\n| C2 | child of P at i = 2 | | 6 → break | — | 6 |\n| C1 | child of P at i = 1 | 3 | 5 | 8 | 8 |\n| C4 | child of C1 at i = 2 | | 9 → break | — | 9 |\n| C5 | child of C1 at i = 3 | | | 15 | 15 |\n\nOnly **6** processes exist (C2 and C4 break out before i = 3, so they never fork). Sum = 7 + 12 + 6 + 8 + 9 + 15 = **57** (verified by running the program).",
+   "trap": "Assuming 2³ = 8 processes as for an unconditional loop — the `break` stops C2 and C4 from forking at i = 3."
+  },
+  {
+   "id": "t01-044",
+   "subtopic": "types-of-os",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "multiprogramming",
+    "I/O overlap",
+    "job ordering"
+   ],
+   "stem": "Three jobs are loaded at time 0 in a multiprogrammed system with **one CPU** and **one I/O device**. Each job does CPU, then I/O, then CPU (times in ms):\n\n| Job | CPU | I/O | CPU |\n|---|---|---|---|\n| A | 40 | 30 | 20 |\n| B | 10 | 40 | 30 |\n| C | 10 | 40 | 10 |\n\nThe CPU is FCFS **non-preemptive**; a job returning from I/O joins the tail of the ready queue. The I/O device serves requests FCFS, one at a time. Ignore all overheads. The OS may choose the **initial order** of the three jobs in the ready queue. Over all 6 possible initial orders, what is the **minimum** time (in ms) at which all three jobs have finished?",
+   "answer": {
+    "min": 130,
+    "max": 130
+   },
+   "explanation": "Total CPU work = 60 + 40 + 40 = 120 ms, so 120 is a lower bound; whether it is reachable depends on the overlap. Simulating each order:\n\n| Initial order | all finish at |\n|---|---|\n| A B C | 160 |\n| A C B | 180 |\n| **B A C** | **130** |\n| B C A | 140 |\n| C A B | 150 |\n| C B A | 140 |\n\n**Trace of B A C:**\n\n| Time | CPU | I/O device | Notes |\n|---|---|---|---|\n| 0–10 | B | — | B → I/O |\n| 10–50 | A | B (10–50) | at 50: B returns (queue: C, B); A → I/O |\n| 50–60 | C | A (50–80) | C wants I/O → waits |\n| 60–90 | B | A, then C (80–120) | A returns at 80; B finishes at 90 |\n| 90–110 | A | C | A finishes at 110 |\n| 110–120 | idle | C | nothing ready |\n| 120–130 | C | — | C finishes at 130 |\n\nThe two 'shortest first burst first' orders (B C A, C B A) both give 140, because the two long 40 ms I/O bursts of B and C then queue back-to-back on the single device while A's long CPU burst cannot cover them. Putting A second lets its 40 ms CPU burst overlap B's I/O. Minimum = **130 ms**.",
+   "trap": "Assuming 'shortest first CPU burst first' (B C A or C B A) is optimal (140), or assuming the 120 ms CPU-work lower bound is reachable."
+  },
+  {
+   "id": "t01-045",
+   "subtopic": "types-of-os",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "time-sharing",
+    "round robin",
+    "context switch",
+    "response time"
+   ],
+   "stem": "A time-sharing system runs **n** processes in round-robin with an integer time quantum **q** ms. Exactly one context switch of **1 ms** occurs between any two consecutive quanta. All processes except X are CPU-bound and always use their full quantum; X needs exactly **50 ms** of CPU in total and is never blocked. The designers require all of:\n\n1. Switching overhead while all processes are CPU-bound, 1/(q + 1), is **at most 10%**.\n2. Whenever a process's quantum ends and it still needs CPU, it runs again within **120 ms**.\n3. X completes within **400 ms** of the start of its first quantum.\n\nOver all integer choices of q, what is the **largest** n for which all three requirements can be met?",
+   "answer": {
+    "min": 9,
+    "max": 9
+   },
+   "explanation": "Between two consecutive quanta of one process there are (n − 1) other quanta and n switches: gap g = (n − 1)q + n.\n\n- (1) 1/(q + 1) ≤ 0.1 → **q ≥ 9**.\n- (2) g ≤ 120.\n- (3) X runs k = ⌈50/q⌉ quanta (the last one partial), with k − 1 gaps in between: 50 + (k − 1)g ≤ 400.\n\nA larger q shrinks k (helps 3) but grows g (hurts 2 and 3), so check each range of k:\n\n| q | k | binding limit on g | g = (n − 1)q + n | max n |\n|---|---|---|---|---|\n| 9 | 6 | 350/5 = 70 | 10n − 9 ≤ 70 | 7 |\n| 10 | 5 | 350/4 = 87.5 | 11n − 10 ≤ 87 | 8 |\n| 11–12 | 5 | 87.5 | 12n − 11 ≤ 87 → 8; 13n − 12 ≤ 87 → 7 | 8 |\n| **13** | **4** | min(350/3 = 116.7, 120) | 14n − 13 ≤ 116 | **9** |\n| 14–16 | 4 | 116.7 | 15n − 14 ≤ 116 → 8 … | ≤ 8 |\n| 17–24 | 3 | min(175, 120) = 120 | 18n − 17 ≤ 120 → 7 … | ≤ 7 |\n| 25–49 | 2 | 120 | 26n − 25 ≤ 120 → 5 … | ≤ 5 |\n\nCheck q = 13, n = 9: g = 8 × 13 + 9 = 113 ≤ 120 ✓; X: 50 + 3 × 113 = 389 ≤ 400 ✓. n = 10 at q = 13: g = 127 > 120 ✗. (A brute-force search over q confirms 9 is the maximum, attained only at q = 13.)\n\nLargest n = **9**.",
+   "trap": "Taking the smallest allowed q (q = 9, giving n = 7) on the reasoning that a smaller quantum always helps response time — here X's completion bound makes the best q the one that just reduces the number of X's quanta to 4."
+  },
+  {
+   "id": "t01-046",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 210,
+   "concepts": [
+    "mode switch",
+    "nested interrupt",
+    "page fault",
+    "system call"
+   ],
+   "stem": "A process runs this fragment (the data is already in the page cache, so nothing blocks and no other process runs):\n\n```c\nn = read(fd, buf, 8192);\nfor (i = 0; i < n; i++) buf[i] = toupper(buf[i]);\nwrite(1, buf, n);\n```\n\nDuring the fragment exactly these extra events occur:\n\n- While the kernel is copying data into `buf` inside `read()`, a **page fault** occurs on `buf`.\n- In the loop (user mode), one **page fault** occurs; while the kernel is handling it, a **disk interrupt** arrives.\n- Two **timer interrupts** arrive while the loop is running in user mode.\n- One **timer interrupt** arrives while the kernel is executing `write()`.\n\nEvery handler returns to where it was interrupted, and `toupper()` runs entirely in user space. How many **mode switches** (user→kernel and kernel→user counted separately) occur during the fragment?",
+   "answer": {
+    "min": 10,
+    "max": 10
+   },
+   "explanation": "Only an event that happens **while the CPU is in user mode** causes a U→K switch (and later a K→U switch). Events arriving while the CPU is already in kernel mode are nested: K → K.\n\n| Event | CPU mode when it occurs | Mode switches |\n|---|---|---|\n| `read()` | user | 2 |\n| page fault during `read()`'s copy | kernel | 0 |\n| page fault in loop | user | 2 |\n| disk interrupt during that fault handler | kernel | 0 |\n| 2 timer interrupts in loop | user | 4 |\n| `write()` | user | 2 |\n| timer interrupt during `write()` | kernel | 0 |\n| **Total** | | **10** |",
+   "trap": "Counting every trap/interrupt as two mode switches (8 events × 2 = 16) — faults and interrupts that arrive in kernel mode do not change the mode."
+  },
+  {
+   "id": "t01-047",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "also_tests": [
+    "system-calls"
+   ],
+   "est_seconds": 400,
+   "concepts": [
+    "mode switch",
+    "signal delivery",
+    "sigreturn",
+    "_exit"
+   ],
+   "stem": "Consider this program:\n\n```c\n#include <signal.h>\n#include <unistd.h>\nstatic pid_t me;\nstatic volatile int c = 0;\nvoid h(int s) {\n    if (++c == 1)\n        kill(me, SIGUSR1);\n    write(1, \"h\", 1);\n}\nint main(void) {\n    struct sigaction sa = {0};   /* sa_mask empty, sa_flags = 0 */\n    sa.sa_handler = h;\n    sigaction(SIGUSR1, &sa, NULL);\n    me = getpid();\n    kill(me, SIGUSR1);\n    write(1, \"m\", 1);\n    _exit(0);\n}\n```\n\nAssume: `sigaction`, `getpid`, `kill`, `write` and `_exit` are each exactly one system call; a pending, unblocked signal is delivered when the kernel is about to return to user mode, by returning to user mode **into the handler** instead of the interrupted code; while `h` runs, SIGUSR1 is blocked; when `h` returns, a trampoline makes one `sigreturn` system call that restores the saved context and signal mask; there are no other interrupts or faults. How many **mode switches** (user→kernel and kernel→user counted separately) occur from the first instruction of `main` until the process terminates?",
+   "answer": {
+    "min": 19,
+    "max": 19
+   },
+   "explanation": "Trace (U→K and K→U each count 1):\n\n| Step | Switches |\n|---|---|\n| `sigaction` enter / return | 2 |\n| `getpid` enter / return | 2 |\n| `kill` (main) enters; on return SIGUSR1 is pending → K→U **into h** (1st run) | 2 |\n| h₁: `kill` enters; SIGUSR1 is blocked inside h → stays pending; returns to h₁ | 2 |\n| h₁: `write(\"h\")` | 2 |\n| h₁ returns → `sigreturn` enters; mask restored, pending SIGUSR1 now deliverable → K→U **into h** (2nd run) | 2 |\n| h₂: c = 2, no kill; `write(\"h\")` | 2 |\n| h₂ returns → `sigreturn` enters; K→U back into main after its `kill` | 2 |\n| main: `write(\"m\")` | 2 |\n| `_exit` enters the kernel and never returns | 1 |\n| **Total** | **19** |\n\nOutput: `hhm` (confirmed by running the program). Even if the second signal were delivered immediately (nested handler), the count is the same: each handler invocation costs one K→U entry plus one `sigreturn` U→K.",
+   "trap": "Treating the handler like a normal function call (forgetting the K→U entry into the handler and the `sigreturn` system calls → 15), or counting `_exit` as a round trip (20)."
+  },
+  {
+   "id": "t01-048",
+   "subtopic": "system-calls",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "also_tests": [
+    "fork"
+   ],
+   "est_seconds": 390,
+   "concepts": [
+    "stdio buffering",
+    "write system call",
+    "fork",
+    "_exit"
+   ],
+   "stem": "`stdout` is redirected to a file with `./a.out > out`, so it is **fully buffered**. The stdio buffer holds **4096 bytes**; bytes are appended one at a time, and whenever the buffer becomes full its 4096 bytes are written with one `write()`. At normal termination (return from `main` / `exit()`), a non-empty buffer is written with one more `write()`; `_exit()` does **not** flush. `L` is a 100-character string (99 letters and a newline). All calls succeed.\n\n```c\nint main(void) {\n    for (int i = 0; i < 100; i++) fputs(L, stdout);\n    pid_t p = fork();\n    for (int i = 0; i < 50; i++) fputs(L, stdout);\n    if (p == 0) _exit(0);\n    wait(NULL);\n    return 0;\n}\n```\n\nHow many bytes does the file `out` contain when the parent has finished?",
+   "answer": {
+    "min": 19096,
+    "max": 19096
+   },
+   "explanation": "**Before fork:** 100 × 100 = 10 000 bytes → the buffer fills twice (2 `write()`s, 8192 bytes to the file) and **1808** bytes remain buffered.\n\n**fork** copies the address space, so the child's buffer also holds those 1808 bytes. Parent and child share the same open-file description, so their writes go at the shared offset and do not overwrite each other.\n\n**Child:** 1808 + 5000 = 6808 bytes → buffer fills once → `write()` of 4096 bytes; the remaining 2712 bytes are **discarded** by `_exit`.\n\n**Parent:** 1808 + 5000 = 6808 → one `write()` of 4096; at `return 0` the remaining 2712 bytes are flushed.\n\n| Source | bytes |\n|---|---|\n| writes before fork | 8192 |\n| child's buffer flush | 4096 |\n| parent's buffer flush | 4096 |\n| parent's exit flush | 2712 |\n| **Total** | **19 096** |\n\nCheck: the parent's 15 000 logical bytes all reach the file, plus the child's single 4096-byte write (1808 duplicated pre-fork bytes + 2288 of its own) = 19 096 (confirmed by running the program with a 4096-byte buffer).",
+   "trap": "Answering 15 000 or 20 000 (ignoring that fork duplicates the 1808 buffered bytes), or 21 808 (forgetting that `_exit` discards the child's unflushed 2712 bytes)."
+  },
+  {
+   "id": "t01-049",
+   "subtopic": "system-calls",
+   "difficulty": 5,
+   "type": "mcq",
+   "marks": 2,
+   "also_tests": [
+    "fork"
+   ],
+   "est_seconds": 360,
+   "concepts": [
+    "file offset sharing",
+    "dup",
+    "O_APPEND",
+    "fork"
+   ],
+   "stem": "All calls succeed and `f` does not exist beforehand. What does file `f` contain after the parent finishes?\n\n```c\nint fd = open(\"f\", O_RDWR | O_CREAT | O_TRUNC, 0644);\nwrite(fd, \"abcdef\", 6);\nif (fork() == 0) {\n    int d = dup(fd);\n    lseek(d, 1, SEEK_SET);\n    write(fd, \"XY\", 2);\n    int g = open(\"f\", O_WRONLY | O_APPEND);\n    write(g, \"Q\", 1);\n    _exit(0);\n}\nwait(NULL);\nwrite(fd, \"Z\", 1);\n```",
+   "options": [
+    "QXYZef",
+    "aXYdefZ",
+    "aXYZefQ",
+    "abcdefXYZ"
+   ],
+   "answer": "C",
+   "explanation": "Key facts: `fork` and `dup` both create descriptors that point to the **same open-file description**, so they share one offset; a separate `open` creates a new description with its own offset; `O_APPEND` moves to end-of-file before every write. Writes overwrite, they do not insert.\n\n| Step | Shared offset (fd, d, parent's fd) | File |\n|---|---|---|\n| parent `write(\"abcdef\")` | 6 | `abcdef` |\n| child `lseek(d, 1)` | 1 | `abcdef` |\n| child `write(fd, \"XY\")` at 1 | 3 | `aXYdef` |\n| child `write(g, \"Q\")` — O_APPEND → at end (6) | 3 (g is separate) | `aXYdefQ` |\n| parent `write(fd, \"Z\")` at 3 | 4 | `aXYZefQ` |\n\nResult: **`aXYZefQ`** (confirmed by running the program).",
+   "option_feedback": [
+    "Ignores O_APPEND: writes Q at offset 0 as if g started at the beginning and did not append.",
+    "Assumes the child's lseek/write do not move the parent's offset (separate offsets after fork), so Z lands at 6 and overwrites Q.",
+    "Correct: fd, d and the parent's fd share one offset (1 → 3), Q is appended at the end via g, and Z goes at the shared offset 3.",
+    "Assumes dup gives an independent offset, so lseek(d) does not affect fd and XY is written at offset 6."
+   ],
+   "trap": "Believing that after fork (or dup) each descriptor has its own file offset."
+  },
+  {
+   "id": "t01-050",
+   "subtopic": "types-of-os",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "multiprogramming",
+    "uniprogramming",
+    "CPU/I-O overlap"
+   ],
+   "stem": "Two identical jobs J1 and J2 are both ready at time 0. Each job runs **CPU 20 ms → I/O 30 ms → CPU 20 ms** and then ends. The two jobs use **different I/O devices**, so their I/O operations can overlap with each other and with CPU work. Ignore all OS overheads.\n\n- In a **uniprogrammed** system, J1 runs to completion and only then is J2 loaded.\n- In a **multiprogrammed** system, both jobs are in memory; the CPU is FCFS non-preemptive with J1 first, and a job whose I/O completes joins the tail of the ready queue.\n\nBy how many ms does multiprogramming reduce the time at which **both** jobs have finished?",
+   "options": [
+    "40",
+    "50",
+    "60",
+    "70"
+   ],
+   "answer": "B",
+   "explanation": "**Uniprogrammed:** each job takes 20 + 30 + 20 = 70 ms and nothing overlaps, so both finish at 2 × 70 = **140 ms**.\n\n**Multiprogrammed:**\n\n| Interval (ms) | CPU | J1's device | J2's device |\n|---|---|---|---|\n| 0–20 | J1 (CPU 1) | – | – |\n| 20–40 | J2 (CPU 1) | J1 I/O (20–50) | – |\n| 40–50 | idle | J1 I/O | J2 I/O (40–70) |\n| 50–70 | J1 (CPU 2) | – | J2 I/O |\n| 70–90 | J2 (CPU 2) | – | – |\n\nJ1's I/O ends at 50 and J1 runs 50–70; J2's I/O ends at 70 and J2 runs 70–90. Both finish at **90 ms**.\n\nReduction = 140 − 90 = **50 ms**.",
+   "option_feedback": [
+    "Wrong: 140 − 100 = 40 assumes the two I/O operations must run one after the other on a shared device (J2's I/O would then run 50–80). The stem says the devices are different.",
+    "Correct: 140 ms uniprogrammed vs 90 ms multiprogrammed.",
+    "Wrong: 140 − 80 = 60 assumes the CPU is never idle (total CPU demand 80 ms). The CPU is idle from 40 to 50 because both jobs are doing I/O.",
+    "Wrong: 70 assumes the second job is completely hidden behind the first. Only part of the work overlaps."
+   ],
+   "trap": "Assuming the multiprogrammed finish time is just the total CPU demand (80 ms) and forgetting the idle gap when both jobs are in I/O."
+  },
+  {
+   "id": "t01-051",
+   "subtopic": "types-of-os",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "multiprogramming",
+    "degree of multiprogramming",
+    "CPU utilization"
+   ],
+   "stem": "In a multiprogrammed system, every process spends **60%** of its time waiting for I/O. Processes wait independently of one another, and the CPU is busy whenever at least one process in memory is not waiting for I/O. What is the **minimum** number of processes that must be in memory for CPU utilisation to be **at least 90%**?",
+   "answer": {
+    "min": 5,
+    "max": 5
+   },
+   "explanation": "CPU utilisation with n processes = 1 − p^n, where p = 0.6 is the probability that a process is waiting for I/O (the CPU is idle only when all n are waiting).\n\nNeed 1 − 0.6^n ≥ 0.9, i.e. 0.6^n ≤ 0.1.\n\n| n | 0.6^n | Utilisation |\n|---|---|---|\n| 3 | 0.216 | 78.4% |\n| 4 | 0.1296 | 87.04% |\n| 5 | 0.07776 | **92.22%** |\n\n(Equivalently n ≥ log 0.1 / log 0.6 ≈ 4.51, so n must be rounded **up**.)\n\nMinimum n = **5**.",
+   "trap": "Using the CPU fraction 0.4 instead of the I/O fraction (1 − 0.4^n ≥ 0.9 gives n = 3), or rounding 4.51 down to 4."
+  },
+  {
+   "id": "t01-052",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "system call overhead",
+    "mode switch",
+    "user-space buffering"
+   ],
+   "stem": "A program writes **64 KB** (1 KB = 1024 bytes) to a file. Every `write()` system call costs a fixed **1.5 µs** (trap into kernel mode, dispatch, return to user mode) plus **0.01 µs per byte** copied by the kernel.\n\n- Version 1 calls `write()` once for every single byte.\n- Version 2 collects bytes in a 4 KB user-space buffer and calls `write()` once each time the buffer is full (64 KB is an exact multiple of 4 KB).\n\nIgnore the cost of copying bytes into the user-space buffer. How many **microseconds** of system-call time does Version 2 save compared with Version 1?",
+   "answer": {
+    "min": 98280,
+    "max": 98280
+   },
+   "explanation": "64 KB = 65,536 bytes.\n\n**Version 1:** 65,536 calls, each 1.5 + 0.01 × 1 = 1.51 µs → 65,536 × 1.51 = **98,959.36 µs**.\n\n**Version 2:** 65,536 / 4,096 = 16 calls, each 1.5 + 0.01 × 4,096 = 42.46 µs → 16 × 42.46 = **679.36 µs**.\n\nSaving = 98,959.36 − 679.36 = **98,280 µs**.\n\nShortcut: the per-byte cost (655.36 µs) is the same in both versions, so the saving is just the fixed cost of the calls avoided: (65,536 − 16) × 1.5 = 98,280 µs. This is why stdio buffers output in user space: the expensive part is crossing into kernel mode, not copying bytes.",
+   "trap": "Forgetting that the per-byte copy cost is paid in both versions, or counting 64,000 bytes instead of 65,536."
+  },
+  {
+   "id": "t01-053",
+   "subtopic": "user-vs-kernel-mode",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "mode bit",
+    "trap",
+    "interrupt",
+    "privileged instruction"
+   ],
+   "stem": "Use the convention **mode bit = 0 in kernel mode, 1 in user mode**. Process P starts in user mode and the following happen in order:\n\n1. P calls `getpid()`, which returns to P.\n2. P calls `read()` on a file whose data is cached. While the kernel is copying the data, a **disk interrupt** for another process arrives; its handler runs and returns into the kernel's `read()` code, which then returns to P.\n3. P calls the C library function `sqrt()`, implemented entirely in user space.\n4. A **timer interrupt** arrives while P is in user mode; its handler returns to P.\n5. P executes a **privileged** instruction in user mode; the OS then terminates P.\n\nHow many times does the mode bit change from **1 to 0**?",
+   "options": [
+    "2",
+    "3",
+    "4",
+    "5"
+   ],
+   "answer": "C",
+   "explanation": "The mode bit goes 1 → 0 only when the CPU enters the kernel **from user mode**.\n\n| Event | 1 → 0 changes | Why |\n|---|---|---|\n| `getpid()` | 1 | system-call trap |\n| `read()` | 1 | system-call trap |\n| disk interrupt during `read()` | 0 | CPU is already in kernel mode (bit already 0) |\n| `sqrt()` | 0 | ordinary user-space function call |\n| timer interrupt in user mode | 1 | hardware interrupt |\n| privileged instruction in user mode | 1 | hardware raises an exception (trap) to the OS, which then kills P |\n\nTotal = **4**.",
+   "option_feedback": [
+    "Wrong: counts only the two system calls; hardware interrupts and exceptions also enter the kernel.",
+    "Wrong: misses one entry, usually the privileged instruction. It does not just fail silently; the hardware traps to the OS.",
+    "Correct: getpid, read, timer interrupt and the privileged-instruction trap.",
+    "Wrong: counts the disk interrupt, but it arrives while the CPU is already in kernel mode, so the mode bit does not change."
+   ],
+   "trap": "Counting the nested disk interrupt (it occurs in kernel mode, so no 1 → 0 change), or thinking a privileged instruction in user mode is simply ignored."
+  }
+ ]
+}

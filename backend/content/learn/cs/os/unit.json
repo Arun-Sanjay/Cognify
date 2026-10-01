@@ -1,0 +1,161 @@
+{
+  "name": "Operating System",
+  "description": "The complete GATE CS Operating System unit in 11 topics. Every topic has a hand-picked Hinglish lecture track and an English one, each with a transcript, AI study notes and a lecture tutor.",
+  "syllabus": "System calls, processes, threads, inter-process communication, concurrency and synchronization. Deadlock. CPU and I/O scheduling. Memory management and virtual memory. File systems.",
+  "topics": [
+    {
+      "id": "t01-os-basics",
+      "number": 1,
+      "title": "OS Basics & System Calls",
+      "summary": "What an operating system does, the kinds of OS, user vs kernel mode, and how programs ask the kernel for services through system calls (including fork()).",
+      "syllabus_points": [
+        "Types of OS",
+        "User vs kernel mode",
+        "System calls",
+        "fork()"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t02-processes",
+      "number": 2,
+      "title": "Processes",
+      "summary": "The process abstraction: states and transitions, the PCB, context switching and the schedulers that move processes between queues.",
+      "syllabus_points": [
+        "Process states",
+        "PCB",
+        "Context switch",
+        "Schedulers",
+        "Zombie & orphan"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t03-threads",
+      "number": 3,
+      "title": "Threads",
+      "summary": "Lightweight execution units inside a process: user- vs kernel-level threads and the multithreading models.",
+      "syllabus_points": [
+        "Thread vs process",
+        "User vs kernel threads",
+        "Multithreading models"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t04-ipc",
+      "number": 4,
+      "title": "Inter-Process Communication",
+      "summary": "How cooperating processes exchange data: shared memory, message passing and pipes.",
+      "syllabus_points": [
+        "Shared memory",
+        "Message passing",
+        "Pipes"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t05-synchronization",
+      "number": 5,
+      "title": "Concurrency & Synchronization",
+      "summary": "Race conditions and the critical-section problem, from software solutions (Peterson) to hardware locks, semaphores, monitors and the classic problems.",
+      "syllabus_points": [
+        "Critical section",
+        "Peterson's solution",
+        "Test-and-set",
+        "Semaphores",
+        "Producer–consumer",
+        "Readers–writers",
+        "Dining philosophers"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t06-deadlock",
+      "number": 6,
+      "title": "Deadlock",
+      "summary": "When processes wait on each other forever: the four conditions, resource-allocation graphs, prevention, avoidance (Banker's algorithm), detection and recovery.",
+      "syllabus_points": [
+        "Necessary conditions",
+        "Resource-allocation graph",
+        "Prevention",
+        "Banker's algorithm",
+        "Detection & recovery"
+      ],
+      "lectures": [
+        "rWFH6PLOIEI"
+      ]
+    },
+    {
+      "id": "t07-cpu-scheduling",
+      "number": 7,
+      "title": "CPU Scheduling",
+      "summary": "Choosing which ready process runs next: FCFS, SJF/SRTF, priority, Round Robin and multilevel queues, with Gantt-chart numericals.",
+      "syllabus_points": [
+        "Scheduling criteria",
+        "FCFS",
+        "SJF / SRTF",
+        "Priority",
+        "Round Robin",
+        "Multilevel queues"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t08-disk-scheduling",
+      "number": 8,
+      "title": "I/O & Disk Scheduling",
+      "summary": "Disk structure and access time, and the algorithms that order disk requests: FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK.",
+      "syllabus_points": [
+        "Disk structure",
+        "Seek & rotational time",
+        "FCFS / SSTF",
+        "SCAN / C-SCAN",
+        "LOOK / C-LOOK"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t09-memory-management",
+      "number": 9,
+      "title": "Memory Management",
+      "summary": "Allocating main memory: partitions and fragmentation, paging with page tables and TLBs, multilevel paging and segmentation.",
+      "syllabus_points": [
+        "Contiguous allocation",
+        "Fragmentation",
+        "Paging",
+        "TLB & EMAT",
+        "Multilevel paging",
+        "Segmentation"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t10-virtual-memory",
+      "number": 10,
+      "title": "Virtual Memory",
+      "summary": "Running programs larger than memory: demand paging, page faults, page-replacement algorithms, Belady's anomaly and thrashing.",
+      "syllabus_points": [
+        "Demand paging",
+        "Page faults",
+        "FIFO / Optimal / LRU",
+        "Belady's anomaly",
+        "Thrashing"
+      ],
+      "lectures": []
+    },
+    {
+      "id": "t11-file-systems",
+      "number": 11,
+      "title": "File Systems",
+      "summary": "How files are stored on disk: directory structures, allocation methods (contiguous, linked, indexed, inode) and free-space management.",
+      "syllabus_points": [
+        "Directory structure",
+        "Allocation methods",
+        "Inode & max file size",
+        "Free-space management"
+      ],
+      "lectures": []
+    }
+  ]
+}

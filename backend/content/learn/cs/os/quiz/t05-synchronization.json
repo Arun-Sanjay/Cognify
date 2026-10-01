@@ -1,0 +1,2369 @@
+{
+  "topic_id": "t05-synchronization",
+  "questions": [
+    {
+      "id": "t05-001",
+      "subtopic": "critical-section",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "critical-section requirements"
+      ],
+      "stem": "A correct solution to the critical-section problem must satisfy three requirements. Which of the following is **not** one of them?",
+      "options": [
+        "Mutual exclusion",
+        "Progress",
+        "Bounded waiting",
+        "Processes must enter the critical section in the order in which they requested it (strict FIFO)"
+      ],
+      "answer": "D",
+      "explanation": "The three requirements (Silberschatz) are:\n\n1. **Mutual exclusion** — at most one process is in its critical section at a time.\n2. **Progress** — if no process is in its CS and some want to enter, only processes not in their remainder section take part in the decision, and the decision cannot be postponed indefinitely.\n3. **Bounded waiting** — after a process requests entry, there is a bound on how many times others may enter before it is admitted.\n\nBounded waiting only needs *some* finite bound; it does not require strict FIFO order. Many correct solutions (e.g. Peterson's, the bounded-waiting test-and-set algorithm) are not FIFO.",
+      "option_feedback": [
+        "A required property.",
+        "A required property.",
+        "A required property.",
+        "Correct — FIFO is stronger than needed; bounded waiting only requires a finite bound."
+      ],
+      "trap": "Confusing bounded waiting with FIFO fairness."
+    },
+    {
+      "id": "t05-002",
+      "subtopic": "critical-section",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "race condition"
+      ],
+      "stem": "A **race condition** is best described as:",
+      "options": [
+        "A situation where the outcome of concurrent execution depends on the particular order in which accesses to shared data interleave",
+        "A situation where two processes wait for each other forever",
+        "A situation where a low-priority process never gets the CPU",
+        "A situation where a process repeatedly tests a variable while waiting"
+      ],
+      "answer": "A",
+      "explanation": "A race condition occurs when several processes/threads access and manipulate shared data concurrently and the **result depends on the interleaving**. The classic example is two threads executing `count++`, which compiles to load / add / store; some interleavings lose an update.\n\n- Waiting for each other forever is **deadlock**.\n- Never getting the CPU is **starvation**.\n- Repeatedly testing a variable is **busy waiting** (spinning).",
+      "option_feedback": [
+        "Correct.",
+        "That is deadlock.",
+        "That is starvation.",
+        "That is busy waiting / spinning."
+      ]
+    },
+    {
+      "id": "t05-003",
+      "subtopic": "critical-section",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "strict alternation",
+        "progress"
+      ],
+      "stem": "Two processes P0 and P1 share `int turn = 0;` and use:\n\n```c\n/* Process Pi (i = 0 or 1, j = 1 - i) */\nwhile (true) {\n    while (turn != i) ;      /* busy wait */\n    /* critical section */\n    turn = j;\n    /* remainder section */\n}\n```\n\nP1 wants to enter its critical section repeatedly, but P0, after one pass, stays in its remainder section for a very long time. Which requirement is violated?",
+      "options": [
+        "Mutual exclusion",
+        "Progress",
+        "Bounded waiting",
+        "None — the scheme is correct"
+      ],
+      "answer": "B",
+      "explanation": "This is **strict alternation**.\n\n- After P0 exits, `turn = 1`, so P1 enters once and sets `turn = 0` on exit.\n- P1 now wants to enter again, but `turn == 0` and P0 is sitting in its remainder section. P1 is blocked by a process that does not even want the CS.\n\nProgress says the decision must be made only by processes that are *not* in their remainder section and cannot be postponed indefinitely — here it is decided by P0, which is in its remainder. So **progress is violated**.\n\nMutual exclusion holds (only the process whose number is in `turn` can be inside). Bounded waiting holds (a waiting process gets in after at most one entry by the other).",
+      "option_feedback": [
+        "ME holds: `turn` admits exactly one process at a time.",
+        "Correct — a process in its remainder section blocks the other.",
+        "Bounded waiting holds: the bound is 1.",
+        "The scheme fails progress."
+      ],
+      "trap": "Thinking strict alternation violates bounded waiting; it actually guarantees a bound of 1."
+    },
+    {
+      "id": "t05-004",
+      "subtopic": "critical-section",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "disabling interrupts",
+        "multiprocessor"
+      ],
+      "stem": "Consider protecting a critical section by **disabling interrupts** on entry and re-enabling them on exit. Which of the following statements are correct?",
+      "options": [
+        "On a uniprocessor it prevents the running process from being preempted inside the critical section",
+        "On a multiprocessor it guarantees mutual exclusion, because interrupts are disabled on every CPU automatically",
+        "It is unsuitable for user-level programs, because a user process could disable interrupts and never re-enable them",
+        "It is the preferred mechanism for long critical sections in a multiprocessor kernel"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A — correct.** Without interrupts, no timer interrupt can trigger a context switch, so on one CPU the process runs the CS without interleaving.\n- **B — wrong.** Disabling interrupts affects only the CPU executing the instruction. Code on another CPU can still enter the same CS. (Broadcasting the disable to all CPUs is slow and is not what happens.)\n- **C — correct.** Giving user code this power is unsafe (it could hog the CPU or hang the system), so it is a privileged operation.\n- **D — wrong.** Long periods with interrupts off hurt responsiveness and still don't give ME across CPUs; multiprocessor kernels use spinlocks/mutexes.",
+      "option_feedback": [
+        "Correct.",
+        "Disabling interrupts is per-CPU.",
+        "Correct.",
+        "Bad for responsiveness and not enough for SMP."
+      ]
+    },
+    {
+      "id": "t05-005",
+      "subtopic": "critical-section",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "bounded waiting"
+      ],
+      "stem": "Which statement correctly describes the **bounded waiting** requirement?",
+      "options": [
+        "A process may stay in its critical section for at most a bounded amount of time",
+        "A process that is in its remainder section must not block other processes",
+        "After a process has requested entry, there is a limit on the number of times other processes may enter their critical sections before that request is granted",
+        "The waiting time of every process must be less than a fixed number of milliseconds"
+      ],
+      "answer": "C",
+      "explanation": "Bounded waiting limits the **number of times** other processes can overtake a waiting process, counted from the moment it makes its request. It says nothing about wall-clock time (no assumption is made about relative speeds), and nothing about how long a process stays in its CS.\n\nOption B paraphrases part of the **progress** requirement.",
+      "option_feedback": [
+        "The CS length is not what bounded waiting limits.",
+        "That is part of progress.",
+        "Correct.",
+        "Bounded waiting is a count of entries, not a time limit."
+      ],
+      "trap": "Mixing up progress and bounded waiting."
+    },
+    {
+      "id": "t05-006",
+      "subtopic": "critical-section",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "race condition",
+        "lost update"
+      ],
+      "stem": "Shared integer `x` is initially 1. Two threads run concurrently, each executing one statement:\n\n```c\nT1:  x = x + 1;\nT2:  x = x * 2;\n```\n\nEach statement compiles to three machine instructions: **load** `x` into a private register, **compute** in the register, **store** the register into `x`. Only these individual instructions are atomic.\n\nHow many **distinct** final values of `x` are possible?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Each thread reads one value of `x` and later writes a value computed from it. The final value is the one written by the **last store**.\n\n**Serial (no overlap):**\n- T1 then T2: x = (1 + 1) × 2 = **4**\n- T2 then T1: x = 1 × 2 + 1 = **3**\n\n**Overlapping (both load the initial 1 before either stores):** T1 computes 2, T2 computes 2. Whichever stores last, x = **2**.\n\nCan a thread load a value other than 1 or the other thread's result? No — the only values ever in `x` are 1, 2, and 4/3. So the possible finals are {2, 3, 4}.\n\nAnswer: **3**.",
+      "trap": "Answering 2 (only the two serial orders) and forgetting the lost-update case."
+    },
+    {
+      "id": "t05-007",
+      "subtopic": "critical-section",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "flag array",
+        "mutual exclusion"
+      ],
+      "stem": "Two processes use a shared array `bool flag[2] = {false, false};`:\n\n```c\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    while (flag[j]) ;      /* wait while the other is interested */\n    flag[i] = true;\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nWhich statement is correct?",
+      "options": [
+        "Mutual exclusion is guaranteed but deadlock is possible",
+        "Mutual exclusion is not guaranteed",
+        "The solution satisfies mutual exclusion, progress and bounded waiting",
+        "Mutual exclusion is guaranteed but bounded waiting is not"
+      ],
+      "answer": "B",
+      "explanation": "The process **checks** the other's flag **before** setting its own, so there is a window between the test and the set.\n\nCounter-example (both flags false initially):\n\n| Step | P0 | P1 | flag[0] | flag[1] |\n|---|---|---|---|---|\n| 1 | tests flag[1] → false, leaves loop | | F | F |\n| 2 | | tests flag[0] → false, leaves loop | F | F |\n| 3 | flag[0] = true, enters CS | | T | F |\n| 4 | | flag[1] = true, enters CS | T | T |\n\nBoth are in the CS → **mutual exclusion violated**.\n\n(The scheme cannot deadlock, because a process never sets its flag and then waits.)",
+      "option_feedback": [
+        "Deadlock needs both to set flags and then wait; here they test first. And ME fails.",
+        "Correct — test-then-set is not atomic.",
+        "ME fails.",
+        "ME fails, so this is not the issue."
+      ],
+      "trap": "Assuming a flag-based scheme always preserves ME."
+    },
+    {
+      "id": "t05-008",
+      "subtopic": "critical-section",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "race condition",
+        "atomicity"
+      ],
+      "stem": "Which of the following statements about race conditions are correct?",
+      "options": [
+        "`count++` on a shared variable can lose an update when two threads execute it concurrently, even on a single CPU",
+        "Declaring the shared variable `volatile` in C makes `count++` atomic",
+        "On a uniprocessor, a race condition between two processes can occur only if a process can be preempted between the instructions that access the shared data",
+        "If every thread only **reads** a shared variable and none writes it, there is no race condition on that variable"
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "explanation": "- **A — correct.** `count++` is load/add/store. If a thread is preempted after the load, another thread's increment is overwritten. This needs only interleaving, not true parallelism.\n- **B — wrong.** `volatile` only forces the compiler to re-read/write memory each time; the read-modify-write is still three separate steps.\n- **C — correct.** On one CPU, interleaving happens only through preemption (an interrupt causing a context switch) between those instructions. That is why disabling interrupts works on a uniprocessor.\n- **D — correct.** Read-only sharing gives the same result in every interleaving; a race needs at least one writer.",
+      "option_feedback": [
+        "Correct.",
+        "`volatile` does not give atomicity.",
+        "Correct.",
+        "Correct — a race needs at least one writer."
+      ]
+    },
+    {
+      "id": "t05-009",
+      "subtopic": "critical-section",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "race condition",
+        "lost update",
+        "minimum final value"
+      ],
+      "stem": "Shared integer `x = 0`. Three threads T1, T2, T3 each run:\n\n```c\nfor (int k = 0; k < 3; k++)\n    x = x + 1;      /* load x into register; add 1; store register into x */\n```\n\nOnly the individual load, add and store instructions are atomic; the loop counter `k` is private. What is the **minimum** possible final value of `x`?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "**Lower bound.** Every store writes (value loaded) + 1. Look at the very last store overall. It comes from some thread's 3rd iteration. That iteration's load happened *after* the same thread's 1st store. Every store writes at least 1, so when that load happens x ≥ 1. The last store therefore writes ≥ 2. So the final value ≥ 2.\n\n**A schedule that reaches 2:**\n\n| Step | Action | x |\n|---|---|---|\n| 1 | T1 loads 0 (iteration 1) | 0 |\n| 2 | T2 runs all 3 iterations | 3 |\n| 3 | T3 runs 2 complete iterations | 5 |\n| 4 | T1 stores 1 (wipes out everything above) | 1 |\n| 5 | T3 loads 1 (its 3rd iteration) | 1 |\n| 6 | T1 runs its remaining 2 iterations | 3 |\n| 7 | T3 stores 2 | **2** |\n\nMinimum = **2** (the maximum would be 9).",
+      "trap": "Answering 3 (one per thread) or 1; neither is the true minimum."
+    },
+    {
+      "id": "t05-010",
+      "subtopic": "critical-section",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "flag array",
+        "deadlock",
+        "progress"
+      ],
+      "stem": "Two processes use `bool flag[2] = {false, false};`:\n\n```c\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    while (flag[j]) ;      /* wait */\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nWhich statement is correct?",
+      "options": [
+        "Mutual exclusion is violated",
+        "Mutual exclusion holds, and the solution satisfies progress and bounded waiting",
+        "Mutual exclusion holds, but both processes can wait forever, so progress is violated",
+        "Mutual exclusion holds and progress holds, but bounded waiting is violated"
+      ],
+      "answer": "C",
+      "explanation": "**Mutual exclusion holds.** Suppose both are in the CS. Each set its own flag before testing the other's. Say P0's test (flag[1] == false) came first. At that moment flag[0] was already true, and it stays true while P0 is in the CS, so P1's later test sees flag[0] == true and P1 cannot leave its loop. Contradiction.\n\n**Progress fails:**\n\n| Step | P0 | P1 | flag |\n|---|---|---|---|\n| 1 | flag[0] = true | | T,F |\n| 2 | | flag[1] = true | T,T |\n| 3 | spins on flag[1] | spins on flag[0] | T,T |\n\nNeither is in the CS and both want in, but neither can ever enter: **deadlock**.\n\n(Option D is wrong because progress already fails.)",
+      "option_feedback": [
+        "Setting the flag before testing preserves ME.",
+        "Both can deadlock.",
+        "Correct.",
+        "Progress fails because of the deadlock."
+      ],
+      "trap": "Swapping the two lines (compare with the test-then-set version) moves the failure from ME to deadlock."
+    },
+    {
+      "id": "t05-011",
+      "subtopic": "critical-section",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "livelock",
+        "progress",
+        "flag back-off"
+      ],
+      "stem": "Two processes use `bool flag[2] = {false, false};`:\n\n```c\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    while (flag[j]) {\n        flag[i] = false;\n        while (flag[j]) ;   /* wait for the other to back off */\n        flag[i] = true;\n    }\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nTake **progress** to mean: whenever no process is in its CS and some want to enter, under **every** possible scheduling one of them eventually enters. Which statement is correct?",
+      "options": [
+        "Mutual exclusion can be violated",
+        "Mutual exclusion, progress and bounded waiting are all satisfied",
+        "Mutual exclusion and progress are satisfied, but bounded waiting is not",
+        "Mutual exclusion is satisfied, but neither progress nor bounded waiting is guaranteed"
+      ],
+      "answer": "D",
+      "explanation": "**ME holds.** A process enters only right after seeing `flag[j] == false` while its own flag is true. This is the same argument as for \"set flag, then test\": the process whose successful test came first had its flag set throughout, so the other one's test must fail.\n\n**Progress fails (livelock).** Run both in lock-step:\n\n| Step | P0 | P1 |\n|---|---|---|\n| 1 | flag[0]=T | flag[1]=T |\n| 2 | sees flag[1]=T, enters outer loop | sees flag[0]=T, enters outer loop |\n| 3 | flag[0]=F | flag[1]=F |\n| 4 | inner test: flag[1]=F, falls through | inner test: flag[0]=F, falls through |\n| 5 | flag[0]=T | flag[1]=T |\n| 6 | outer test sees T → back to step 3 | same |\n\nThis cycle can repeat forever with nobody entering. Under the stated definition, progress is not guaranteed. This is not a deadlock (both keep running); it is a **livelock**.\n\n**Bounded waiting fails.** A slow P0 can keep losing: each time it sets its flag, a fast P1 is already in or re-entering, so P0 backs off again with no bound on P1's entries.\n\n(This is Dekker's \"attempt 4\"; Dekker's full algorithm adds a `turn` variable to fix it.)",
+      "option_feedback": [
+        "A process enters only after seeing the other's flag false while its own is set, so ME holds.",
+        "Lock-step execution livelocks.",
+        "Livelock breaks progress as defined.",
+        "Correct."
+      ],
+      "trap": "Treating livelock as acceptable because nobody is blocked."
+    },
+    {
+      "id": "t05-012",
+      "subtopic": "critical-section",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 270,
+      "concepts": [
+        "race condition",
+        "range of final values"
+      ],
+      "stem": "Shared integer `x = 0`. Two threads run concurrently:\n\n```c\nT1:  for (k = 0; k < 5; k++)  x = x + 1;\nT2:  for (k = 0; k < 3; k++)  x = x - 1;\n```\n\nEach `x = x ± 1` is a separate load / compute / store, and only these instructions are atomic. How many **distinct** final values of `x` are possible?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "**Bounds.** A lost update can only *remove* the effect of a statement, so the final value lies between −3 (all decrements count, all increments lost) and +5 (all increments count, all decrements lost).\n\n- **Max 5:** T1 loads 0; T2 runs all 3 decrements (x = −3); T1 stores 1, overwriting them; T1 finishes → 5.\n- **Min −3:** T2 loads 0; T1 runs all 5 increments (x = 5); T2 stores −1; T2 finishes → −3.\n\n**Every value in between is reachable.**\n\n*Values 5 − m, m = 0..3:* T1 loads 0. T2 runs 3 − m full decrements, which are then lost when T1 stores 1. After that, T2's remaining m decrements and T1's remaining 4 increments run one at a time without overlap → 1 + 4 − m = 5 − m → {5, 4, 3, 2}.\n\n*Values −3 + k, k = 0..5:* T2 loads 0. T1 runs 5 − k full increments, which are lost when T2 stores −1. After that, T1's remaining k increments and T2's remaining 2 decrements run without overlap → −1 + k − 2 = k − 3 → {−3, …, 2}.\n\nUnion = {−3, −2, …, 5} → **9** values. (Exhaustive enumeration of all interleavings gives the same set.)",
+      "trap": "Answering 2 (the net value) or forgetting that lost updates can push the value both up and down."
+    },
+    {
+      "id": "t05-013",
+      "subtopic": "critical-section",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "race condition",
+        "lost update",
+        "three threads"
+      ],
+      "stem": "Shared integer `x = 1`. Three threads each execute one statement once:\n\n```c\nT1:  x = x + 2;\nT2:  x = x * 3;\nT3:  x = x - 1;\n```\n\nEach statement is load / compute / store, and only these instructions are atomic. How many **distinct** final values of `x` are possible?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "The final value is produced by the thread whose **store is last**. That thread applies its operation to the value **it loaded**. The loaded value can be the initial 1, or any value that the *other two* threads could leave in x before the load: one of them alone, or both in either order (overlapping between those two only produces values from the same set).\n\n**Last writer T3 (−1):** it can load 1, 3 (+2), 3 (×3), (1+2)×3 = 9, 1×3+2 = 5 → finals {0, 2, 4, 8}.\n\n**Last writer T2 (×3):** it can load 1, 3 (+2), 0 (−1), (1+2)−1 = 2, (1−1)+2 = 2 → finals {3, 9, 0, 6}.\n\n**Last writer T1 (+2):** it can load 1, 3 (×3), 0 (−1), 1×3−1 = 2, (1−1)×3 = 0 → finals {3, 5, 2, 4}.\n\nUnion = {0, 2, 3, 4, 5, 6, 8, 9} → **8** values.\n\nCheck: the 6 serial orders give only {8, 6, 4, 2}. The other four values (0, 3, 5, 9) need lost updates. An exhaustive interleaving search gives the same 8 values.",
+      "trap": "Counting only the 6 serial permutations (4 distinct values)."
+    },
+    {
+      "id": "t05-014",
+      "subtopic": "petersons-solution",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "Peterson's solution",
+        "shared variables"
+      ],
+      "stem": "Peterson's solution for two processes uses which shared variables?",
+      "options": [
+        "A single integer `turn` only",
+        "A boolean array `flag[2]` only",
+        "A boolean array `flag[2]` and an integer `turn`",
+        "A semaphore `mutex` and an integer `count`"
+      ],
+      "answer": "C",
+      "explanation": "Peterson's algorithm shares:\n\n- `flag[i]` — process i wants to enter;\n- `turn` — whose turn it is when both want in.\n\n```c\nflag[i] = true; turn = j;\nwhile (flag[j] && turn == j) ;\n/* CS */\nflag[i] = false;\n```\n\n`turn` alone gives strict alternation (fails progress). `flag` alone can deadlock or break ME. Peterson's uses no semaphores; it relies only on atomic loads and stores.",
+      "option_feedback": [
+        "That is strict alternation.",
+        "Flags alone can deadlock or break ME.",
+        "Correct.",
+        "Peterson's uses no semaphores."
+      ]
+    },
+    {
+      "id": "t05-015",
+      "subtopic": "petersons-solution",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "Peterson's solution",
+        "correctness"
+      ],
+      "stem": "Assuming loads and stores are atomic and are executed in program order, Peterson's two-process solution satisfies:",
+      "options": [
+        "Mutual exclusion only",
+        "Mutual exclusion and progress, but not bounded waiting",
+        "Mutual exclusion and bounded waiting, but not progress",
+        "Mutual exclusion, progress and bounded waiting"
+      ],
+      "answer": "D",
+      "explanation": "Peterson's solution is a complete software solution for two processes:\n\n- **ME:** if both were in the CS, both flags would be true, so each must have passed with `turn == i`, but `turn` holds one value.\n- **Progress:** a process in its remainder has `flag = false`, so it cannot block the other. If both are waiting, `turn` lets one through.\n- **Bounded waiting:** a process waits for at most **one** entry by the other, because on re-entry the other sets `turn` to give way.",
+      "option_feedback": [
+        "It also satisfies progress and BW.",
+        "BW holds with bound 1.",
+        "Progress holds.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t05-016",
+      "subtopic": "petersons-solution",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "Peterson's solution",
+        "limitations",
+        "memory ordering"
+      ],
+      "stem": "Which of the following statements about Peterson's solution are correct?",
+      "options": [
+        "As written, it is for exactly two processes",
+        "It uses busy waiting",
+        "It is guaranteed to work on modern multiprocessors without memory barriers, even if the hardware reorders independent stores and loads",
+        "It needs a special atomic instruction such as test-and-set"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — correct.** The classic algorithm is for two processes (generalisations such as the filter algorithm exist, but they are different algorithms).\n- **B — correct.** The waiting process spins in `while (flag[j] && turn == j);`.\n- **C — wrong.** Modern CPUs and compilers may reorder the store `flag[i] = true` with the later load of `flag[j]`. Then both processes can see the other's flag as false and both enter. A memory fence is needed.\n- **D — wrong.** It needs only atomic loads and stores of single words; that is the point of a software solution.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Reordering breaks it; barriers are needed.",
+        "Only atomic load/store are needed."
+      ],
+      "trap": "Assuming Peterson's works unmodified on modern hardware."
+    },
+    {
+      "id": "t05-017",
+      "subtopic": "petersons-solution",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "Peterson's solution",
+        "turn variable"
+      ],
+      "stem": "Peterson's solution:\n\n```c\nbool flag[2] = {false, false};\nint  turn;\n\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j) ;   /* busy wait */\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nBoth processes want to enter at about the same time. The order of shared writes is: P0 sets `flag[0]`, P1 sets `flag[1]`, P0 sets `turn = 1`, P1 sets `turn = 0`. Then both reach their while-tests. What happens?",
+      "options": [
+        "P0 enters the CS; P1 waits",
+        "P1 enters the CS; P0 waits",
+        "Both enter the CS",
+        "Both wait forever"
+      ],
+      "answer": "A",
+      "explanation": "After the four writes: `flag[0] = flag[1] = true` and `turn = 0` (P1 wrote last).\n\n- P0 tests `flag[1] && turn == 1` → true && false → **false** → P0 enters.\n- P1 tests `flag[0] && turn == 0` → true && true → **true** → P1 spins.\n\nRule: when both are interested, the process that wrote `turn` **last** waits, because it gave the turn away last.",
+      "option_feedback": [
+        "Correct — the last writer of turn (P1) gives way.",
+        "P1 wrote turn = 0 last, so P1 waits.",
+        "Impossible: turn has one value.",
+        "Peterson's is deadlock-free: one test is false."
+      ],
+      "trap": "Thinking the last writer of turn wins."
+    },
+    {
+      "id": "t05-018",
+      "subtopic": "petersons-solution",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "bounded waiting",
+        "Peterson's solution"
+      ],
+      "stem": "Peterson's solution:\n\n```c\nbool flag[2] = {false, false};\nint  turn;\n\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j) ;   /* busy wait */\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nP0 has just executed `turn = 1` and is now in its while loop. What is the **maximum** number of times P1 can **enter** its critical section from this moment until P0 enters?",
+      "answer": {
+        "min": 1,
+        "max": 1
+      },
+      "explanation": "At this moment `flag[0] = true` and P0 is waiting.\n\n- P1 may get in **once**. For example, P1 had already set `turn = 0` earlier, P0 then overwrote it with `turn = 1`, so P1's test `flag[0] && turn == 0` is false and P1 enters.\n- When P1 exits and tries again, it executes `turn = 0` itself. Now P1's test `flag[0] && turn == 0` is true, so P1 spins, while P0's test `flag[1] && turn == 1` is false, so P0 enters.\n\nSo P1 can overtake P0 at most **1** time. This is Peterson's bounded-waiting bound.",
+      "trap": "Answering 0: P1 can still get in once if it was already past its turn assignment."
+    },
+    {
+      "id": "t05-019",
+      "subtopic": "petersons-solution",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "Peterson's solution",
+        "statement order",
+        "mutual exclusion"
+      ],
+      "stem": "Peterson's entry section is changed so that `turn` is assigned **before** `flag`:\n\n```c\n/* Process Pi, j = 1 - i */\nturn = j;\nflag[i] = true;\nwhile (flag[j] && turn == j) ;\n/* critical section */\nflag[i] = false;\n```\n\nInitially `flag[0] = flag[1] = false`. Which is correct?",
+      "options": [
+        "The algorithm is still correct",
+        "Mutual exclusion can be violated",
+        "Mutual exclusion holds but deadlock is possible",
+        "Mutual exclusion holds but bounded waiting is violated"
+      ],
+      "answer": "B",
+      "explanation": "Counter-example:\n\n| Step | Action | flag[0] | flag[1] | turn |\n|---|---|---|---|---|\n| 1 | P0: turn = 1 | F | F | 1 |\n| 2 | P1: turn = 0 | F | F | 0 |\n| 3 | P1: flag[1] = true | F | T | 0 |\n| 4 | P1 tests flag[0] && turn==0 → **F** (flag[0] false) → enters CS | F | T | 0 |\n| 5 | P0: flag[0] = true | T | T | 0 |\n| 6 | P0 tests flag[1] && turn==1 → turn is 0 → **F** → enters CS | T | T | 0 |\n\nBoth are in the CS. The original order (flag first, then turn) makes sure that whoever writes `turn` last has already announced interest. Swapping the lines breaks this.",
+      "option_feedback": [
+        "See the counter-example.",
+        "Correct.",
+        "ME itself fails.",
+        "ME itself fails."
+      ],
+      "trap": "Believing the order of the two assignments doesn't matter."
+    },
+    {
+      "id": "t05-020",
+      "subtopic": "petersons-solution",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "Peterson's solution",
+        "modified condition"
+      ],
+      "stem": "In Peterson's solution the wait condition is changed (assignments unchanged):\n\n```c\n/* Process Pi, j = 1 - i */\nflag[i] = true;\nturn = j;\nwhile (flag[j] && turn == i) ;     /* was: turn == j */\n/* critical section */\nflag[i] = false;\n```\n\nInitially both flags are false and `turn = 0`. Which is correct?",
+      "options": [
+        "The algorithm is still correct",
+        "Mutual exclusion holds but progress is violated",
+        "Mutual exclusion can be violated",
+        "Mutual exclusion holds but the processes can deadlock"
+      ],
+      "answer": "C",
+      "explanation": "Each process now waits only when `turn` names **itself**. But it has just set `turn = j`, so unless the other process overwrites `turn`, it walks straight in.\n\n| Step | Action | flag[0] | flag[1] | turn |\n|---|---|---|---|---|\n| 1 | P0: flag[0] = T | T | F | 0 |\n| 2 | P0: turn = 1 | T | F | 1 |\n| 3 | P0 tests flag[1] → F → enters CS | T | F | 1 |\n| 4 | P1: flag[1] = T | T | T | 1 |\n| 5 | P1: turn = 0 | T | T | 0 |\n| 6 | P1 tests flag[0] && turn == 1 → turn is 0 → F → enters CS | T | T | 0 |\n\nBoth are in the CS → **ME violated**. The process that wrote `turn` last now goes ahead instead of giving way.",
+      "option_feedback": [
+        "See the trace.",
+        "ME itself fails.",
+        "Correct.",
+        "ME fails, so this is not the issue."
+      ]
+    },
+    {
+      "id": "t05-021",
+      "subtopic": "petersons-solution",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "Peterson's solution",
+        "modified condition",
+        "progress"
+      ],
+      "stem": "In Peterson's solution `&&` is replaced by `||` in the wait condition:\n\n```c\n/* Process Pi, j = 1 - i */\nflag[i] = true;\nturn = j;\nwhile (flag[j] || turn == j) ;\n/* critical section */\nflag[i] = false;\n```\n\nInitially both flags are false. Which is correct?",
+      "options": [
+        "The algorithm is still correct",
+        "Mutual exclusion can be violated",
+        "Mutual exclusion holds, but progress is violated",
+        "Mutual exclusion and progress hold, but bounded waiting is violated"
+      ],
+      "answer": "C",
+      "explanation": "**ME holds.** The `||` condition is *stronger* than the original `&&` condition, so a process leaves the loop in fewer situations than in Peterson's. Every entry allowed here is also allowed by Peterson's, which is mutually exclusive.\n\n**Progress fails.** Let P1 stay in its remainder section (`flag[1] = false`). P0 sets `turn = 1` and tests `flag[1] || turn == 1` → false || **true** → spins. Only P1 can change `turn`, and it doesn't want the CS. So P0 waits forever although the CS is free.\n\n(If both want in, both flags are true and both spin forever, which is also a deadlock.)",
+      "option_feedback": [
+        "P0 blocks itself when alone.",
+        "A stronger wait condition cannot break ME.",
+        "Correct.",
+        "Progress itself fails."
+      ],
+      "trap": "Thinking a stricter wait condition can only help."
+    },
+    {
+      "id": "t05-022",
+      "subtopic": "petersons-solution",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "Peterson's solution",
+        "invariants"
+      ],
+      "stem": "Peterson's solution (initially both flags false; `turn` may start with any value):\n\n```c\nbool flag[2] = {false, false};\nint  turn;\n\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j) ;   /* busy wait */\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nWhich statements are correct?",
+      "options": [
+        "If both processes are executing their while loops at the same moment, at least one of them will leave its loop",
+        "Whenever Pi is inside its critical section, `flag[i] == true`",
+        "Correctness depends on initialising `turn` to 0",
+        "If P0 is in its critical section and P1 is spinning in its while loop (having already executed `turn = 0`), then `turn == 0`"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "explanation": "- **A — correct.** Both looping means both flags are true. `turn` is either 0 or 1, so exactly one of the conditions `turn == j` is false and that process leaves. No deadlock.\n- **B — correct.** `flag[i]` is set before the loop and cleared only after the CS.\n- **C — wrong.** Both processes write `turn` before testing it, so its initial value doesn't matter.\n- **D — correct.** P1 is spinning, so it last saw `turn == 0` with `flag[0]` true. If P0 had written `turn = 1` after P1's `turn = 0`, P0 would see `flag[1] && turn == 1` true and couldn't be in the CS. So P0's `turn = 1` came earlier, P1's `turn = 0` was the last write to `turn`, and nobody has changed it since (P0 doesn't write `turn` again until its next entry). Hence `turn == 0`.",
+      "option_feedback": [
+        "Correct — no deadlock.",
+        "Correct.",
+        "turn is written before it is read.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t05-023",
+      "subtopic": "petersons-solution",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "Peterson's solution",
+        "exit section",
+        "progress"
+      ],
+      "stem": "In Peterson's solution the exit section is changed: instead of clearing its flag, a process gives the turn away.\n\n```c\n/* Process Pi, j = 1 - i */\nwhile (true) {\n    flag[i] = true;\n    turn = j;\n    while (flag[j] && turn == j) ;\n    /* critical section */\n    turn = j;                 /* was: flag[i] = false; */\n    /* remainder section */\n}\n```\n\nInitially both flags are false. Which statement is correct?",
+      "options": [
+        "Mutual exclusion can be violated",
+        "Mutual exclusion holds, but after both processes have entered at least once, a process may be unable to enter even though the other is in its remainder section forever",
+        "The algorithm satisfies mutual exclusion, progress and bounded waiting",
+        "Mutual exclusion holds, and progress holds, but bounded waiting is violated"
+      ],
+      "answer": "B",
+      "explanation": "**ME still holds.** Flags are now never cleared, so they are true at least as often as in Peterson's, and the entry code is unchanged. The ME argument still applies: if both were in the CS, both flags would be true, so each must have passed with `turn == i`, but `turn` holds one value. (Exhaustive state search confirms ME.)\n\n**Progress fails.** Once P1 has entered once, `flag[1]` stays true forever. Suppose P1 then stays in its remainder section. P0 now runs `flag[0] = true; turn = 1;` and tests `flag[1] && turn == 1` → true && true → it spins. Only P1 could change `turn`, and P1 never comes back. So P0 is blocked by a process in its remainder section, which breaks progress.\n\nThe exit `turn = j` doesn't help P0 here, because P0 resets `turn = 1` itself on its next entry. In effect, once both flags are stuck at true, the algorithm becomes strict alternation.",
+      "option_feedback": [
+        "ME is preserved (flags only stay true longer).",
+        "Correct — once both flags are stuck at true, it behaves like strict alternation.",
+        "Progress fails.",
+        "Progress fails, not just BW."
+      ],
+      "trap": "Thinking `turn = j` on exit is a harmless replacement for clearing the flag."
+    },
+    {
+      "id": "t05-024",
+      "subtopic": "test-and-set",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "test-and-set",
+        "atomic instruction"
+      ],
+      "stem": "The `TestAndSet(bool *target)` instruction atomically:",
+      "options": [
+        "Sets `*target` to false and returns true",
+        "Returns the old value of `*target` and sets `*target` to true",
+        "Returns true if `*target` was true, and otherwise leaves `*target` unchanged",
+        "Swaps `*target` with a register and returns nothing"
+      ],
+      "answer": "B",
+      "explanation": "Semantics, executed as **one indivisible** hardware operation:\n\n```c\nbool TestAndSet(bool *target) {\n    bool rv = *target;\n    *target = true;\n    return rv;\n}\n```\n\nA spinlock built from it is `while (TestAndSet(&lock)) ;`. The caller that gets back `false` is the one that found the lock free and now holds it.",
+      "option_feedback": [
+        "Backwards.",
+        "Correct.",
+        "It always sets the target to true.",
+        "That describes Swap/XCHG, which also returns a value via the register."
+      ]
+    },
+    {
+      "id": "t05-025",
+      "subtopic": "test-and-set",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "atomic instructions"
+      ],
+      "stem": "Which of the following is **not** an atomic hardware primitive commonly used to build locks?",
+      "options": [
+        "Test-and-set",
+        "Compare-and-swap",
+        "Fetch-and-add",
+        "A load of a shared variable followed by a separate store to it"
+      ],
+      "answer": "D",
+      "explanation": "Test-and-set, compare-and-swap (CAS) and fetch-and-add each do a read-modify-write of one memory word as a **single indivisible** operation.\n\nA load followed by a separate store is two instructions. Another processor can access the variable between them, which is exactly the race these primitives exist to prevent.",
+      "option_feedback": [
+        "Atomic RMW.",
+        "Atomic RMW.",
+        "Atomic RMW.",
+        "Correct — two separate instructions are not atomic together."
+      ]
+    },
+    {
+      "id": "t05-026",
+      "subtopic": "test-and-set",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "spinlock",
+        "bounded waiting"
+      ],
+      "stem": "Processes use:\n\n```c\nbool lock = false;\n/* each process */\nwhile (TestAndSet(&lock)) ;   /* spin */\n/* critical section */\nlock = false;\n```\n\nWhich requirements of the critical-section problem does this satisfy (for any number of processes)?",
+      "options": [
+        "Mutual exclusion only",
+        "Mutual exclusion and progress, but not bounded waiting",
+        "Mutual exclusion, progress and bounded waiting",
+        "Progress and bounded waiting, but not mutual exclusion"
+      ],
+      "answer": "B",
+      "explanation": "- **ME:** only the process whose `TestAndSet` returns `false` gets in, and after that `lock` is true until it is released.\n- **Progress:** if the lock is free, the next `TestAndSet` by any waiting process succeeds; processes in their remainder don't touch `lock`.\n- **Bounded waiting: NOT guaranteed.** When `lock` is released, whichever spinner happens to execute TSL first wins. An unlucky process can lose every time, so it can starve.\n\nSilberschatz's version with a `waiting[]` array, where the exiting process scans for the next waiter in circular order, adds bounded waiting.",
+      "option_feedback": [
+        "Progress also holds.",
+        "Correct.",
+        "A spinner can lose every race, so BW fails.",
+        "ME holds."
+      ],
+      "trap": "Assuming a hardware lock is automatically fair."
+    },
+    {
+      "id": "t05-027",
+      "subtopic": "test-and-set",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "compare-and-swap"
+      ],
+      "stem": "`int CAS(int *p, int expected, int newval)` atomically returns the old value of `*p` and stores `newval` into `*p` **only if** the old value equals `expected`.\n\n```c\nint v = 5;\nint r1 = CAS(&v, 5, 8);\nint r2 = CAS(&v, 5, 9);\nint r3 = CAS(&v, 8, 2);\n```\n\nWhat is `r1 + r2 + r3 + v` after these statements?",
+      "answer": {
+        "min": 23,
+        "max": 23
+      },
+      "explanation": "| Call | Old v | Match? | r | New v |\n|---|---|---|---|---|\n| CAS(&v, 5, 8) | 5 | yes | r1 = 5 | 8 |\n| CAS(&v, 5, 9) | 8 | no | r2 = 8 | 8 |\n| CAS(&v, 8, 2) | 8 | yes | r3 = 8 | 2 |\n\nr1 + r2 + r3 + v = 5 + 8 + 8 + 2 = **23**.\n\nCAS returns the old value **whether or not** it succeeds; a failed CAS leaves memory unchanged.",
+      "trap": "Assuming a failed CAS returns `expected` or 0."
+    },
+    {
+      "id": "t05-028",
+      "subtopic": "test-and-set",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "test-and-set",
+        "wrong polarity"
+      ],
+      "stem": "A programmer writes the spin loop with the test inverted:\n\n```c\nbool lock = false;\n/* each process */\nwhile (!TestAndSet(&lock)) ;\n/* critical section */\nlock = false;\n```\n\nWhich is correct?",
+      "options": [
+        "Mutual exclusion holds, but no process can ever enter",
+        "Mutual exclusion holds, and the code behaves like the normal spinlock",
+        "Mutual exclusion is violated",
+        "Exactly one process ever enters, and the system then deadlocks"
+      ],
+      "answer": "C",
+      "explanation": "Trace with `lock = false`:\n\n1. P0: `TestAndSet` returns **false** and sets lock = true. `!false` = true → keeps looping.\n2. P0: `TestAndSet` returns **true**. `!true` = false → leaves the loop → **P0 in CS**.\n3. P1: `TestAndSet` returns **true** (lock is held). `!true` = false → leaves the loop → **P1 in CS**.\n\nBoth are in the CS. With the test inverted, a process gets in exactly when the lock is already **held**. **ME is violated.**",
+      "option_feedback": [
+        "Processes do enter; they get in when the lock is busy.",
+        "The inverted test breaks ME.",
+        "Correct.",
+        "Many processes can enter; nothing blocks."
+      ]
+    },
+    {
+      "id": "t05-029",
+      "subtopic": "test-and-set",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "bounded-waiting test-and-set",
+        "waiting array"
+      ],
+      "stem": "Silberschatz's bounded-waiting test-and-set algorithm has this exit section for process Pi among n processes:\n\n```c\nj = (i + 1) % n;\nwhile ((j != i) && !waiting[j])\n    j = (j + 1) % n;\nif (j == i)  lock = false;\nelse         waiting[j] = false;   /* hand the CS directly to Pj */\n```\n\nWith n = 6, P2 is leaving its critical section and `waiting[] = {T, F, F, F, T, T}` (indices 0 to 5). Which process enters the critical section next? Give its index.",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "Scan starts at j = (2 + 1) % 6 = 3:\n\n| j | waiting[j] | action |\n|---|---|---|\n| 3 | F | j = 4 |\n| 4 | **T** | stop |\n\nj = 4 ≠ i, so `waiting[4] = false` and **P4** enters. The lock stays held and is passed directly to P4.\n\nThe scan is circular from i + 1, so P0, although waiting, is served after P4 and P5. That is why any waiter enters within n − 1 turns.",
+      "trap": "Choosing P0 (lowest index) instead of the next waiter in circular order."
+    },
+    {
+      "id": "t05-030",
+      "subtopic": "test-and-set",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "spinlock",
+        "priority scheduling",
+        "uniprocessor"
+      ],
+      "stem": "On a **uniprocessor** with **strict preemptive priority** scheduling, low-priority process L acquires a test-and-set spinlock (`while (TestAndSet(&lock));`). While L is in its critical section, high-priority process H becomes ready, preempts L and tries to acquire the same spinlock. No other process is ready. What happens?",
+      "options": [
+        "H spins briefly; L is rescheduled, releases the lock, and H proceeds",
+        "H spins forever: L never runs again to release the lock, so neither makes progress",
+        "The test-and-set instruction detects the conflict and blocks H",
+        "L is aborted automatically and H acquires the lock"
+      ],
+      "answer": "B",
+      "explanation": "On one CPU with strict priority, the scheduler always runs the highest-priority ready process. H is ready (spinning counts as running), so **L never gets the CPU** again and can never execute `lock = false`. H spins forever on a lock that cannot be released.\n\nThis is the priority-inversion problem made worse by busy waiting. Fixes: use blocking locks (H sleeps, so L can run), disable preemption while holding a spinlock, or use priority inheritance.",
+      "option_feedback": [
+        "L would need the CPU, but H, with higher priority, never gives it up.",
+        "Correct.",
+        "TSL is a plain atomic RMW; it never blocks.",
+        "Nothing aborts L."
+      ],
+      "trap": "Assuming the lock holder will eventually run."
+    },
+    {
+      "id": "t05-031",
+      "subtopic": "test-and-set",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "test-and-test-and-set",
+        "ticket lock",
+        "fetch-and-add"
+      ],
+      "stem": "Consider two locks:\n\n```c\n/* Lock X: test-and-test-and-set */\nwhile (true) {\n    while (lock) ;                       /* plain read */\n    if (!TestAndSet(&lock)) break;\n}\n/* CS */  lock = false;\n\n/* Lock Y: ticket lock */\nint my = FetchAndAdd(&next_ticket, 1);   /* returns old value */\nwhile (now_serving != my) ;\n/* CS */  now_serving++;\n```\n\nWhich statements are correct?",
+      "options": [
+        "Lock X guarantees mutual exclusion even though the first `while (lock)` test is not atomic with the later set",
+        "Lock X guarantees bounded waiting",
+        "Lock Y grants the critical section in the order of `FetchAndAdd` calls, so it guarantees bounded waiting",
+        "In Lock Y two processes can obtain the same ticket number if they call `FetchAndAdd` at the same time"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A — correct.** The plain read is only a hint. A process enters only if its **atomic** `TestAndSet` returns false, so ME is the same as for the plain TSL lock. (The point of the read is fewer cache-invalidating writes while spinning.)\n- **B — wrong.** After a release, all spinners race to `TestAndSet` and any one can win, so a process can lose forever.\n- **C — correct.** Tickets are handed out in a strict order and served in the same order, so a waiter waits for at most n − 1 others: FIFO.\n- **D — wrong.** `FetchAndAdd` is atomic, so every caller gets a different old value.",
+      "option_feedback": [
+        "Correct — the atomic TSL decides entry.",
+        "TTAS is not fair.",
+        "Correct.",
+        "FAA is atomic; tickets are unique."
+      ]
+    },
+    {
+      "id": "t05-032",
+      "subtopic": "test-and-set",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "ticket lock",
+        "atomic fetch-and-add",
+        "lost update",
+        "starvation"
+      ],
+      "stem": "A programmer builds a ticket lock but takes the ticket with a plain load and store instead of `FetchAndAdd`:\n\n```c\nint next_ticket = 0, now_serving = 0;\n\nvoid acquire() {\n    int my = next_ticket;          /* atomic load  */\n    next_ticket = my + 1;          /* atomic store */\n    while (now_serving != my) ;    /* spin */\n}\nvoid release() { FetchAndAdd(&now_serving, 1); }   /* atomic increment */\n```\n\nThree processes each execute `acquire(); /* critical section */ release();` **exactly once**. Only the individual loads, stores and the `FetchAndAdd` are atomic. Which statements are correct?",
+      "options": [
+        "All three processes can be inside the critical section at the same time",
+        "A process can spin forever even though both other processes have completed `release()`",
+        "If all three processes finish, `next_ticket` is always 3 at the end",
+        "Even when the three processes receive three different ticket numbers, one of them can still spin forever"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "The bug: two processes can load the same value of `next_ticket` before either stores, so they get the **same ticket**.\n\n- **A — correct.** All three load `next_ticket = 0` before any store. All have `my = 0` and `now_serving = 0`, so all three leave the spin loop: **3 processes in the CS**.\n- **B — correct.** P1 and P2 both load 0; P1 stores 1; P3 then loads 1 and stores 2. Tickets: P1 = 0, P2 = 0, P3 = 1.\n\n| Step | Event | now_serving |\n|---|---|---|\n| 1 | P1 tests `now_serving == 0` → enters CS | 0 |\n| 2 | P1 releases (before P2 has tested) | 1 |\n| 3 | P3 (ticket 1) enters, then releases | 2 |\n| 4 | P2 (ticket 0) tests: 2 ≠ 0 → spins | 2 |\n\n`now_serving` only grows, so it never returns to 0: **P2 spins forever** although both others have finished.\n- **C — wrong.** In the run for A all three store 0 + 1, so `next_ticket` ends at **1** (it can end at 1, 2 or 3).\n- **D — wrong.** Every value stored is (a loaded value) + 1, starting from 0. To load 2 someone must have stored 2, i.e. loaded 1, which needs someone who loaded 0. So three different tickets must be exactly 0, 1, 2, and the lock then behaves like a correct ticket lock: `now_serving` reaches t only after ticket t − 1 is released and cannot pass t until ticket t is released. Nobody is skipped.\n\n(An exhaustive search over all interleavings confirms: at most 3 in the CS; spinning forever happens only with duplicate tickets.)",
+      "option_feedback": [
+        "Correct — all three can read ticket 0.",
+        "Correct — a duplicate ticket can be passed by `now_serving` before its second holder tests it.",
+        "Wrong — duplicate tickets leave `next_ticket` at 1 or 2.",
+        "Wrong — distinct tickets must be 0, 1, 2, and then the lock works correctly."
+      ],
+      "trap": "Assuming the only damage from a non-atomic ticket grab is two processes in the CS; it can also make a process miss its turn forever."
+    },
+    {
+      "id": "t05-033",
+      "subtopic": "test-and-set",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "fetch-and-add",
+        "counting lock",
+        "livelock"
+      ],
+      "stem": "A programmer wants **at most 2** processes in a region at once and uses atomic `FetchAndAdd(int *p, int d)`, which adds `d` to `*p` and returns the **old** value:\n\n```c\nint count = 2;\n\nvoid enter() {\n    while (FetchAndAdd(&count, -1) <= 0)   /* no slot: undo and retry */\n        FetchAndAdd(&count, +1);\n}\nvoid leave() { FetchAndAdd(&count, +1); }\n```\n\nAny number of processes call `enter(); /* region */ leave();` repeatedly. Which statements are correct?",
+      "options": [
+        "At no time are more than 2 processes inside the region",
+        "A process's attempt can fail (old value ≤ 0) even at a moment when fewer than 2 processes are inside the region",
+        "`count` never becomes negative",
+        "Every process that calls `enter()` is guaranteed to get in within a bounded number of entries by others"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Let *in* = processes inside and *p* = processes that have decremented on a failed attempt but not yet undone it. At every moment **count = 2 − in − p**.\n\n- **A — correct.** A process gets in only if the old value was > 0, i.e. 2 − in − p > 0, so in < 2 − p ≤ 2 before it enters. So `in` never goes above 2.\n- **B — correct.** Example with three processes: X and Y are inside (count = 0). Z tries: old = 0, fails, count = −1. X leaves: count = 0, so only Y is inside. X immediately tries again: old = 0 → **fails**, though only 1 process is inside. Pending failed attempts can block a free slot (and in a bad schedule this can repeat, a livelock).\n- **C — wrong.** In the example above count = −1.\n- **D — wrong.** Retrying is a race with no ordering, so a process can lose forever (starvation).",
+      "option_feedback": [
+        "Correct — use the invariant count = 2 − in − pending.",
+        "Correct — transient decrements hide a free slot.",
+        "It reaches −1 in the example.",
+        "No fairness: starvation is possible."
+      ],
+      "trap": "Assuming that because ME-style safety holds, the lock is also live and fair."
+    },
+    {
+      "id": "t05-034",
+      "subtopic": "semaphores",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "counting semaphore",
+        "negative value"
+      ],
+      "stem": "A counting semaphore is implemented with a waiting queue:\n\n```c\nwait(S):   S.value--;  if (S.value < 0) { add caller to S.list; block(); }\nsignal(S): S.value++;  if (S.value <= 0) { remove a process P from S.list; wakeup(P); }\n```\n\nAt some instant `S.value = -3`. What does this tell you?",
+      "options": [
+        "Exactly 3 processes are blocked on S",
+        "3 more signal operations than wait operations have been performed",
+        "S has been corrupted, since a semaphore can never be negative",
+        "3 processes are currently inside the critical section"
+      ],
+      "answer": "A",
+      "explanation": "In this implementation the value is decremented **before** the process decides whether to block. So a negative value −k means exactly k processes are waiting in `S.list`.\n\n(In the textbook busy-wait definition the value never goes below 0. In this queue-based version it may, and its magnitude is the queue length.)",
+      "option_feedback": [
+        "Correct.",
+        "It is the other way round: waits exceeded signals plus the initial value.",
+        "Negative values are normal in this implementation.",
+        "The value says nothing directly about how many are inside."
+      ]
+    },
+    {
+      "id": "t05-035",
+      "subtopic": "semaphores",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "wait",
+        "signal"
+      ],
+      "stem": "Which semaphore operation can cause the calling process to **block**?",
+      "options": [
+        "`wait()` (P)",
+        "`signal()` (V)",
+        "Both `wait()` and `signal()`",
+        "Neither; semaphores never block"
+      ],
+      "answer": "A",
+      "explanation": "`wait()`/P decrements and blocks the caller if no unit is available. `signal()`/V increments and possibly wakes a waiter; it **never** blocks the caller.",
+      "option_feedback": [
+        "Correct.",
+        "signal never blocks.",
+        "Only wait blocks.",
+        "wait blocks when the value is not positive."
+      ]
+    },
+    {
+      "id": "t05-036",
+      "subtopic": "semaphores",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "counting semaphore arithmetic"
+      ],
+      "stem": "A counting semaphore S is initialised to 5. Then 12 `wait(S)` and 9 `signal(S)` operations are performed, in some order, by various processes, and **all of them complete**. What is the final value of S?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "Each completed wait subtracts 1 and each signal adds 1, regardless of order:\n\nS = 5 − 12 + 9 = **2**.\n\n(Order would matter only if some waits were still blocked at the end, but the question says all of them complete.)",
+      "trap": "Trying to simulate a particular order; the final value does not depend on it."
+    },
+    {
+      "id": "t05-037",
+      "subtopic": "semaphores",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "mutex",
+        "binary semaphore",
+        "ownership"
+      ],
+      "stem": "Which of the following is the key conceptual difference between a **mutex lock** and a **binary semaphore**?",
+      "options": [
+        "A mutex can take values other than 0 and 1",
+        "A binary semaphore always busy-waits, while a mutex always blocks",
+        "Only a mutex can provide mutual exclusion",
+        "A mutex has an owner: only the thread that locked it should unlock it, while any process may signal a binary semaphore"
+      ],
+      "answer": "D",
+      "explanation": "Both have two states and both can give mutual exclusion, and either can be built with spinning or blocking. The difference is **ownership**:\n\n- A mutex is locked and unlocked by the same thread. That is what allows features such as priority inheritance and recursive locking.\n- A semaphore has no owner. One process can `wait` and another can `signal`, which is why semaphores are also used for **signalling and ordering** between processes.",
+      "option_feedback": [
+        "A mutex is also two-state.",
+        "Either can be implemented with spinning or blocking.",
+        "A binary semaphore initialised to 1 also gives ME.",
+        "Correct."
+      ]
+    },
+    {
+      "id": "t05-038",
+      "subtopic": "semaphores",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "monitors",
+        "condition variables"
+      ],
+      "stem": "Which of the following statements about **monitors** are correct?",
+      "options": [
+        "At most one process can be active inside a monitor at any time",
+        "`x.wait()` on a condition variable always suspends the calling process",
+        "`x.signal()` on a condition variable with no waiting process is remembered, so a later `x.wait()` returns immediately",
+        "A condition variable holds an integer count, just like a semaphore"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — correct.** The monitor gives mutual exclusion on its procedures automatically.\n- **B — correct.** `wait()` always suspends the caller (and releases the monitor) until another process signals.\n- **C — wrong.** If no process is waiting, `signal()` has **no effect** and is lost. This is the main difference from V() on a semaphore, which increments the count.\n- **D — wrong.** A condition variable is only a queue of waiting processes; it has no value.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Signals with no waiter are lost.",
+        "A condition variable has no count."
+      ],
+      "trap": "Treating condition-variable signal like semaphore V."
+    },
+    {
+      "id": "t05-039",
+      "subtopic": "semaphores",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "precedence graph",
+        "semaphores for ordering"
+      ],
+      "stem": "Statements must run with this precedence: S1 → S2, S1 → S3, S2 → S4, S3 → S4 (S4 only after both S2 and S3). Each Si runs in its own process. All semaphores are counting semaphores initialised to 0.\n\n```c\nP1:  S1;  V(a);  V(b);\nP2:  P(a);  S2;  V(c);\nP3:  P(b);  S3;  ___X___;\nP4:  P(c);  ___Y___;  S4;\n```\n\nWhich choices of (X, Y) enforce the precedence correctly **and** never deadlock?",
+      "options": [
+        "X = V(c), Y = P(c)",
+        "X = V(d), Y = P(d)",
+        "X = V(b), Y = P(b)",
+        "X = V(c), Y = P(d)"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — correct.** P2 and P3 each do V(c) once after S2 and S3. P4 does P(c) twice, so it gets past only after **both** signals. A counting semaphore can stand for \"two events happened\".\n- **B — correct.** The standard one-semaphore-per-edge scheme.\n- **C — wrong.** P1's V(b) may still be unused if P3 is slow. P4 (after S2) can then take that unit with P(b) and run S4 **before S3**. P3 then blocks forever on P(b).\n- **D — wrong.** Nobody ever signals d, so P4 blocks forever.",
+      "option_feedback": [
+        "Correct — a counting semaphore collects two signals.",
+        "Correct.",
+        "P4 can steal P1's V(b).",
+        "d is never signalled: deadlock."
+      ],
+      "trap": "Thinking each predecessor needs its own semaphore (A also works)."
+    },
+    {
+      "id": "t05-040",
+      "subtopic": "semaphores",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "counting semaphore",
+        "blocked processes"
+      ],
+      "stem": "Counting semaphore S (queue-based; value may go negative) has initial value 3. Events in order:\n\n1. Processes P1, P2, …, P7 each execute `wait(S)` (in that order).\n2. P1 executes `signal(S)`.\n3. P8 (which never waited) executes `signal(S)`.\n4. P9 executes `wait(S)`.\n\nHow many processes are blocked on S after step 4?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "| Step | S.value | Blocked queue |\n|---|---|---|\n| start | 3 | — |\n| P1, P2, P3 wait | 0 | — |\n| P4 … P7 wait | −4 | P4, P5, P6, P7 |\n| P1 signal | −3 | wakes P4 → P5, P6, P7 |\n| P8 signal | −2 | wakes P5 → P6, P7 |\n| P9 wait | −3 | P6, P7, P9 |\n\nBlocked = **3** (= −S.value).",
+      "trap": "Not counting a signal from a process that never waited; it still adds a unit."
+    },
+    {
+      "id": "t05-041",
+      "subtopic": "semaphores",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "semaphore deadlock",
+        "lock ordering"
+      ],
+      "stem": "Two processes use counting semaphores S and Q:\n\n```c\nP0:  wait(S);  wait(Q);  /* use */  signal(Q);  signal(S);\nP1:  wait(Q);  wait(S);  /* use */  signal(S);  signal(Q);\n```\n\nNo other process uses S or Q. For which initial values (S, Q) is **deadlock possible**?",
+      "options": [
+        "(1, 1)",
+        "(2, 1)",
+        "(1, 2)",
+        "(2, 2)"
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Deadlock needs P0 to hold a unit of S while waiting for Q, and P1 to hold a unit of Q while waiting for S, with **no units left** of either.\n\n- **(1, 1):** P0 takes S (S = 0), P1 takes Q (Q = 0). P0 waits on Q and P1 waits on S → **deadlock**.\n- **(2, 1):** If P0 holds one S, one is still free, so P1 can always get S. No deadlock.\n- **(1, 2):** Symmetric: P0 can always get Q. No deadlock.\n- **(2, 2):** Neither semaphore can run out with only two processes each holding at most one unit.",
+      "option_feedback": [
+        "Correct — circular wait.",
+        "A spare S unit breaks the cycle.",
+        "A spare Q unit breaks the cycle.",
+        "Neither can run out."
+      ]
+    },
+    {
+      "id": "t05-042",
+      "subtopic": "semaphores",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "atomicity of wait",
+        "busy-wait semaphore"
+      ],
+      "stem": "A programmer implements `wait` for a binary semaphore **without** making it atomic:\n\n```c\nvoid wait(int *S) {\n    while (*S <= 0) ;   /* spin */\n    *S = *S - 1;        /* load, subtract, store */\n}\nvoid signal(int *S) { *S = *S + 1; }\n```\n\n`S = 1` and processes use `wait(&S); CS; signal(&S);`. Which is correct?",
+      "options": [
+        "Two processes can be in the CS together, and S can later end up with a value other than 0 or 1",
+        "Mutual exclusion holds, because the while loop checks S before decrementing",
+        "Mutual exclusion holds, but deadlock becomes possible",
+        "Only bounded waiting is affected"
+      ],
+      "answer": "A",
+      "explanation": "P0 tests `S = 1 > 0` and leaves the loop. Before it decrements, P1 also tests `S = 1` and leaves the loop. Both now decrement:\n\n- If the decrements don't overlap, S goes 1 → 0 → **−1**.\n- If they overlap (both load 1), both store 0.\n\nEither way **both are in the CS**. When both signal, S becomes 1 (from −1) or 2 (from 0), so later more than one process can enter at once.\n\nThe test and the decrement must be done as one atomic step; that is the definition of `wait`.",
+      "option_feedback": [
+        "Correct.",
+        "Test and decrement are separate, so there is a window.",
+        "ME itself fails.",
+        "ME fails."
+      ]
+    },
+    {
+      "id": "t05-043",
+      "subtopic": "semaphores",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 150,
+      "concepts": [
+        "semaphore misuse",
+        "max concurrency"
+      ],
+      "stem": "Counting semaphore S is initialised to 2. Processes P1 to P8 each execute, once:\n\n```c\nwait(S);  /* critical section */  signal(S);\n```\n\nProcess P9 has a bug and executes, once:\n\n```c\nsignal(S);  /* critical section */  wait(S);\n```\n\nWhat is the **maximum** number of processes that can be in the critical section at the same time?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "Without P9, at most 2 processes can be inside (S = 2).\n\nP9's `signal(S)` adds one extra unit **before** P9 enters, so during P9's CS one extra correct process can get in:\n\n| Event | S | Inside |\n|---|---|---|\n| P1 wait, P2 wait | 0 | P1, P2 |\n| P9 signal | 1 | P1, P2, P9 |\n| P3 wait | 0 | P1, P2, P9, P3 |\n\nNo more units exist, so P4 to P8 block. P9 runs its code only once, so it can add at most one extra unit, and its final `wait(S)` takes that unit back.\n\nMaximum = 2 (normal) + 1 (let in by P9's signal) + 1 (P9 itself) = **4**.",
+      "trap": "Answering 3 by forgetting that P9 itself is also in the CS."
+    },
+    {
+      "id": "t05-044",
+      "subtopic": "semaphores",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "semaphore ordering",
+        "possible outputs"
+      ],
+      "stem": "Semaphores `a = 0`, `b = 0`. Two processes run concurrently (each `print` is atomic):\n\n```c\nP1:  print(\"A\");  signal(a);  print(\"B\");  wait(b);  print(\"C\");\nP2:  print(\"D\");  wait(a);    print(\"E\");  signal(b);  print(\"F\");\n```\n\nHow many **distinct** output strings (of six letters) are possible?",
+      "answer": {
+        "min": 12,
+        "max": 12
+      },
+      "explanation": "**Ordering constraints:**\n\n- Program order: A < B < C and D < E < F.\n- `signal(a)` after A, `wait(a)` before E → **A < E**.\n- `signal(b)` after E, `wait(b)` before C → **E < C**.\n\nCount the orders of the six letters that satisfy these. E must come after A and D. C comes after B and E, and F after E.\n\n**Case 1: B before E.** Before E: {A, D, B} with A < B → 3 orders (DAB, ADB, ABD). Then E. After E: {C, F} in any order → 2. Total 3 × 2 = 6.\n\n**Case 2: B after E.** Before E: {A, D} → 2 orders. Then E. After E: {B, C, F} with B < C → 3 orders. Total 2 × 3 = 6.\n\nTotal = **12** (exhaustive enumeration agrees).",
+      "trap": "Forgetting that B is not constrained relative to E."
+    },
+    {
+      "id": "t05-045",
+      "subtopic": "semaphores",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "semaphore ordering",
+        "alternation"
+      ],
+      "stem": "Semaphores `s = 1`, `t = 1`. Two processes run concurrently:\n\n```c\nP1:  repeat 3 times { wait(s);  print(\"A\");  signal(t); }\nP2:  repeat 3 times { wait(t);  print(\"B\");  signal(s); }\n```\n\nHow many distinct output strings are possible?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "**Constraint on A.** The k-th A needs k units of s: 1 initial + (number of signal(s) so far). Each signal(s) comes after a B, so at every prefix **#A ≤ #B + 1**.\n\n**Symmetrically**, #B ≤ #A + 1.\n\nSo |#A − #B| ≤ 1 for every prefix, and any string with this property can actually happen.\n\nWith 3 A's and 3 B's: after positions 2, 4 and 6 the counts must be equal (an imbalance at an even position would be even and nonzero, so ≥ 2). So each pair (1,2), (3,4), (5,6) is either AB or BA, chosen independently: 2³ = **8**.\n\n(ABABAB, ABABBA, ABBAAB, ABBABA, BAABAB, BAABBA, BABAAB, BABABA.)",
+      "trap": "Answering 2 (strict alternation) by not noticing that both semaphores start at 1."
+    },
+    {
+      "id": "t05-046",
+      "subtopic": "semaphores",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "monitors",
+        "Hoare vs Mesa semantics"
+      ],
+      "stem": "A monitor implements a bounded buffer. The consumer's procedure is:\n\n```c\nremove() {\n    if (count == 0) notEmpty.wait();\n    /* take an item */  count--;\n    notFull.signal();\n}\n```\n\nand `insert()` ends with `count++; notEmpty.signal();`. There may be several consumers. Which statements are correct?",
+      "options": [
+        "Under Hoare (signal-and-wait) semantics, the `if` is safe: the signalled consumer runs immediately and finds count > 0",
+        "Under Mesa (signal-and-continue) semantics, a consumer may take an item from an empty buffer, because another consumer can enter the monitor before the signalled one resumes",
+        "Replacing `if` by `while` makes the code correct under both semantics",
+        "Under Mesa semantics the signalled process resumes before the signaller executes its next statement"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "- **A — correct.** With Hoare semantics, the monitor passes directly from the signaller to the woken consumer, so the condition it waited for (count > 0) still holds.\n- **B — correct.** With Mesa semantics, `signal` only moves the waiter to the ready queue and the signaller keeps running. Before the woken consumer gets the monitor, a newly arriving consumer can take the item. The woken consumer then continues after the `if` and removes from an empty buffer.\n- **C — correct.** `while` re-checks the condition after waking, which is safe in both cases.\n- **D — wrong.** That describes Hoare semantics.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Correct.",
+        "That is Hoare, not Mesa."
+      ],
+      "trap": "Using `if` around `wait()` with Mesa monitors (e.g. Java, pthreads)."
+    },
+    {
+      "id": "t05-047",
+      "subtopic": "semaphores",
+      "also_tests": [
+        "prevention"
+      ],
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "semaphore deadlock",
+        "circular wait",
+        "resource ordering"
+      ],
+      "stem": "Three processes use semaphores S, T, U, each initialised to 1:\n\n```c\nP1:  wait(S); wait(T);  /* work */  signal(T); signal(S);\nP2:  wait(T); wait(U);  /* work */  signal(U); signal(T);\nP3:  wait(U); wait(S);  /* work */  signal(S); signal(U);\n```\n\nDeadlock is possible as written. Which **single** change, on its own, makes deadlock impossible?",
+      "options": [
+        "Initialise T to 2 instead of 1",
+        "Change P2 to `wait(U); wait(T); … signal(T); signal(U);`",
+        "Reverse the order of the two `signal` calls in every process",
+        "Change P3 to `wait(U); wait(S); … signal(U); signal(S);`"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "As written: P1 holds S and wants T, P2 holds T and wants U, P3 holds U and wants S → **circular wait**.\n\n- **A — works.** Only P1 and P2 use T. With 2 units, a process asking for T always finds one free, so the cycle cannot close.\n- **B — works.** The acquire orders are now P1: S→T, P2: U→T, P3: U→S. All follow the global order U < S < T, so no cycle can form.\n- **C — no effect.** The order of release doesn't matter for deadlock; the cycle forms during acquisition.\n- **D — no effect.** It changes only the release order in P3; P3 still acquires U then S.",
+      "option_feedback": [
+        "Correct — the spare unit breaks the cycle.",
+        "Correct — consistent global ordering.",
+        "Release order is irrelevant.",
+        "Only the release order changed."
+      ],
+      "trap": "Thinking that changing the release order prevents deadlock."
+    },
+    {
+      "id": "t05-048",
+      "subtopic": "semaphores",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "barrier",
+        "semaphore",
+        "race on shared count"
+      ],
+      "stem": "Three threads synchronise at a barrier. Shared: `int count = 0; semaphore mutex = 1, barrier = 0;` Each thread executes:\n\n```c\nwait(mutex);\ncount = count + 1;\nsignal(mutex);\nif (count == 3) signal(barrier);   /* count read OUTSIDE the mutex */\nwait(barrier);\nsignal(barrier);\n```\n\nAll three threads eventually get past the barrier. What is the **maximum** possible value of the semaphore `barrier` after all three have finished?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "**Effect of each line on `barrier`:** the `wait(barrier); signal(barrier);` pair (the \"turnstile\") changes it by 0 for each thread. So the final value = number of threads that executed `signal(barrier)` in the `if`.\n\n**How many threads can see count == 3?** count is read **after** `signal(mutex)`. If all three threads finish their increments before any of them reaches the `if`, all three read 3 and each executes `signal(barrier)`.\n\n**Trace:** T1, T2, T3 each increment (count = 3). T1 checks → V (barrier = 1), T2 checks → V (2), T3 checks → V (3). Each then does wait/signal: net 0. Final **barrier = 3**.\n\nIn the best case only the last incrementer sees 3 (final = 1). The barrier always works (at least one V happens after all three arrive), but its value after use is not reset properly, so the barrier is not reusable. Exhaustive interleaving search gives final values {1, 2, 3}.",
+      "trap": "Answering 1 by assuming only the last arriving thread sees count == 3."
+    },
+    {
+      "id": "t05-049",
+      "subtopic": "producer-consumer",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "bounded buffer",
+        "semaphore initial values"
+      ],
+      "stem": "In the semaphore solution to the bounded-buffer (producer–consumer) problem with a buffer of N slots, the semaphores `mutex`, `empty` and `full` are initialised to:",
+      "options": [
+        "mutex = 0, empty = 0, full = N",
+        "mutex = 1, empty = 0, full = N",
+        "mutex = 1, empty = N, full = 0",
+        "mutex = N, empty = 1, full = 0"
+      ],
+      "answer": "C",
+      "explanation": "- `mutex = 1` — mutual exclusion on the buffer.\n- `empty = N` — number of free slots; at the start all N are free.\n- `full = 0` — number of filled slots; at the start none are filled.\n\nThe producer waits on `empty` and signals `full`; the consumer does the reverse.",
+      "option_feedback": [
+        "mutex = 0 blocks everyone; empty/full are swapped.",
+        "empty/full are swapped.",
+        "Correct.",
+        "mutex must be 1."
+      ]
+    },
+    {
+      "id": "t05-050",
+      "subtopic": "producer-consumer",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "bounded buffer",
+        "invariant"
+      ],
+      "stem": "In the bounded-buffer solution:\n\n```c\nsemaphore mutex = 1, empty = N, full = 0;\n\nproducer:                         consumer:\nwhile (true) {                    while (true) {\n    item = produce();                 wait(full);\n    wait(empty);                      wait(mutex);\n    wait(mutex);                      item = remove();\n    insert(item);                     signal(mutex);\n    signal(mutex);                    signal(empty);\n    signal(full);                     consume(item);\n}                                 }\n```\n\nWhenever no process is between a `wait` and its matching `signal` on `empty`/`full`, which quantity always equals N?",
+      "options": [
+        "mutex + full",
+        "empty + full",
+        "empty − full",
+        "mutex + empty"
+      ],
+      "answer": "B",
+      "explanation": "Every slot is either free (counted by `empty`) or filled (counted by `full`). A producer turns one free slot into a filled one (`wait(empty)` … `signal(full)`) and a consumer does the reverse. At quiescent moments **empty + full = N**.\n\n(While a process is between those two operations, the sum is temporarily N − 1 for each such process.)",
+      "option_feedback": [
+        "mutex is unrelated to slot counts.",
+        "Correct.",
+        "This changes with every item.",
+        "mutex is unrelated."
+      ]
+    },
+    {
+      "id": "t05-051",
+      "subtopic": "producer-consumer",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "bounded buffer",
+        "semaphore values"
+      ],
+      "stem": "In the bounded-buffer solution with N = 8:\n\n```c\nsemaphore mutex = 1, empty = N, full = 0;\n\nproducer:                         consumer:\nwhile (true) {                    while (true) {\n    item = produce();                 wait(full);\n    wait(empty);                      wait(mutex);\n    wait(mutex);                      item = remove();\n    insert(item);                     signal(mutex);\n    signal(mutex);                    signal(empty);\n    signal(full);                     consume(item);\n}                                 }\n```\n\nStarting from the initial state, producers have **completed** 13 insertions and consumers have **completed** 7 removals, and no process is currently inside its loop body. What is the value of `empty`?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "Items now in the buffer = 13 − 7 = 6, so\n\n- full = 6\n- empty = 8 − 6 = **2**\n\nCheck with the operations: empty = 8 − 13 (producers' waits) + 7 (consumers' signals) = 2. ✓",
+      "trap": "Answering 6 (that is `full`)."
+    },
+    {
+      "id": "t05-052",
+      "subtopic": "producer-consumer",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "bounded buffer",
+        "wrong wait order",
+        "deadlock"
+      ],
+      "stem": "In the bounded-buffer solution, the producer's two `wait` operations are swapped:\n\n```c\nproducer: wait(mutex); wait(empty); insert(item); signal(mutex); signal(full);\nconsumer: wait(full);  wait(mutex); remove();     signal(mutex); signal(empty);\n```\n\nWhat can go wrong?",
+      "options": [
+        "Two producers may insert into the same slot",
+        "The consumer may remove from an empty buffer",
+        "Nothing; the order of the two waits does not matter",
+        "When the buffer is full, a producer can block on `empty` while holding `mutex`, and the consumer then blocks on `mutex`: deadlock"
+      ],
+      "answer": "D",
+      "explanation": "Buffer full (empty = 0). The producer takes `mutex` and then blocks on `empty`, **still holding mutex**. The consumer passes `wait(full)`, then blocks on `wait(mutex)`. It could free a slot, but only after getting the mutex. Each waits for the other → **deadlock**.\n\nRule: wait on the **counting** semaphore first, then on `mutex`. Never block on a condition while holding the lock that the other side needs.",
+      "option_feedback": [
+        "mutex still serialises inserts.",
+        "full still guards consumers.",
+        "The order matters a lot.",
+        "Correct."
+      ],
+      "trap": "Thinking wait order is cosmetic."
+    },
+    {
+      "id": "t05-053",
+      "subtopic": "producer-consumer",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "bounded buffer",
+        "operation order"
+      ],
+      "stem": "Starting from the correct bounded-buffer code:\n\n```c\nsemaphore mutex = 1, empty = N, full = 0;\n\nproducer:                         consumer:\nwhile (true) {                    while (true) {\n    item = produce();                 wait(full);\n    wait(empty);                      wait(mutex);\n    wait(mutex);                      item = remove();\n    insert(item);                     signal(mutex);\n    signal(mutex);                    signal(empty);\n    signal(full);                     consume(item);\n}                                 }\n```\n\nWhich single modification, on its own, can lead to **deadlock**?",
+      "options": [
+        "Consumer: `wait(mutex)` before `wait(full)`",
+        "Producer: `signal(full)` before `signal(mutex)`",
+        "Consumer: `signal(empty)` before `signal(mutex)`",
+        "Producer: `wait(mutex)` before `wait(empty)`"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "- **A — deadlock.** Buffer empty: the consumer holds `mutex` and blocks on `full`. The producer then blocks on `mutex` and can never produce.\n- **B — safe.** `signal` never blocks. Signalling `full` slightly early only lets a consumer pass `wait(full)` and then wait briefly on `mutex`.\n- **C — safe.** Same reason.\n- **D — deadlock.** Buffer full: the producer holds `mutex` and blocks on `empty` (mirror image of A).\n\nSwapping **waits** is dangerous; swapping **signals** is harmless.",
+      "option_feedback": [
+        "Correct — blocks on full while holding mutex.",
+        "signal order is harmless.",
+        "signal order is harmless.",
+        "Correct — blocks on empty while holding mutex."
+      ]
+    },
+    {
+      "id": "t05-054",
+      "subtopic": "producer-consumer",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "bounded buffer",
+        "negative semaphore value"
+      ],
+      "stem": "Bounded buffer with N = 4 and the standard code:\n\n```c\nsemaphore mutex = 1, empty = N, full = 0;\n\nproducer:                         consumer:\nwhile (true) {                    while (true) {\n    item = produce();                 wait(full);\n    wait(empty);                      wait(mutex);\n    wait(mutex);                      item = remove();\n    insert(item);                     signal(mutex);\n    signal(mutex);                    signal(empty);\n    signal(full);                     consume(item);\n}                                 }\n```\n\nSemaphores are queue-based (their values may go negative). Starting from the initial state, **only the producer** runs (the consumer has not started). It tries to produce 7 items and runs until it blocks. What is `full + empty` at that point?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Items 1–4: each does `wait(empty)` (4 → 0) and `signal(full)` (0 → 4).\n\nItem 5: `wait(empty)` makes empty = **−1** and the producer blocks.\n\nfull + empty = 4 + (−1) = **3**.\n\nIn general, full + empty = N − (number of producers blocked on `empty`).",
+      "trap": "Answering 4: forgetting that the blocked wait already decremented empty."
+    },
+    {
+      "id": "t05-055",
+      "subtopic": "producer-consumer",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "bounded buffer",
+        "wrong initialisation"
+      ],
+      "stem": "A programmer initialises the bounded-buffer semaphores wrongly as `mutex = 1, empty = 0, full = N` (empty and full swapped), with the code otherwise standard:\n\n```c\nproducer: wait(empty); wait(mutex); insert(); signal(mutex); signal(full);\nconsumer: wait(full);  wait(mutex); remove(); signal(mutex); signal(empty);\n```\n\nThe buffer actually starts with no items. What happens?",
+      "options": [
+        "Immediate deadlock: neither side can ever proceed",
+        "The consumer can perform up to N removals on a buffer that holds no real items, and the producer blocks until the consumer has freed slots",
+        "The system works correctly but with buffer capacity 0",
+        "The producer can insert N items and then the consumer works normally"
+      ],
+      "answer": "B",
+      "explanation": "- Producer: `wait(empty)` with empty = 0 → blocks.\n- Consumer: `wait(full)` succeeds N times, so it \"removes\" N items from a buffer that has none. It reads garbage, and the `out` index runs ahead of `in`.\n- Each removal does `signal(empty)`, which unblocks the producer.\n\nNot deadlock: the consumer can always start. From then on the consumer can be up to N items **ahead** of the producer instead of behind it, so it keeps consuming slots that haven't been filled.",
+      "option_feedback": [
+        "The consumer can proceed.",
+        "Correct.",
+        "It doesn't work correctly: garbage is consumed.",
+        "The producer starts blocked."
+      ]
+    },
+    {
+      "id": "t05-056",
+      "subtopic": "producer-consumer",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "bounded buffer",
+        "multiple producers",
+        "missing mutex"
+      ],
+      "stem": "A circular buffer of N slots is managed without a mutex:\n\n```c\nsemaphore empty = N, full = 0;   int in = 0, out = 0;\n\nproducer: wait(empty); buffer[in] = item; in = (in + 1) % N; signal(full);\nconsumer: wait(full);  item = buffer[out]; out = (out + 1) % N; signal(empty);\n```\n\n(`in = (in + 1) % N` is load / compute / store.) Which statements are correct?",
+      "options": [
+        "With exactly one producer and one consumer, the code is correct",
+        "With two producers, both can write into the same slot, so one item is lost",
+        "With two producers, a consumer may later read a slot that no producer filled",
+        "With two producers, `empty` and `full` alone prevent two producers from using the same slot"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "- **A — correct.** One producer and one consumer each update only their own index (`in` or `out`). `empty`/`full` make sure they never touch the same slot at the same time (the consumer only reads filled slots, the producer only writes free ones). This is the classic lock-free single-producer/single-consumer ring.\n- **B — correct.** Two producers both pass `wait(empty)` (two free slots), both read `in = k`, and both write `buffer[k]`. One item is overwritten.\n- **C — correct.** Continuing from B: either `in` advances by 2 (slot k+1 never written), or a lost update advances it by 1. Either way `full` was signalled twice for one real item, so a consumer eventually reads a stale slot.\n- **D — wrong.** The counting semaphores only limit **how many** producers proceed, not **which slot** each one uses. That needs mutual exclusion on `in`.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Correct.",
+        "Counting semaphores don't serialise access to `in`."
+      ]
+    },
+    {
+      "id": "t05-057",
+      "subtopic": "producer-consumer",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "bounded buffer",
+        "event orderings",
+        "counting paths"
+      ],
+      "stem": "A buffer has capacity N = 2 and starts empty. One producer inserts exactly 4 items and one consumer removes exactly 4 items, using the standard semaphore solution. Treat each `insert` (I) and `remove` (R) as one atomic event.\n\nHow many distinct sequences of the 8 events (e.g. `IIRRIRIR`) are possible?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "A sequence is valid if at every prefix: 0 ≤ (#I − #R) ≤ 2 (you can't remove from an empty buffer or insert into a full one).\n\nCount lattice paths with a DP. W(i, r) = number of valid prefixes with i inserts and r removes; W(i, r) = W(i−1, r) + W(i, r−1) over valid cells.\n\n| r \\ i | 0 | 1 | 2 | 3 | 4 |\n|---|---|---|---|---|---|\n| 0 | 1 | 1 | 1 | – | – |\n| 1 | – | 1 | 2 | 2 | – |\n| 2 | – | – | 2 | 4 | 4 |\n| 3 | – | – | – | 4 | 8 |\n| 4 | – | – | – | – | 8 |\n\nW(4, 4) = **8**.\n\nCheck by listing them: IRIRIRIR, IRIRIIRR, IRIIRRIR, IRIIRIRR, IIRRIRIR, IIRRIIRR, IIRIRRIR, IIRIRIRR = 8.",
+      "trap": "Answering C(8,4)/5 = 14 (Catalan), which ignores the capacity limit of 2."
+    },
+    {
+      "id": "t05-058",
+      "subtopic": "producer-consumer",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "bounded buffer",
+        "semaphore ordering",
+        "deadlock",
+        "buffer invariant"
+      ],
+      "stem": "A bounded buffer has **one slot** (N = 1). Any number of producers and consumers run, each looping forever. The standard solution is:\n\n```c\nsemaphore mutex = 1, empty = 1, full = 0;      /* N = 1 */\n\nproducer:  wait(empty); wait(mutex); insert(item); signal(mutex); signal(full);\nconsumer:  wait(full);  wait(mutex); item = remove(); signal(mutex); signal(empty);\n```\n\n`insert` does `buffer[in] = item; in = (in + 1) % N;` and `remove` does `item = buffer[out]; out = (out + 1) % N;`.\n\nEach variant below changes the standard code **only** as shown. Which variants are still correct, i.e. can never deadlock, never overwrite an item that has not been removed, and never remove from an empty slot?",
+      "options": [
+        "Producer: `wait(empty); wait(mutex); insert(item); signal(full); signal(mutex);`",
+        "Consumer: `wait(mutex); wait(full); item = remove(); signal(mutex); signal(empty);`",
+        "No `mutex` at all. Producer: `wait(empty); insert(item); signal(full);` Consumer: `wait(full); item = remove(); signal(empty);`",
+        "Consumer: `wait(full); signal(empty); wait(mutex); item = remove(); signal(mutex);`"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "- **A — correct.** Only the order of two `signal`s changes. `signal` never blocks, so no new deadlock. A consumer woken by `full` still has to get `mutex`, which the producer releases right after.\n- **B — wrong (deadlock).** Buffer empty: a consumer takes `mutex` and blocks on `full`, still holding `mutex`. Every producer blocks on `wait(mutex)`, so `full` is never signalled.\n- **C — correct (with N = 1).** Let p = producers between `wait(empty)` and `signal(full)` and c = consumers between `wait(full)` and `signal(empty)`. Every step keeps **empty + full + p + c = 1**. So at any moment at most **one** process is touching the buffer, and producers and consumers strictly alternate. The race on `in`/`out` is harmless too: with N = 1 both indices are always 0. `mutex` is redundant here (it is needed only for N ≥ 2, where two producers can pass `wait(empty)` together).\n- **D — wrong (overwrite).** A consumer passes `wait(full)` and signals `empty` **before** removing. A producer now passes `wait(empty)`, gets `mutex` first and writes the slot, overwriting the item the consumer has not read yet. That item is lost; the new item is then removed, and the counts no longer match the buffer contents.\n\n(Model-checked with 2 producers and 2 consumers, 1 and 2 iterations each: only B deadlocks, only D overwrites or reads an empty slot.)",
+      "option_feedback": [
+        "Correct — reordering signals is harmless.",
+        "Wrong — consumer blocks on `full` while holding `mutex`: deadlock.",
+        "Correct — with one slot, empty + full + (processes in transit) = 1 already gives exclusive access.",
+        "Wrong — the early `signal(empty)` lets a producer overwrite an unread item."
+      ],
+      "trap": "Assuming that removing the mutex always breaks the bounded buffer; with N = 1 the counting semaphores alone serialise all access."
+    },
+    {
+      "id": "t05-059",
+      "subtopic": "readers-writers",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "readers-writers problem"
+      ],
+      "stem": "In the readers–writers problem, which access pattern must be allowed or forbidden?",
+      "options": [
+        "Any number of readers may access the data at the same time, but a writer needs exclusive access",
+        "Only one reader or one writer may access the data at any time",
+        "Any number of writers may access the data at the same time, but readers need exclusive access",
+        "Readers and writers may always access the data together, as long as there is only one writer"
+      ],
+      "answer": "A",
+      "explanation": "Reading does not change the data, so readers can share access. A writer changes it, so while a writer is active **no** other reader or writer may be inside.\n\nOption B is correct but too strict: it would be a plain mutex and lose the concurrency that readers can safely have.",
+      "option_feedback": [
+        "Correct.",
+        "Correct but needlessly strict; readers may share.",
+        "Backwards.",
+        "A writer can never overlap with readers."
+      ]
+    },
+    {
+      "id": "t05-060",
+      "subtopic": "readers-writers",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "first readers-writers",
+        "starvation"
+      ],
+      "stem": "The classic (first) readers–writers solution:\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;\nint read_count = 0;\n\nwriter:                          reader:\n    wait(rw_mutex);                  wait(mutex);\n    /* write */                      read_count++;\n    signal(rw_mutex);                if (read_count == 1) wait(rw_mutex);\n                                     signal(mutex);\n                                     /* read */\n                                     wait(mutex);\n                                     read_count--;\n                                     if (read_count == 0) signal(rw_mutex);\n                                     signal(mutex);\n```\n\nWhich statement is correct?",
+      "options": [
+        "Readers may starve",
+        "Both readers and writers may starve",
+        "Neither can starve",
+        "Writers may starve"
+      ],
+      "answer": "D",
+      "explanation": "Only the **first** reader waits on `rw_mutex`. Readers arriving while others are reading just increment `read_count` and go in. If readers keep arriving with overlapping reads, `read_count` never drops to 0, `rw_mutex` is never released, and a waiting writer can wait **forever**.\n\nThis is the **readers-preference** solution. The second readers–writers problem (writers preference) moves the risk of starvation to readers.",
+      "option_feedback": [
+        "Readers are favoured here.",
+        "Readers cannot starve here (writers finish and release).",
+        "Writers can starve.",
+        "Correct."
+      ],
+      "trap": "Mixing up which side the first readers–writers solution starves."
+    },
+    {
+      "id": "t05-061",
+      "subtopic": "readers-writers",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "read_count",
+        "mutex"
+      ],
+      "stem": "In the first readers–writers solution:\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;\nint read_count = 0;\n\nwriter:                          reader:\n    wait(rw_mutex);                  wait(mutex);\n    /* write */                      read_count++;\n    signal(rw_mutex);                if (read_count == 1) wait(rw_mutex);\n                                     signal(mutex);\n                                     /* read */\n                                     wait(mutex);\n                                     read_count--;\n                                     if (read_count == 0) signal(rw_mutex);\n                                     signal(mutex);\n```\n\nWhat is the purpose of the semaphore `mutex`?",
+      "options": [
+        "To give mutual exclusion on updates to `read_count` (and the test that follows each update)",
+        "To stop writers from writing while readers read",
+        "To make readers enter in FIFO order",
+        "To let at most one reader read at a time"
+      ],
+      "answer": "A",
+      "explanation": "`mutex` protects the shared counter `read_count`. Incrementing it and testing `read_count == 1`, or decrementing and testing `read_count == 0`, must happen as one unit. That way exactly one reader (the first) acquires `rw_mutex` and exactly one (the last) releases it.\n\nExcluding writers is the job of `rw_mutex`.",
+      "option_feedback": [
+        "Correct.",
+        "That is rw_mutex.",
+        "Semaphores here don't guarantee FIFO.",
+        "Readers read concurrently; mutex is released before reading."
+      ]
+    },
+    {
+      "id": "t05-062",
+      "subtopic": "readers-writers",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "first readers-writers",
+        "queues on semaphores"
+      ],
+      "stem": "First readers–writers solution:\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;\nint read_count = 0;\n\nwriter:                          reader:\n    wait(rw_mutex);                  wait(mutex);\n    /* write */                      read_count++;\n    signal(rw_mutex);                if (read_count == 1) wait(rw_mutex);\n                                     signal(mutex);\n                                     /* read */\n                                     wait(mutex);\n                                     read_count--;\n                                     if (read_count == 0) signal(rw_mutex);\n                                     signal(mutex);\n```\n\nA writer is currently writing (`read_count = 0`). Then 5 readers arrive one after another. How many of these readers are blocked on the semaphore `mutex` (as opposed to `rw_mutex`)?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "- Reader 1: gets `mutex`, read_count = 1, so it executes `wait(rw_mutex)`. The writer holds rw_mutex, so **Reader 1 blocks on rw_mutex while still holding mutex**.\n- Readers 2–5: each blocks at `wait(mutex)`.\n\nSo **1** reader is queued on rw_mutex and **4** on mutex. When the writer signals rw_mutex, Reader 1 continues and releases mutex, and the others then follow one by one.",
+      "trap": "Answering 5 (all on rw_mutex) or 0."
+    },
+    {
+      "id": "t05-063",
+      "subtopic": "readers-writers",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "readers preference",
+        "first readers-writers"
+      ],
+      "stem": "For the first readers–writers solution:\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;\nint read_count = 0;\n\nwriter:                          reader:\n    wait(rw_mutex);                  wait(mutex);\n    /* write */                      read_count++;\n    signal(rw_mutex);                if (read_count == 1) wait(rw_mutex);\n                                     signal(mutex);\n                                     /* read */\n                                     wait(mutex);\n                                     read_count--;\n                                     if (read_count == 0) signal(rw_mutex);\n                                     signal(mutex);\n```\n\nWhich statements are correct?",
+      "options": [
+        "If readers are reading and a writer is waiting, a newly arriving reader is admitted immediately",
+        "If a writer is writing, a newly arriving reader blocks",
+        "Two writers may write at the same time if no reader is present",
+        "A waiting writer is guaranteed to enter as soon as the readers that were reading when it arrived have finished"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — correct.** read_count > 0, so the new reader doesn't touch rw_mutex; it increments the count and reads. This is the readers preference.\n- **B — correct.** read_count becomes 1, so it waits on rw_mutex, which the writer holds.\n- **C — wrong.** Every writer waits on rw_mutex (initial value 1).\n- **D — wrong.** Readers who arrive later keep read_count above 0, so the writer can wait indefinitely.",
+      "option_feedback": [
+        "Correct.",
+        "Correct.",
+        "Writers exclude each other with rw_mutex.",
+        "New readers can keep jumping ahead."
+      ]
+    },
+    {
+      "id": "t05-064",
+      "subtopic": "readers-writers",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "second readers-writers",
+        "writers preference",
+        "starvation"
+      ],
+      "stem": "In the **second** readers–writers problem (writers preference), once a writer is waiting, no new reader may start reading. Which statement about this policy is correct?",
+      "options": [
+        "Readers may starve if writers keep arriving",
+        "Writers may starve if readers keep arriving",
+        "Neither readers nor writers can starve",
+        "Readers and writers may access the data at the same time"
+      ],
+      "answer": "A",
+      "explanation": "With writers preference, a stream of writers can keep at least one writer waiting at all times, so new readers are never admitted. **Readers starve.**\n\nEach preference policy can starve the other side. A fair solution, for example one where everyone first passes through a FIFO \"service queue\" semaphore, avoids starvation for both.",
+      "option_feedback": [
+        "Correct.",
+        "That is the first (readers-preference) problem.",
+        "Writers preference can starve readers.",
+        "Exclusion between readers and writers is still enforced."
+      ]
+    },
+    {
+      "id": "t05-065",
+      "subtopic": "readers-writers",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "readers preference",
+        "timeline"
+      ],
+      "stem": "A shared file uses the **readers-preference** policy: a reader that arrives while any reader is reading starts immediately, even if a writer is waiting. A writer needs exclusive access. Ignore all overheads.\n\n| Process | Arrival time | Duration |\n|---|---|---|\n| R1 (reader) | 0 | 5 |\n| W1 (writer) | 1 | 3 |\n| R2 (reader) | 2 | 5 |\n| R3 (reader) | 6 | 4 |\n\nAt what time does W1 **finish** writing?",
+      "answer": {
+        "min": 13,
+        "max": 13
+      },
+      "explanation": "| Time | Event |\n|---|---|\n| 0 | R1 starts reading (0–5) |\n| 1 | W1 arrives; a reader is active → waits |\n| 2 | R2 arrives; R1 is reading → starts at once (2–7) |\n| 5 | R1 finishes; R2 still reading |\n| 6 | R3 arrives; R2 is reading → starts at once (6–10) |\n| 7 | R2 finishes; R3 still reading |\n| 10 | R3 finishes; no readers → W1 writes (10–13) |\n\nW1 finishes at **13**.\n\n(With writers preference, R2 would have to wait behind W1, and W1 would write 5–8.)",
+      "trap": "Answering 8 by applying writers preference."
+    },
+    {
+      "id": "t05-066",
+      "subtopic": "readers-writers",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "readers-writers",
+        "misplaced signal(mutex)"
+      ],
+      "stem": "A programmer moves `signal(mutex)` in the reader's entry section to **before** the test:\n\n```c\nreader:\n    wait(mutex);\n    read_count++;\n    signal(mutex);\n    if (read_count == 1) wait(rw_mutex);    /* tested outside mutex */\n    /* read */\n    wait(mutex);\n    read_count--;\n    if (read_count == 0) signal(rw_mutex);\n    signal(mutex);\n\nwriter:  wait(rw_mutex); /* write */ signal(rw_mutex);\n```\n\nWhich is a possible consequence?",
+      "options": [
+        "A deadlock occurs every time two readers arrive together",
+        "A reader can be reading while a writer is writing",
+        "Nothing changes, since read_count is still updated under mutex",
+        "Writers can no longer starve"
+      ],
+      "answer": "B",
+      "explanation": "Writer W is writing (it holds rw_mutex). Two readers arrive:\n\n| Step | R1 | R2 | read_count |\n|---|---|---|---|\n| 1 | wait(mutex); count++; signal(mutex) | | 1 |\n| 2 | | wait(mutex); count++; signal(mutex) | 2 |\n| 3 | test count == 1 → **false** | | 2 |\n| 4 | | test count == 1 → **false** | 2 |\n\nNeither reader waits on rw_mutex, so **both read while W is writing**. Further damage: when they leave, the last one does `signal(rw_mutex)` that was never matched by a wait, so rw_mutex can rise above 1 and later let two writers in.\n\nThe update is protected, but the **test** must be in the same critical section as the update.",
+      "option_feedback": [
+        "Not every time, and the real problem is lost exclusion.",
+        "Correct.",
+        "The test reads read_count after other readers changed it.",
+        "Unrelated to the bug."
+      ]
+    },
+    {
+      "id": "t05-067",
+      "subtopic": "readers-writers",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "readers-writers",
+        "test outside critical section",
+        "deadlock"
+      ],
+      "stem": "In this readers–writers code the reader's **exit** test is done outside `mutex`. All semaphores are **counting** semaphores (a signal always increments), with `mutex = 1`, `wrt = 1`, `rc = 0`.\n\n```c\nreader:                                  writer:\n    wait(mutex);                             wait(wrt);\n    rc = rc + 1;                             /* write */\n    if (rc == 1) wait(wrt);                  signal(wrt);\n    signal(mutex);\n    /* read */\n    wait(mutex);\n    rc = rc - 1;\n    signal(mutex);\n    if (rc == 0) signal(wrt);   /* tested outside mutex */\n```\n\nAny number of readers and writers may arrive. Which statements are correct?",
+      "options": [
+        "Two writers can be writing at the same time",
+        "A reader and a writer can be accessing the data at the same time",
+        "The system can reach a state where readers and writers are all blocked forever",
+        "Writers may starve, but mutual exclusion among writers is always preserved"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "Start: R1 and R2 are reading (rc = 2; wrt = 0, taken by R1).\n\n**A — two writers.** R1 decrements (rc = 1) and releases mutex; R2 decrements (rc = 0) and releases mutex. **Both** now test rc == 0 → true → `signal(wrt)` twice → wrt = 2. Writers W1 and W2 both pass `wait(wrt)`. ✓\n\n**B — reader with writer.** Continue from wrt = 2: only W1 enters (wrt = 1). New reader R3: rc = 1 → `wait(wrt)` → wrt = 0, passes → R3 reads while W1 writes. ✓\n\n**C — deadlock.** From the start state: R1 and R2 both decrement (rc = 0) but **haven't tested yet**. R3 arrives: takes mutex, rc = 1, `wait(wrt)` → wrt is 0 → **blocks while holding mutex**. Now R1 and R2 test rc == 0 → rc is 1 → no signal. Nobody will ever signal wrt. R3 holds mutex forever, so all later readers block on mutex and all writers block on wrt. ✓\n\n**D — wrong** (A shows writers can overlap).\n\nAn exhaustive state search over 3 readers and 2 writers finds all three failures.",
+      "option_feedback": [
+        "Correct — double signal(wrt).",
+        "Correct.",
+        "Correct — R3 blocks on wrt while holding mutex.",
+        "Contradicted by A."
+      ],
+      "trap": "Assuming that because rc is updated under the mutex, a test outside it is safe."
+    },
+    {
+      "id": "t05-068",
+      "subtopic": "dining-philosophers",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 40,
+      "concepts": [
+        "dining philosophers",
+        "deadlock"
+      ],
+      "stem": "Five philosophers use this solution:\n\n```c\nsemaphore chopstick[5] = {1, 1, 1, 1, 1};\n\n/* philosopher i */\nwhile (true) {\n    wait(chopstick[i]);               /* left  */\n    wait(chopstick[(i + 1) % 5]);     /* right */\n    eat();\n    signal(chopstick[(i + 1) % 5]);\n    signal(chopstick[i]);\n    think();\n}\n```\n\nWhat is its main problem?",
+      "options": [
+        "If all five pick up their left chopstick at the same time, every philosopher waits forever for the right one (deadlock)",
+        "Two neighbours can eat at the same time with a shared chopstick",
+        "At most one philosopher can eat at a time",
+        "A philosopher may eat with only one chopstick"
+      ],
+      "answer": "A",
+      "explanation": "Each chopstick is a binary semaphore, so no chopstick is ever shared (ME holds). But if every philosopher does `wait(chopstick[i])` before anyone does the second wait, all five chopsticks are taken and each philosopher blocks on its right chopstick, which the right neighbour holds. That is a **circular wait**, so the system **deadlocks**.",
+      "option_feedback": [
+        "Correct.",
+        "The semaphores prevent sharing.",
+        "Up to 2 can eat at once.",
+        "Both waits are needed before eating."
+      ]
+    },
+    {
+      "id": "t05-069",
+      "subtopic": "dining-philosophers",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "dining philosophers",
+        "room semaphore"
+      ],
+      "stem": "To prevent deadlock among 5 philosophers using the naive pick-left-then-right code, a counting semaphore `room` is added: each philosopher does `wait(room)` before picking up chopsticks and `signal(room)` after putting them down. What is the **largest** initial value of `room` that still guarantees freedom from deadlock?",
+      "options": [
+        "1",
+        "2",
+        "4",
+        "5"
+      ],
+      "answer": "C",
+      "explanation": "With at most **4** philosophers at the table there are 5 chopsticks for 4 people. By the pigeonhole principle, at least one seated philosopher can get both chopsticks, eat, and release them, so no circular wait can cover everyone.\n\nWith 5 all can sit and the original deadlock comes back. Values 1 or 2 are also deadlock-free but reduce concurrency for no reason; the question asks for the largest.",
+      "option_feedback": [
+        "Safe but not the largest.",
+        "Safe but not the largest.",
+        "Correct (n − 1).",
+        "Allows the original deadlock."
+      ]
+    },
+    {
+      "id": "t05-070",
+      "subtopic": "dining-philosophers",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "dining philosophers",
+        "max concurrency"
+      ],
+      "stem": "Seven philosophers sit at a round table with one chopstick between each pair of neighbours (7 chopsticks). Each needs both adjacent chopsticks to eat. What is the maximum number of philosophers that can be eating at the same time?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Each eater uses 2 chopsticks and two neighbours can't both eat (they share a chopstick). With n = 7, the maximum is ⌊7 / 2⌋ = **3**: for example philosophers 0, 2, 4 use chopsticks 0–1, 2–3, 4–5, leaving 6 unused. A 4th eater would need 8 chopsticks.",
+      "trap": "Answering 3.5 → 4."
+    },
+    {
+      "id": "t05-071",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "prevention"
+      ],
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "dining philosophers",
+        "deadlock prevention"
+      ],
+      "stem": "Which of the following modifications of the dining-philosophers solution (5 philosophers, 5 chopsticks) **guarantee freedom from deadlock**?",
+      "options": [
+        "Odd-numbered philosophers pick up left then right; even-numbered pick up right then left",
+        "A philosopher picks up both chopsticks only when both are free, checking and taking them inside one critical section",
+        "Every philosopher picks up the **right** chopstick first, then the left",
+        "At most 4 philosophers are allowed to sit at the table at the same time"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "explanation": "- **A — yes.** Asymmetry breaks the cycle. At least one pair of neighbours (e.g. P0 and P1) reach for their shared chopstick first, so only one of them can hold it; the chain where all five each hold one chopstick and wait for the next cannot close around the table.\n- **B — yes.** Taking both at once removes **hold-and-wait**.\n- **C — no.** Still symmetric: if everyone grabs the right chopstick, everyone waits for the left. Same deadlock, mirrored.\n- **D — yes.** 5 chopsticks for 4 people: someone can always eat.",
+      "option_feedback": [
+        "Correct — asymmetry.",
+        "Correct — no hold-and-wait.",
+        "Symmetric again, so deadlock is still possible.",
+        "Correct — n − 1 seats."
+      ]
+    },
+    {
+      "id": "t05-072",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "resource pool",
+        "deadlock-free minimum"
+      ],
+      "stem": "In a variant of the dining philosophers, 6 philosophers share a common pool of **identical** chopsticks in the centre of the table. To eat, a philosopher needs 3 chopsticks. It takes them one at a time and keeps them until it has eaten, then returns all 3. What is the **minimum** number of chopsticks in the pool that guarantees deadlock can never occur?",
+      "answer": {
+        "min": 13,
+        "max": 13
+      },
+      "explanation": "Worst case: every philosopher holds one fewer than it needs, i.e. 2 each → 6 × 2 = 12 chopsticks, all blocked.\n\nOne more chopstick lets some philosopher complete its set of 3, eat, and release, after which the others can proceed.\n\nMinimum = 6 × (3 − 1) + 1 = **13**.\n\nWith 12, the \"everyone holds 2\" state is reachable and is a deadlock.",
+      "trap": "Answering 18 (enough for everyone at once) or 12."
+    },
+    {
+      "id": "t05-073",
+      "subtopic": "dining-philosophers",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "dining philosophers",
+        "deadlock state",
+        "semaphore values"
+      ],
+      "stem": "Five philosophers run the naive solution, with queue-based semaphores (values may go negative):\n\n```c\nsemaphore chopstick[5] = {1, 1, 1, 1, 1};\n\n/* philosopher i */\nwhile (true) {\n    wait(chopstick[i]);               /* left  */\n    wait(chopstick[(i + 1) % 5]);     /* right */\n    eat();\n    signal(chopstick[(i + 1) % 5]);\n    signal(chopstick[i]);\n    think();\n}\n```\n\nThe system reaches the deadlock in which every philosopher holds its left chopstick and is blocked on its right one. What is the **sum** of the values of the five `chopstick` semaphores?",
+      "answer": {
+        "min": -5,
+        "max": -5
+      },
+      "explanation": "For each chopstick c:\n\n- its owner's `wait` (as a left chopstick) takes it from 1 to 0;\n- the neighbour's `wait` (as a right chopstick) takes it from 0 to −1 and blocks.\n\nEach of the 5 semaphores = −1, so the sum = **−5**. This matches 5 blocked processes, one queued on each semaphore.",
+      "trap": "Answering 0 by using the non-negative (busy-wait) semaphore model."
+    },
+    {
+      "id": "t05-074",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "semaphores"
+      ],
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "monitor solution",
+        "starvation"
+      ],
+      "stem": "In the monitor solution (Silberschatz), each philosopher has `state[i] ∈ {THINKING, HUNGRY, EATING}` and a condition `self[i]`. `pickup(i)` sets HUNGRY and calls `test(i)`. `test(i)` lets i eat only if neither neighbour is EATING. `putdown(i)` calls `test` on both neighbours. Which statement is correct?",
+      "options": [
+        "It can deadlock if all philosophers become hungry together",
+        "Two neighbours can eat at the same time if they call pickup at the same instant",
+        "It is deadlock-free and starvation-free",
+        "It is deadlock-free, but a philosopher can starve if its two neighbours keep taking turns eating"
+      ],
+      "answer": "D",
+      "explanation": "- **No deadlock.** A philosopher picks up both chopsticks at once (state goes to EATING) only when both neighbours are not eating. Nobody ever holds one chopstick and waits for the other, so there is no hold-and-wait.\n- **No two neighbours eat together.** The monitor runs one procedure at a time, so the check-and-set in `test` is atomic.\n- **Starvation is possible.** Suppose P1 is hungry. If P0 and P2 eat in overlapping turns (P0 starts before P2 stops, and the other way round), at least one neighbour of P1 is always EATING, so P1 never passes `test`.",
+      "option_feedback": [
+        "Both chopsticks are taken together, so no hold-and-wait.",
+        "The monitor serialises the test.",
+        "Starvation is still possible.",
+        "Correct."
+      ],
+      "trap": "Assuming deadlock-free means starvation-free."
+    },
+    {
+      "id": "t05-075",
+      "subtopic": "dining-philosophers",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "dining philosophers",
+        "left/right handed",
+        "circular wait"
+      ],
+      "stem": "Six philosophers P0 to P5 sit around a table. Chopstick ci lies between P(i−1) and Pi; Pi's **left** chopstick is ci and its **right** is c((i+1) mod 6). Each chopstick is a binary semaphore. A philosopher is either **L** (takes left first, then right) or **R** (takes right first, then left) and holds the first while waiting for the second.\n\nFor which assignments (listed for P0 to P5) is deadlock **possible**?",
+      "options": [
+        "L L L L L L",
+        "L R L R L R",
+        "L L L R L L",
+        "R R R R R R"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "In a deadlock each blocked philosopher holds exactly one chopstick and waits for another held by a blocked neighbour. With 6 chopsticks and a cycle that must cover the whole table, each philosopher holds one.\n\nSuppose Pi holds its left ci and waits for its right c(i+1). The holder of c(i+1) must be P(i+1), and P(i+1) must have taken it **first**. c(i+1) is P(i+1)'s **left**, so P(i+1) is **L**. Following this around the table, **every** philosopher is L. In the same way, if anyone holds their right chopstick, everyone is R.\n\n- **A (all L)** and **D (all R)**: the cycle can form → deadlock possible.\n- **B, C**: there is at least one L and one R → the cycle cannot close → no deadlock.\n\nSo a **single** philosopher with the other handedness is enough to prevent deadlock.",
+      "option_feedback": [
+        "Correct.",
+        "Mixed handedness breaks the cycle.",
+        "One R philosopher is enough.",
+        "Correct — symmetric the other way."
+      ]
+    },
+    {
+      "id": "t05-076",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "circular wait",
+        "hold and wait",
+        "mutex placement",
+        "deadlock"
+      ],
+      "stem": "Five philosophers P0 to P4. Philosopher i's left chopstick is `c[i]` and its right chopstick is `c[(i + 1) % 5]`. All `c[k]` and `m` are semaphores initialised to 1; each philosopher loops forever (think, get hungry, eat). The naive code is:\n\n```c\nwait(c[i]);  wait(c[(i+1)%5]);  eat();  signal(c[(i+1)%5]);  signal(c[i]);\n```\n\nWhich variants guarantee that **deadlock can never occur**?",
+      "options": [
+        "P0 to P3 use the naive code; P4 picks up its right chopstick first, then its left",
+        "`wait(m); wait(c[i]); wait(c[(i+1)%5]); signal(m); eat(); signal(c[(i+1)%5]); signal(c[i]);`",
+        "`wait(m); wait(c[i]); signal(m); wait(c[(i+1)%5]); eat(); signal(c[(i+1)%5]); signal(c[i]);`",
+        "`wait(m); wait(c[i]); wait(c[(i+1)%5]); signal(m); eat(); wait(m); signal(c[(i+1)%5]); signal(c[i]); signal(m);`"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — deadlock-free.** A deadlock needs every philosopher to hold one chopstick and wait for the next one around the table, which needs everyone to take the same side first. P0 and P4 both reach for c0 **first**, so only one of them can hold it; the cycle cannot close.\n- **B — deadlock-free.** A philosopher can block while holding `m` (and possibly its left chopstick). But the chopstick it waits for is held by someone who is **eating**: only the holder of `m` ever holds a chopstick without eating. An eater puts its chopsticks down **without** needing `m`, so the waiter always gets released. Holding a lock while blocked is not enough for deadlock here, because the process it waits for does not need that lock.\n- **C — deadlock possible.** `m` covers only the first pickup. P0 takes `m`, `c0`, releases `m`; P1 does the same with `c1`; … P4 with `c4`. Now all five hold their left chopstick and block on the right: the naive deadlock.\n- **D — deadlock possible.** P0 is eating (holds c0, c1). P1 takes `m`, then blocks on `wait(c1)` **holding `m`**. P0 finishes eating and blocks on `wait(m)` before it can put down c1. Each waits for the other.\n\n(Exhaustive state search over all interleavings confirms: A and B never deadlock; C and D can.)",
+      "option_feedback": [
+        "Correct — one reversed philosopher breaks the cycle.",
+        "Correct — eaters release without `m`, so whoever holds `m` is always eventually released.",
+        "Wrong — releasing `m` between the two pickups lets all five hold their left chopstick.",
+        "Wrong — the putdown needs `m`, which is held by a philosopher blocked on the eater's chopstick."
+      ],
+      "trap": "Rejecting B because it blocks while holding a mutex, and accepting D because it \"protects\" both pickup and putdown."
+    },
+    {
+      "id": "t05-077",
+      "subtopic": "petersons-solution",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "Peterson's algorithm",
+        "mutual exclusion proof",
+        "progress"
+      ],
+      "stem": "Peterson's solution for processes P0 and P1 (j = 1 − i) is:\n\n```c\nbool flag[2] = {false, false};  int turn;      /* turn may start as 0 or 1 */\n/* entry */  flag[i] = true;  turn = j;  while (flag[j] && turn == j) ;\n/* critical section */\n/* exit  */  flag[i] = false;\n```\n\nAssume loads and stores are atomic and execute in program order. **Progress** here means: if no process is in its CS and some want to enter, one of them will be able to enter, and a process in its remainder section can never stop the other from entering.\n\nEach variant changes only what is shown (everything else as above). Which variants guarantee **both** mutual exclusion and progress?",
+      "options": [
+        "Entry: `flag[i] = true;  turn = i;  while (flag[j] && turn == i) ;`",
+        "Entry: `flag[i] = true;  while (flag[j] && turn == j) ;  turn = j;`",
+        "Entry: `flag[i] = true;  turn = i;  while (flag[j] && turn == j) ;`",
+        "Exit: `turn = i;  flag[i] = false;`"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "- **A — correct.** Here `turn` names the process that wrote it **last**, and that process waits. In the original, `turn = j` also means \"the last writer gives way\". Renaming turn′ = 1 − turn turns A into the original algorithm line for line, so it has exactly the same properties.\n- **B — ME violated.** The loop is tested before `turn` is written.\n\n| Step | Action | flag | turn |\n|---|---|---|---|\n| 1 | P0: flag[0] = T; tests flag[1] = F → passes | T,F | 0 |\n| 2 | P0: turn = 1; enters CS | T,F | 1 |\n| 3 | P1: flag[1] = T; tests flag[0] && turn == 0 → turn is 1 → passes | T,T | 1 |\n| 4 | P1: turn = 0; enters CS | T,T | 0 |\n\n- **C — ME violated.** Each process sets `turn` to **itself** but waits only when `turn` names the **other**. P0: flag[0] = T, turn = 0, flag[1] = F → enters. P1: flag[1] = T, turn = 1, tests `flag[0] && turn == 0` → false → enters. Both inside.\n- **D — correct.** On exit Pi first writes `turn = i` while `flag[i]` is still true. That can only make Pj's condition `flag[i] && turn == i` **true**, i.e. keep Pj waiting a moment longer; it can never let Pj in early, so ME is unaffected. The next step `flag[i] = false` releases Pj exactly as before. Progress: a process in its remainder has `flag = false`, so it never blocks the other; if both are waiting, each has just written `turn`, which has one value, so one gets through.\n\n(An exhaustive state search confirms: A and D satisfy ME and progress for both initial values of `turn`; B and C violate ME.)",
+      "option_feedback": [
+        "Correct — it is Peterson's with the meaning of `turn` mirrored.",
+        "Wrong — testing before writing `turn` lets both pass.",
+        "Wrong — \"set turn to myself, wait if turn is the other\" lets both pass.",
+        "Correct — the extra write only delays the other process, and the flag is still cleared."
+      ],
+      "trap": "Judging variants by how different they look from the textbook code instead of by tracing them; A looks wrong but is correct, C looks almost identical but is broken."
+    },
+    {
+      "id": "t05-078",
+      "subtopic": "petersons-solution",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "Peterson's algorithm",
+        "n-process generalisation",
+        "interleaving bound"
+      ],
+      "stem": "A programmer \"generalises\" Peterson's solution to **four** processes P0 to P3:\n\n```c\nbool flag[4] = {false, false, false, false};\nint  turn = 0;\n\n/* process Pi */\nwhile (true) {\n    flag[i] = true;\n    turn = i;\n    while ((flag[a] || flag[b] || flag[c]) && turn == i) ;   /* a, b, c = the other three */\n    /* critical section */\n    flag[i] = false;\n    /* remainder section */\n}\n```\n\nLoads and stores are atomic and execute in program order. What is the **maximum** number of processes that can be in the critical section at the same time?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "**Upper bound: not all 4.** Suppose all four are in the CS. Let Pk be the **last** process to write `turn`; after that `turn == k` stays true. Pk passed its loop after that write, so at its test all other flags were false. But each other process in the CS set its flag **before** its own write to `turn` (which came before Pk's write) and keeps it set until it leaves. So some other flag was true at Pk's test, and with `turn == k` Pk must spin. Contradiction. So at most 3.\n\n**3 is reachable** (each process \"rescues\" the previous one by overwriting `turn`):\n\n| Step | Action | turn | In CS |\n|---|---|---|---|\n| 1 | P0: flag[0] = T, turn = 0 | 0 | — |\n| 2 | P1: flag[1] = T, turn = 1 | 1 | — |\n| 3 | P0 tests: turn ≠ 0 → enters. P1 tests: flag[0] && turn == 1 → spins | 1 | P0 |\n| 4 | P2: flag[2] = T, turn = 2; P1 tests: turn ≠ 1 → enters | 2 | P0, P1 |\n| 5 | P3: flag[3] = T, turn = 3; P2 tests: turn ≠ 2 → enters | 3 | P0, P1, P2 |\n\nP3 spins (turn == 3 and other flags set). Maximum = **3**. With 2 processes this code is exactly Peterson's (last writer waits) and is correct, but `turn` can only protect against the **last** arrival, so with n processes up to n − 1 can get in.\n\n(An exhaustive state search over all interleavings gives maximum 3 for n = 4 and 2 for n = 3.)",
+      "trap": "Answering 1 because the 2-process algorithm is correct, or 4 because the code looks broken."
+    },
+    {
+      "id": "t05-079",
+      "subtopic": "test-and-set",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "compare-and-swap",
+        "lock-free retry loop",
+        "max over interleavings"
+      ],
+      "stem": "`CAS(&x, e, n)` atomically compares `x` with `e`; if equal it stores `n`. It always returns the old value of `x`. A lock-free increment is:\n\n```c\nvoid increment() {\n    int old;\n    do {\n        old = x;                                  /* atomic load */\n    } while (CAS(&x, old, old + 1) != old);       /* retry if x changed */\n}\n```\n\nShared `x = 0`. Threads T1 and T2 each call `increment()` **3 times**. Over all interleavings, what is the **maximum** total number of CAS calls that **fail**?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "**When does a CAS fail?** Thread A's CAS fails only if `x` changed after A's load, i.e. the other thread B made a **successful** CAS in between. After failing, A loads again, so a single success by B can make A fail **at most once**.\n\n**Bound.** There are 3 + 3 = 6 successful CAS calls (x always ends at 6). Each can cause at most one failure, so at most 6. The **last** success overall can cause none: the other thread has already finished all its increments, so it has no pending load to invalidate. Maximum ≤ **5**.\n\n**A schedule with 5 failures** (A = T1, B = T2):\n\n| Step | Action | x | Failures |\n|---|---|---|---|\n| 1 | A loads 0, B loads 0, A CAS ok | 1 | 0 |\n| 2 | B CAS fails; B loads 1, A loads 1, B CAS ok | 2 | 1 |\n| 3 | A CAS fails; A loads 2, B loads 2, A CAS ok | 3 | 2 |\n| 4 | B CAS fails; B loads 3, A loads 3, B CAS ok | 4 | 3 |\n| 5 | A CAS fails; A loads 4, B loads 4, A CAS ok (A done) | 5 | 4 |\n| 6 | B CAS fails; B loads 5, B CAS ok (B done) | 6 | 5 |\n\nMaximum = **5** (exhaustive search over all interleavings agrees).",
+      "trap": "Answering 6 (one failure per success) without noticing the last success cannot invalidate anyone, or thinking failures are unbounded."
+    },
+    {
+      "id": "t05-080",
+      "subtopic": "test-and-set",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "compare-and-swap",
+        "fetch-and-add",
+        "lost update",
+        "case analysis"
+      ],
+      "stem": "Shared integer `x = 1`. Three threads each run one statement once:\n\n```c\nT1:  CAS(&x, 1, 5);          /* atomic: if x == 1 then x = 5 */\nT2:  FetchAndAdd(&x, 2);     /* atomic: x = x + 2 */\nT3:  x = x * 3;              /* NOT atomic: load x; compute; store */\n```\n\n`CAS` and `FetchAndAdd` are single atomic instructions; T3's load and store are separate atomic instructions. How many **distinct** final values of `x` are possible?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "T1 and T2 are atomic, so they never lose each other's updates. T3 loads a value r and later stores 3r, wiping out any atomic operation that happened **between** its load and store. An operation **after** T3's store applies to 3r: the CAS then always fails (3r ≠ 1), the FAA adds 2.\n\nClassify by which atomic operations happen **before T3's load**:\n\n| Before T3's load | r | Operations between load and store / after store | Finals |\n|---|---|---|---|\n| none | 1 | none after → 3; FAA after → 5; CAS after fails | 3, 5 |\n| CAS only (1 → 5) | 5 | FAA lost → 15; FAA after → 17 | 15, 17 |\n| FAA only (1 → 3) | 3 | CAS fails anyway (x ≠ 1) | 9 |\n| CAS then FAA (1 → 5 → 7) | 7 | — | 21 |\n| FAA then CAS (1 → 3, CAS fails) | 3 | — | 9 |\n\nNote that in the first row, a CAS between T3's load and store succeeds (1 → 5) but is overwritten by 3; a CAS after the store fails.\n\nDistinct values: {3, 5, 9, 15, 17, 21} → **6** (an exhaustive interleaving search gives the same set).",
+      "trap": "Forgetting that a CAS placed after T3's store fails, or treating T3 as atomic (which gives only the serial outcomes)."
+    },
+    {
+      "id": "t05-081",
+      "subtopic": "semaphores",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "mutex semaphore",
+        "race condition",
+        "lost update",
+        "case analysis"
+      ],
+      "stem": "Shared integer `x = 1` and semaphore `mutex = 1`. Three threads each run once:\n\n```c\nT1:  wait(mutex);  x = x + 1;  signal(mutex);\nT2:  wait(mutex);  x = x * 2;  signal(mutex);\nT3:  x = x + 3;               /* bug: no wait/signal */\n```\n\nEvery `x = …` statement is load / compute / store, and only these instructions are atomic. How many **distinct** final values of `x` are possible?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "The mutex makes T1 and T2 run one after the other, but T3 ignores it, so T3's load and store can fall anywhere, **including between the load and store of T1 or T2**. Use the **last writer** of x:\n\n**T3 stores last.** T3 writes (value it loaded) + 3. T3 writes only once, so before that x holds only values made by T1/T2 running serially from 1: 1, 2 (T1 or T2 alone), 4 (T1 then T2), 3 (T2 then T1). Finals: **4, 5, 7, 6**.\n\n**T2 stores last** (so the mutex order is T1, T2). T2 writes 2v, where v is what it loaded:\n- T1 loaded 1 → v = 2;\n- T3 stored 4 before T1 loaded → T1 writes 5 → v = 5;\n- T3 stored after T1's store and before T2's load: T3 loaded 1 or 2 → v = 4 or 5.\n\nv ∈ {2, 4, 5} → finals **4, 8, 10**.\n\n**T1 stores last** (mutex order T2, T1). T1 writes v + 1:\n- T2 loaded 1 → v = 2; T3 stored 4 before T2 loaded → v = 8;\n- T3 stored between T2's store and T1's load: T3 loaded 1 or 2 → v = 4 or 5.\n\nv ∈ {2, 8, 4, 5} → finals **3, 9, 5, 6**.\n\nUnion = {3, 4, 5, 6, 7, 8, 9, 10} → **8** values. (Exhaustive enumeration agrees. Without the mutex at all, 2 would also be possible: 9 values.)",
+      "trap": "Counting only the orders of three whole statements, or assuming the mutex protects x from T3 as well."
+    },
+    {
+      "id": "t05-082",
+      "subtopic": "semaphores",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "counting semaphore",
+        "binary semaphore",
+        "lost wakeup",
+        "deadlock"
+      ],
+      "stem": "A counting semaphore with initial value K is implemented from two **binary** semaphores (a `signal` on a binary semaphore whose value is already 1 leaves it at 1):\n\n```c\nint c = K;\nbinary_semaphore mutex = 1, delay = 0;\n\nvoid P() {\n    wait(mutex);\n    c = c - 1;\n    if (c < 0) { signal(mutex); wait(delay); }\n    else       signal(mutex);\n}\n\nvoid V() {\n    wait(mutex);\n    c = c + 1;\n    if (c <= 0) signal(delay);\n    signal(mutex);\n}\n```\n\nWhich statements are correct?",
+      "options": [
+        "If `delay` is changed to a counting semaphore (everything else unchanged), every process blocked in `P()` is released by a later `V()`, and no more processes complete `P()` than K plus the number of `V()` calls",
+        "With K = 0, if two processes call `P()` and a third calls `V()` twice, one of the `P()` callers can stay blocked forever",
+        "With the binary `delay`, more processes can complete `P()` than K plus the number of `V()` calls",
+        "Moving `signal(mutex)` in `P()` to after `wait(delay)` (keep the mutex while waiting on `delay`) fixes the problem"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "The weak spot is the gap between `signal(mutex)` and `wait(delay)` in `P()`.\n\n- **B — correct (lost wakeup).** K = 0:\n\n| Step | Action | c | delay |\n|---|---|---|---|\n| 1 | A: P(): c = −1, signal(mutex), preempted before wait(delay) | −1 | 0 |\n| 2 | B: same | −2 | 0 |\n| 3 | V(): c = −1 ≤ 0 → signal(delay) | −1 | 1 |\n| 4 | V(): c = 0 ≤ 0 → signal(delay): already 1, **stays 1** | 0 | 1 |\n| 5 | A: wait(delay) → passes | 0 | 0 |\n| 6 | B: wait(delay) → **blocks forever** | 0 | 0 |\n\nTwo V()s were done for two P()s, yet B never gets through: one wakeup was lost because a binary semaphore cannot count.\n- **A — correct.** With a counting `delay`, both signals in steps 3–4 are remembered (delay = 2), so both waiters pass. Each `signal(delay)` corresponds to exactly one process that made c negative, so nothing is lost and nobody extra gets through.\n- **C — wrong.** The bug only loses wakeups (it can only let *fewer* through); `delay` is signalled only when c ≤ 0, i.e. when someone is owed a wakeup, so it never lets extra processes through.\n- **D — wrong.** A waiter would block on `delay` **holding `mutex`**, and every `V()` blocks on `wait(mutex)`, so nobody can ever signal `delay`: deadlock.\n\n(Model-checked exhaustively for 2–3 callers of P() and V().)",
+      "option_feedback": [
+        "Correct — counting `delay` remembers every wakeup.",
+        "Correct — two signals arrive before either waiter reaches wait(delay); the binary semaphore keeps only one.",
+        "Wrong — the bug loses wakeups; it never admits extra processes.",
+        "Wrong — waiting on `delay` while holding `mutex` blocks every V(): deadlock."
+      ],
+      "trap": "Assuming that a binary semaphore can replace a counting one whenever signals and waits are balanced."
+    },
+    {
+      "id": "t05-083",
+      "subtopic": "producer-consumer",
+      "also_tests": [
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "circular buffer",
+        "race on index",
+        "lost update",
+        "case analysis"
+      ],
+      "stem": "A circular buffer of N = 4 slots is used **without a mutex**:\n\n```c\nsemaphore empty = 4, full = 0;   int in = 0;\n\nproducer:  wait(empty);  buffer[in] = item;  in = (in + 1) % 4;  signal(full);\n```\n\n`buffer[in] = item` is two atomic steps (read `in`; write the slot) and `in = (in + 1) % 4` is two atomic steps (read `in`; write `in`). Initially `in = 0` and every slot holds a stale value, written `−`. Two producers insert items **X** and **Y** concurrently, once each; no consumer runs.\n\nAfter both producers finish, which final states (slot 0, slot 1, `in`) are possible?",
+      "options": [
+        "slot 0 = Y, slot 1 = −, in = 2",
+        "slot 0 = X, slot 1 = Y, in = 1",
+        "slot 0 = −, slot 1 = X, in = 2",
+        "slot 0 = X, slot 1 = −, in = 1"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "`empty = 4`, so both producers pass `wait(empty)` at once; nothing stops them racing on `in`.\n\n**Case 1: both read `in = 0` for the slot write.** Both write slot 0; the later write wins (X or Y), slot 1 stays −. For the index update, if both read `in` before either writes it, both store 1 (lost update) → in = 1; otherwise the second reads 1 and stores 2 → in = 2. Outcomes: (X or Y, −, 1 or 2).\n\n**Case 2: one producer reads `in` for its slot after the other has stored `in = 1`.** Then the first producer's two steps on `in` are both finished, so the second reads 1 for both its slot and its index: slot 0 = first item, slot 1 = second item, in = 2.\n\nThat gives exactly six outcomes: (X, −, 1), (X, −, 2), (Y, −, 1), (Y, −, 2), (X, Y, 2), (Y, X, 2).\n\n- **A — possible** (Case 1, index updates not overlapping): one item lost although `in` advanced by 2.\n- **B — impossible.** Separate slots need the second producer to read `in = 1` after the first stored it, and then it also reads 1 for its own index update → in = 2.\n- **C — impossible.** Every read of `in` before any index store returns 0, so the first slot written is always slot 0; slot 0 cannot stay stale.\n- **D — possible** (Case 1 with both index reads before either store): X overwrites Y, and `in` loses an increment.\n\n(An exhaustive interleaving search gives exactly the six outcomes above.)",
+      "option_feedback": [
+        "Possible — both wrote slot 0, but the index updates did not overlap.",
+        "Impossible — different slots force in = 2.",
+        "Impossible — someone always writes slot 0 first.",
+        "Possible — both wrote slot 0 and both index updates read 0."
+      ],
+      "trap": "Assuming that `in = 2` means both items were stored, or that counting semaphores alone give each producer its own slot."
+    },
+    {
+      "id": "t05-084",
+      "subtopic": "readers-writers",
+      "also_tests": [
+        "semaphores"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "first readers-writers",
+        "queue-based semaphore",
+        "negative semaphore value"
+      ],
+      "stem": "First readers–writers solution with **queue-based** semaphores (a `wait` that finds the value ≤ 0 still decrements it and blocks; queues are FIFO):\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;   int read_count = 0;\n\nwriter:  wait(rw_mutex);  /* write */  signal(rw_mutex);\n\nreader:  wait(mutex);  read_count++;\n         if (read_count == 1) wait(rw_mutex);\n         signal(mutex);\n         /* read */\n         wait(mutex);  read_count--;\n         if (read_count == 0) signal(rw_mutex);\n         signal(mutex);\n```\n\nEvents in order (each process runs until it starts reading/writing, blocks, or finishes; a woken process continues the same way):\n\n1. R1 arrives  2. W1 arrives  3. R2 arrives  4. R1 finishes reading  5. W2 arrives  6. R2 finishes reading  7. R3 arrives  8. R4 arrives\n\nWhat is `rw_mutex + mutex + read_count` after event 8?",
+      "answer": {
+        "min": -2,
+        "max": -2
+      },
+      "explanation": "| Event | rw_mutex | mutex | read_count | Note |\n|---|---|---|---|---|\n| start | 1 | 1 | 0 | |\n| R1 arrives | 0 | 1 | 1 | first reader takes rw_mutex, reads |\n| W1 arrives | −1 | 1 | 1 | W1 blocked on rw_mutex |\n| R2 arrives | −1 | 1 | 2 | not first → reads at once |\n| R1 leaves | −1 | 1 | 1 | |\n| W2 arrives | −2 | 1 | 1 | queue: W1, W2 |\n| R2 leaves | −1 | 1 | 0 | last reader signals → W1 wakes and writes |\n| R3 arrives | −2 | 0 | 1 | first reader → `wait(rw_mutex)` blocks **while holding mutex** |\n| R4 arrives | −2 | −1 | 1 | blocks on `mutex` |\n\nrw_mutex + mutex + read_count = −2 + (−1) + 1 = **−2**.\n\nThe twist: R3 blocks on `rw_mutex` before releasing `mutex`, so R4 queues on `mutex`, not on `rw_mutex`. (A step-by-step simulation gives the same values.)",
+      "trap": "Putting R4 in the rw_mutex queue, or forgetting that R2's exit already brought read_count back to 0 before R3 arrived."
+    },
+    {
+      "id": "t05-085",
+      "subtopic": "readers-writers",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "writers preference",
+        "reader starvation",
+        "timeline"
+      ],
+      "stem": "A shared file uses **writers preference**:\n\n- readers may read together; a writer needs exclusive access;\n- an arriving reader may start only if no writer is writing **or waiting**;\n- when the file becomes free, the earliest waiting **writer** goes first if any writer is waiting; only if none is waiting do all waiting readers start together.\n\nIgnore overheads.\n\n| Process | Arrival | Duration |\n|---|---|---|\n| R1 (reader) | 0 | 4 |\n| W1 (writer) | 1 | 3 |\n| R2 (reader) | 2 | 2 |\n| W2 (writer) | 5 | 2 |\n| R3 (reader) | 6 | 3 |\n\nHow long does R2 **wait** (start time − arrival time)?",
+      "answer": {
+        "min": 7,
+        "max": 7
+      },
+      "explanation": "| Time | Event |\n|---|---|\n| 0 | R1 starts reading (0–4) |\n| 1 | W1 arrives; R1 is reading → W1 waits |\n| 2 | R2 arrives; a writer (W1) is waiting → R2 waits |\n| 4 | R1 finishes; W1 is waiting → W1 writes (4–7) |\n| 5 | W2 arrives; W1 writing → waits |\n| 6 | R3 arrives; writers waiting → waits |\n| 7 | W1 finishes; **W2 is waiting → W2 goes before R2**, although R2 arrived earlier (7–9) |\n| 9 | no writer waiting → R2 and R3 start together (R2: 9–11, R3: 9–12) |\n\nR2 waits 9 − 2 = **7**.\n\nCompare: under readers preference R2 would start at once (wait 0); in FIFO order it would start after W1 at 7 (wait 5). (A simulation of the stated policy gives the same timeline.)",
+      "trap": "Answering 5 by letting R2 go after W1 in arrival order; under writers preference the later writer W2 overtakes R2."
+    },
+    {
+      "id": "t05-086",
+      "subtopic": "readers-writers",
+      "also_tests": [
+        "semaphores"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "first readers-writers",
+        "mutual exclusion",
+        "deadlock",
+        "code variants"
+      ],
+      "stem": "The first readers–writers solution is:\n\n```c\nsemaphore rw_mutex = 1, mutex = 1;   int read_count = 0;\n\nwriter:  wait(rw_mutex);  /* write */  signal(rw_mutex);\n\nreader:  wait(mutex);  read_count++;\n         if (read_count == 1) wait(rw_mutex);\n         signal(mutex);\n         /* read */\n         wait(mutex);  read_count--;\n         if (read_count == 0) signal(rw_mutex);\n         signal(mutex);\n```\n\nEach variant changes **only the reader** as shown (writers unchanged). Any number of readers and writers may run repeatedly. Which variants are still correct, i.e. a writer never overlaps any other reader or writer, readers may read together, and no deadlock is possible?",
+      "options": [
+        "Entry: `wait(mutex); if (read_count == 0) wait(rw_mutex); read_count++; signal(mutex);`",
+        "Exit: `wait(mutex); if (read_count == 1) signal(rw_mutex); read_count--; signal(mutex);`",
+        "Entry: `wait(mutex); read_count++; signal(mutex); wait(rw_mutex);` (exit unchanged)",
+        "Entry: `wait(mutex); read_count++; if (read_count == 1) { signal(mutex); wait(rw_mutex); } else signal(mutex);`"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A — correct.** Testing `read_count == 0` **before** incrementing is the same test as `read_count == 1` after incrementing, and both happen inside `mutex`. Exactly the first reader takes `rw_mutex`, as before.\n- **B — correct.** Testing `read_count == 1` before decrementing is the same as testing `== 0` after, again inside `mutex`. Exactly the last reader releases `rw_mutex`.\n- **C — deadlock.** Every reader now waits on `rw_mutex`, but only the last reader signals it. R1 enters (count 1, takes rw_mutex). R2: count 2, blocks on rw_mutex. R1 leaves: count 1, no signal. R2 is blocked forever, and so is every writer. (Readers could also no longer share.)\n- **D — ME violated.** The first reader releases `mutex` **before** it has got `rw_mutex`. A writer is writing; R1: count = 1, releases mutex, blocks on rw_mutex. R2: count = 2 → not first → releases mutex and **starts reading while the writer writes**.\n\n(Model-checked over all interleavings with up to 3 readers and 2 writers: A and B are safe and deadlock-free; C deadlocks; D lets a reader overlap a writer.)",
+      "option_feedback": [
+        "Correct — same test, just before the increment.",
+        "Correct — same test, just before the decrement.",
+        "Wrong — non-first readers block on rw_mutex and only the last reader signals it: deadlock.",
+        "Wrong — later readers see count > 1 and walk in while the first reader is still waiting for the writer."
+      ],
+      "trap": "Rejecting A and B because the test is in a different place, and accepting D because the counter update is still under the mutex."
+    },
+    {
+      "id": "t05-087",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "prevention"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "resource pool",
+        "hold and wait",
+        "minimum resources for deadlock freedom"
+      ],
+      "stem": "Four philosophers share a central pool of **identical** chopsticks. To eat, P1 needs 2 chopsticks, P2 needs 3, P3 needs 3 and P4 needs 1. Each philosopher takes chopsticks **one at a time**, keeps them until it has eaten, then returns all of them. What is the **minimum** number of chopsticks in the pool that guarantees deadlock can never occur?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "**Worst case.** Deadlock means every hungry philosopher holds some chopsticks and waits for one more, with the pool empty. The most chopsticks that can be held with **nobody** able to finish is when each holds one fewer than it needs:\n\n(2 − 1) + (3 − 1) + (3 − 1) + (1 − 1) = 1 + 2 + 2 + 0 = **5**.\n\nP4 holds nothing in that state: needing a single chopstick, it never holds one while waiting.\n\n- With **5** chopsticks this state is reachable (P4 also blocks with 0), so deadlock is possible.\n- With **6**, whenever all others are short by one, one chopstick is still free, so some philosopher completes its set, eats and returns them, and the rest follow.\n\nMinimum = Σ(kᵢ − 1) + 1 = **6**. (An exhaustive state search confirms deadlock with 5 and none with 6.)",
+      "trap": "Counting P4 as needing a held chopstick (answer 7), or adding up the full needs (answer 9)."
+    },
+    {
+      "id": "t05-088",
+      "subtopic": "dining-philosophers",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "asymmetric solution",
+        "resource contention",
+        "max over reachable states"
+      ],
+      "stem": "Six philosophers P0 to P5 sit around a table. Chopstick ci lies between P(i−1) and Pi; Pi's **left** chopstick is ci and its **right** is c((i+1) mod 6). Each chopstick is a binary semaphore.\n\nEven-numbered philosophers (P0, P2, P4) pick up **left then right**; odd-numbered ones (P1, P3, P5) pick up **right then left**. A philosopher holds its first chopstick while waiting for the second. All six become hungry.\n\nWhat is the **maximum** number of philosophers that can be **blocked** (waiting on a chopstick) at the same time?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "**Who wants what first.**\n\n| Philosopher | First | Second |\n|---|---|---|\n| P0 (L) | c0 | c1 |\n| P1 (R) | c2 | c1 |\n| P2 (L) | c2 | c3 |\n| P3 (R) | c4 | c3 |\n| P4 (L) | c4 | c5 |\n| P5 (R) | c0 | c5 |\n\nSo c0, c2, c4 are only ever taken **first** (each by a pair: {P5, P0}, {P1, P2}, {P3, P4}), and c1, c3, c5 only **second** (each wanted by a pair: {P0, P1}, {P2, P3}, {P4, P5}).\n\n**Blocked on a first chopstick:** at most one per pair → **≤ 3**.\n\n**Blocked on a second chopstick:** such a philosopher holds a first chopstick, and its second is held by the other member of its \"second\" pair, who has both chopsticks and is **eating**. Each eater can block only one such philosopher. Only 3 first chopsticks exist, so (eaters) + (blocked on second) ≤ 3, and blocked-on-second ≤ eaters → **≤ 1**.\n\nTotal ≤ 3 + 1 = **4**.\n\n**Reachable:** P0 takes c0, P1 takes c2, P3 takes c4. P5, P2, P4 block on their first chopsticks. P0 takes c1 and eats, so P1 blocks on c1. Blocked: P1, P2, P4, P5 = **4**.\n\n(An exhaustive state search gives maximum 4.)",
+      "trap": "Answering 5 (n − 1, true for many deadlock-free variants) without noticing that the alternating order makes pairs compete for the same first chopstick."
+    },
+    {
+      "id": "t05-089",
+      "subtopic": "producer-consumer",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "lost wakeup",
+        "sleep/wakeup",
+        "race condition"
+      ],
+      "stem": "A producer and a consumer share a buffer of N slots (N > 2) using `sleep()` and `wakeup()` instead of semaphores. `sleep()` blocks the caller. `wakeup(p)` unblocks p if p is asleep and **does nothing** otherwise.\n\n```c\nint count = 0;                        /* items in buffer */\n\nproducer:                             consumer:\nwhile (true) {                        while (true) {\n    item = produce();                     if (count == 0) sleep();\n    if (count == N) sleep();              item = remove();\n    insert(item);                         count = count - 1;\n    count = count + 1;                    if (count == N - 1) wakeup(producer);\n    if (count == 1) wakeup(consumer);     consume(item);\n}                                     }\n```\n\nThe buffer starts empty. Which execution order leaves **both** processes asleep forever?",
+      "options": [
+        "The consumer reads count = 0 and calls `sleep()`. Then the producer inserts an item, sets count = 1 and calls `wakeup(consumer)`.",
+        "The producer inserts an item, sets count = 1 and calls `wakeup(consumer)` before the consumer has run at all. Then the consumer runs.",
+        "The producer inserts an item but is preempted before `count = count + 1`. The consumer reads count = 0 and calls `sleep()`. The producer resumes, sets count = 1 and calls `wakeup(consumer)`.",
+        "The consumer reads count = 0 but is preempted before calling `sleep()`. The producer inserts an item, sets count = 1 and calls `wakeup(consumer)`. Then the consumer resumes."
+      ],
+      "answer": "D",
+      "explanation": "The bug is that testing `count` and calling `sleep()` are **not atomic**, and a `wakeup` sent to a process that is not yet asleep is **lost**.\n\nTrace option D:\n\n1. Consumer: `count == 0` is true, so it decides to sleep, but it is preempted before `sleep()`.\n2. Producer: inserts, count = 1, and calls `wakeup(consumer)`. The consumer is not asleep, so the wakeup is **lost**.\n3. Consumer resumes and calls `sleep()`. Nothing will ever wake it, since the producer only wakes it when count becomes 1.\n4. Producer keeps producing until count = N, then sleeps. The consumer never removes anything, so nobody wakes the producer.\n\nBoth sleep forever.\n\nThe other orders are safe:\n\n- **A:** the consumer is already asleep, so the wakeup works.\n- **B:** the consumer later reads count = 1 and does not sleep.\n- **C:** the consumer is asleep by the time the producer sets count = 1 and calls wakeup, so it is woken.\n\nSemaphores fix this because `signal` is **remembered** in the count even if nobody is waiting.",
+      "option_feedback": [
+        "Safe: the consumer is already asleep when the wakeup arrives, so it is woken.",
+        "Safe: the wakeup is wasted, but the consumer then reads count = 1 and never sleeps.",
+        "Safe: the consumer goes to sleep before the producer sets count = 1, so the wakeup reaches a sleeping consumer.",
+        "Correct: the wakeup arrives between the consumer's test and its sleep(), so it is lost. Both eventually sleep forever."
+      ],
+      "trap": "Option B: a wasted wakeup alone is harmless. It only matters when it falls between the test of count and the call to sleep()."
+    }
+  ]
+}

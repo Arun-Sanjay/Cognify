@@ -1,0 +1,1669 @@
+{
+  "topic_id": "t06-deadlock",
+  "questions": [
+    {
+      "id": "t06-001",
+      "subtopic": "necessary-conditions",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "Coffman conditions"
+      ],
+      "stem": "Which of the following is **not** one of the four necessary conditions for deadlock?",
+      "options": [
+        "Mutual exclusion",
+        "Hold and wait",
+        "Starvation",
+        "Circular wait"
+      ],
+      "answer": "C",
+      "explanation": "The four (Coffman) necessary conditions are **mutual exclusion**, **hold and wait**, **no preemption** and **circular wait**.\n\nStarvation is a different liveness problem. A process can starve while every other process keeps making progress, so it is not a condition for deadlock.",
+      "option_feedback": [
+        "Is a condition: at least one resource must be non-sharable.",
+        "Is a condition: a process holds at least one resource while waiting for more.",
+        "Correct: starvation (indefinite postponement) is a separate problem and is not one of the four conditions.",
+        "Is a condition: a closed chain P0 → P1 → … → P0 of processes, each waiting for the next."
+      ],
+      "trap": "Mixing up starvation and deadlock."
+    },
+    {
+      "id": "t06-002",
+      "subtopic": "necessary-conditions",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "hold and wait",
+        "Coffman conditions"
+      ],
+      "stem": "*\"A process that is holding at least one resource is waiting to acquire additional resources currently held by other processes.\"* Which deadlock condition does this sentence describe?",
+      "options": [
+        "Mutual exclusion",
+        "Hold and wait",
+        "No preemption",
+        "Circular wait"
+      ],
+      "answer": "B",
+      "explanation": "That is the definition of **hold and wait**.\n\n- Mutual exclusion: a resource can be used by only one process at a time.\n- No preemption: a resource is released only voluntarily by the process holding it.\n- Circular wait: a cycle of processes, each waiting for a resource held by the next.",
+      "option_feedback": [
+        "Mutual exclusion is about a resource being non-sharable. It says nothing about waiting while holding.",
+        "Correct: holding some resources while waiting for others.",
+        "No preemption means held resources cannot be taken away forcibly.",
+        "Circular wait needs a closed chain of waiting processes. The sentence describes only one process."
+      ]
+    },
+    {
+      "id": "t06-003",
+      "subtopic": "necessary-conditions",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "necessary vs sufficient",
+        "single-instance resources"
+      ],
+      "stem": "Which statement about the four Coffman conditions is correct?",
+      "also_tests": [
+        "resource-allocation-graph"
+      ],
+      "options": [
+        "They are both necessary and sufficient for deadlock in every system.",
+        "They are sufficient but not necessary for deadlock.",
+        "Deadlock can occur even if mutual exclusion does not hold, provided the other three hold.",
+        "They are necessary in general, and are also sufficient when every resource type has exactly one instance."
+      ],
+      "answer": "D",
+      "explanation": "The four conditions are **necessary**: if any one is absent, deadlock is impossible.\n\n- If **every resource type has a single instance**, then circular wait (together with the other three) **is sufficient**. Each process on the cycle waits for the only instance of a resource held by the next process, so nobody can proceed.\n- With **multiple instances**, a cycle can exist without deadlock. An instance on the cycle may be held by a process outside the cycle, which can finish and release it.\n\nSo the conditions are necessary in general, and sufficient only for single-instance resources.",
+      "option_feedback": [
+        "Not sufficient with multi-instance resources: a cycle can exist with no deadlock.",
+        "Backwards: every deadlock needs all four, so they are necessary.",
+        "If every resource were sharable, no process would ever wait, so deadlock would be impossible.",
+        "Correct: necessary always, and sufficient for single-instance resource types."
+      ]
+    },
+    {
+      "id": "t06-004",
+      "subtopic": "necessary-conditions",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "minimum resources",
+        "Σ(k−1)+1"
+      ],
+      "stem": "Three processes share a resource type R with identical instances. Each process needs **at most 2** instances of R, acquires them one at a time and releases them only when it finishes. What is the **minimum** number of instances of R that guarantees deadlock can never occur?",
+      "answer": {
+        "min": 4,
+        "max": 4
+      },
+      "explanation": "Worst case: every process holds one less than its maximum and waits for one more.\n\n- With 3 instances, each process can hold 1 = 2 − 1 and wait for its second. Nothing is free, so all three are deadlocked.\n- With 3 × (2 − 1) + 1 = **4** instances, after each process holds 1 there is still 1 free instance. Some process gets its 2nd instance, finishes, and releases 2 instances, and the others then finish too.\n\nGeneral rule: minimum = Σ(kᵢ − 1) + 1 = 3 + 1 = **4**.",
+      "trap": "Answering 3 (one per process) or 6 (sum of maxima)."
+    },
+    {
+      "id": "t06-005",
+      "subtopic": "necessary-conditions",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "minimum resources",
+        "Σ(k−1)+1"
+      ],
+      "stem": "Four processes P1, P2, P3, P4 share a single resource type with identical units. Their maximum requirements are 3, 4, 5 and 6 units. A process requests units one at a time and releases all its units only when it terminates. What is the minimum number of units that guarantees the system is **deadlock-free**?",
+      "answer": {
+        "min": 15,
+        "max": 15
+      },
+      "explanation": "Deadlock is possible only if every process can be stuck holding fewer than its maximum while no unit is free. The worst case is each process holding kᵢ − 1 units:\n\n| Process | Max kᵢ | Worst-case holding kᵢ − 1 |\n|---|---|---|\n| P1 | 3 | 2 |\n| P2 | 4 | 3 |\n| P3 | 5 | 4 |\n| P4 | 6 | 5 |\n| **Total** | 18 | **14** |\n\n- With 14 units, all of them can be tied up this way and every process waits forever, so deadlock is possible.\n- With 14 + 1 = **15** units, one unit is always free in that worst case. Some process completes and releases its units, and the rest can then complete one after another.\n\nMinimum = Σ(kᵢ − 1) + 1 = **15**.",
+      "trap": "Using the sum of maxima (18) or forgetting the +1 (14)."
+    },
+    {
+      "id": "t06-006",
+      "subtopic": "necessary-conditions",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "maximum processes",
+        "Σ(k−1)+1"
+      ],
+      "stem": "A system has 12 identical tape drives. Every process needs at most 3 tape drives, requests them one at a time and holds them until it terminates. What is the **maximum** number of processes that can run concurrently with deadlock still **guaranteed not to occur**?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "For n processes each needing at most 3, deadlock freedom needs:\n\nn × (3 − 1) + 1 ≤ 12  →  2n ≤ 11  →  n ≤ 5.5, so **n = 5**.\n\nCheck:\n- n = 5: in the worst case each holds 2, which uses 10 drives and leaves 2 free. One process gets its 3rd drive and finishes. Safe.\n- n = 6: each can hold 2, which uses all 12 drives. Every process waits for a 3rd drive, so deadlock is possible.",
+      "trap": "12 / 3 = 4 assumes processes must hold their full maximum at once. The worst case is each holding k − 1."
+    },
+    {
+      "id": "t06-007",
+      "subtopic": "necessary-conditions",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "circular wait",
+        "hold and wait",
+        "independence of conditions"
+      ],
+      "stem": "Which of the following statements about the four necessary conditions is **true**?",
+      "options": [
+        "If circular wait holds among a set of processes, then hold and wait also holds for every process in that cycle.",
+        "All four conditions must be broken simultaneously to guarantee that deadlock cannot occur.",
+        "The no-preemption condition is violated whenever the CPU scheduler is preemptive.",
+        "Mutual exclusion must hold for every resource in the system for deadlock to be possible."
+      ],
+      "answer": "A",
+      "explanation": "Look at a circular wait P0 → P1 → … → Pₙ → P0. Each Pᵢ **waits** for a resource held by Pᵢ₊₁, and each Pᵢ also **holds** the resource that Pᵢ₋₁ wants. So every process on the cycle is holding and waiting at the same time. **Circular wait implies hold and wait**, which means the four conditions are not independent.\n\nThe other options are false:\n- Removing any **one** condition is enough to rule out deadlock. That is the whole basis of deadlock prevention.\n- No preemption concerns resources being **taken away**. It has nothing to do with CPU scheduling.\n- Mutual exclusion must hold for **at least one** resource involved, not for every resource in the system.",
+      "option_feedback": [
+        "Correct: each process on the cycle holds one resource and waits for another.",
+        "Breaking any one condition is enough.",
+        "A preemptive CPU scheduler is unrelated. The condition concerns preempting allocated resources such as locks or devices.",
+        "Only the resources involved in the deadlock need to be non-sharable."
+      ]
+    },
+    {
+      "id": "t06-008",
+      "subtopic": "necessary-conditions",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 120,
+      "concepts": [
+        "minimum resources",
+        "sum of maximum needs"
+      ],
+      "stem": "Five processes share 9 identical units of a resource. Each process needs at least 1 unit, requests units one at a time and releases them only on termination. What is the **largest possible value of the sum of the five maximum needs** for which deadlock is guaranteed to be impossible?",
+      "answer": {
+        "min": 13,
+        "max": 13
+      },
+      "explanation": "With m units and n processes with maximum needs kᵢ, deadlock is impossible exactly when\n\nΣ(kᵢ − 1) + 1 ≤ m  ⇔  Σkᵢ ≤ m + n − 1.\n\nHere m = 9 and n = 5, so Σkᵢ ≤ 9 + 5 − 1 = **13**.\n\nCheck the boundary:\n- Σkᵢ = 13: the worst case Σ(kᵢ − 1) = 8 leaves 1 unit free, so someone can finish. Example needs: 3, 3, 3, 2, 2.\n- Σkᵢ = 14: Σ(kᵢ − 1) = 9 can use all 9 units with every process still short by one, so deadlock is possible.",
+      "trap": "Answering 9 (Σ ≤ m), which is far too conservative, or forgetting the −1 and answering 14."
+    },
+    {
+      "id": "t06-009",
+      "subtopic": "necessary-conditions",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "minimum resources",
+        "hold and wait",
+        "request granularity"
+      ],
+      "stem": "Processes share identical units of a single resource type. Unless stated otherwise, a process requests units **one at a time**, keeps what it holds while waiting, and releases all its units only when it terminates, which it does as soon as it holds its maximum.\n\nIn which configurations is a deadlock **possible**?",
+      "options": [
+        "4 processes, each with maximum need 3, sharing 8 units",
+        "5 processes with maximum needs 1, 1, 4, 4 and 4, sharing 10 units",
+        "3 processes, each with maximum need 4, sharing 8 units. P1 and P2 request one unit at a time, but P3 asks for all 4 of its units in a **single** request, granted only when 4 units are free",
+        "2 processes with maximum needs 5 and 5, sharing 8 units"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "When every process requests one unit at a time, a deadlock means every process is stuck one short of its maximum with **no unit free**. The most the processes can hold in that situation is Σ(kᵢ − 1), so deadlock is possible ⇔ units ≤ Σ(kᵢ − 1), i.e. units < Σ(kᵢ − 1) + 1.\n\n**A, possible.** Σ(kᵢ − 1) = 4 × 2 = 8 = units. Each process holds 2, all 8 units are used, and every process waits for its 3rd.\n\n**B, not possible.** Σ(kᵢ − 1) = 0 + 0 + 3 + 3 + 3 = 9 < 10. A process whose maximum is 1 never holds and waits: it holds nothing while waiting, and its one unit completes it. So it contributes 0, and with 10 units at least one unit is always free in the worst case.\n\n**C, not possible.** P3 never holds anything while waiting: it holds either 0 units or all 4 (and then finishes). For a deadlock P1 and P2 must also be blocked, which needs **no** free unit. But while P3 holds 0, P1 and P2 hold at most 3 + 3 = 6 < 8, so at least 2 units are free and P1 or P2 can always proceed. The plain formula 3 × (4 − 1) + 1 = 10 > 8 wrongly says deadlock is possible; it assumes P3 can sit holding 3 units. (Deadlock would need 6 units or fewer here.)\n\n**D, possible.** Σ(kᵢ − 1) = 4 + 4 = 8 = units. Both hold 4 and both wait.",
+      "option_feedback": [
+        "Correct: each process can hold 2 of the 8 units and wait for a 3rd.",
+        "Not possible: the two processes with maximum 1 never hold and wait, so the bound is 0 + 0 + 3 + 3 + 3 + 1 = 10 ≤ 10.",
+        "Not possible: P3 holds 0 or 4 units, never 3. While it waits, P1 and P2 hold at most 6 of 8 units, so a unit is always free for them.",
+        "Correct: both processes can hold 4 units each and wait for a 5th."
+      ],
+      "trap": "Applying Σ(kᵢ − 1) + 1 mechanically: it overcounts processes with maximum 1 and processes that request everything at once."
+    },
+    {
+      "id": "t06-010",
+      "subtopic": "necessary-conditions",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "multiple resource types",
+        "minimum resources",
+        "case analysis"
+      ],
+      "stem": "Three processes P1, P2, P3 each need at most **2 units of A** and **3 units of B** to finish. The system has **4 units of A** and **n units of B**.\n\nA process requests **one unit of one type at a time**, in any order it likes, keeps everything it holds while waiting, and releases everything only when it terminates (as soon as it holds 2 A and 3 B).\n\nWhat is the **minimum** value of n for which deadlock is **impossible**?",
+      "also_tests": [
+        "bankers-algorithm"
+      ],
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "The single-type bound gives 3 × (2 − 1) + 1 = 4 for A, which is met, and 3 × (3 − 1) + 1 = 7 for B. But processes can be blocked on **different** types, so the per-type bounds do not compose. Analyse the deadlocked states directly.\n\nIn a deadlock every unfinished process is blocked, which means it waits for a type that has **no free unit**.\n\n- A process waiting for **A** is short of A, so it holds a ≤ 1, and b ≤ 3.\n- A process waiting for **B** holds b ≤ 2, and a ≤ 2.\n\n**All three processes unfinished.** Let k of them wait for A and 3 − k wait for B.\n\n| k | Can A be exhausted (Σa = 4)? | Max Σb, so max n |\n|---|---|---|\n| 3 | Σa ≤ 3 × 1 = 3 < 4, no | – |\n| 2 | Σa ≤ 1 + 1 + 2 = 4, yes | 3 + 3 + 2 = **8** |\n| 1 | Σa ≤ 1 + 2 + 2 = 5, yes | 3 + 2 + 2 = 7 |\n| 0 | nobody waits for A | 2 + 2 + 2 = 6 |\n\nIf someone waits for B, B must be exhausted, so n = Σb. The largest n with a deadlock is **8**: P1 and P2 hold (1 A, 3 B) and wait for A, while P3 holds (2 A, 2 B) and waits for B. A: 1 + 1 + 2 = 4 used, B: 3 + 3 + 2 = 8 used, and nobody can proceed. Every holding pattern is reachable by granting one unit at a time.\n\n**One process already finished.** The other two must use all 4 A for anyone to wait on A, which means both hold 2 A, so neither waits for A. Both then wait for B with b ≤ 2, giving n ≤ 4. Nothing new.\n\nSo deadlock is possible for every n ≤ 8 and impossible for n = **9**.",
+      "trap": "Answering 7 by applying the single-type formula to B on its own, or 8 by missing the state where two processes hold all their B and wait for A."
+    },
+    {
+      "id": "t06-011",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "request edge",
+        "assignment edge"
+      ],
+      "stem": "In a resource-allocation graph, a directed edge **Pᵢ → Rⱼ** means:",
+      "options": [
+        "Pᵢ has requested an instance of Rⱼ and is waiting for it",
+        "An instance of Rⱼ has been allocated to Pᵢ",
+        "Pᵢ has released an instance of Rⱼ",
+        "Pᵢ may request Rⱼ at some time in the future"
+      ],
+      "answer": "A",
+      "explanation": "- **Request edge** Pᵢ → Rⱼ: process Pᵢ has requested an instance of Rⱼ and is waiting for it.\n- **Assignment edge** Rⱼ → Pᵢ: an instance of Rⱼ has been allocated to Pᵢ.\n\nWhen the request is granted, the request edge is replaced by an assignment edge.",
+      "option_feedback": [
+        "Correct: a process-to-resource edge is a request edge.",
+        "That is an assignment edge, which runs from the resource to the process.",
+        "A release deletes the assignment edge. No edge represents a release.",
+        "That is a claim edge, drawn dashed, which is used only in the RAG avoidance algorithm."
+      ]
+    },
+    {
+      "id": "t06-012",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "single-instance resources",
+        "cycle"
+      ],
+      "stem": "If **every resource type has exactly one instance**, a cycle in the resource-allocation graph is:",
+      "options": [
+        "Necessary but not sufficient for deadlock",
+        "Both necessary and sufficient for deadlock",
+        "Sufficient but not necessary for deadlock",
+        "Neither necessary nor sufficient for deadlock"
+      ],
+      "answer": "B",
+      "explanation": "With single-instance resources, each process on a cycle waits for the **only** instance of a resource, and that instance is held by the next process on the cycle. No process can proceed, so a cycle means deadlock. Conversely, every deadlock shows up as a cycle.\n\nSo a cycle is **necessary and sufficient** for deadlock in this case.",
+      "option_feedback": [
+        "That is the multi-instance case.",
+        "Correct: single instance means cycle ⇔ deadlock.",
+        "Every deadlock produces a cycle, so a cycle is also necessary.",
+        "A cycle is always necessary for deadlock."
+      ]
+    },
+    {
+      "id": "t06-013",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "multi-instance resources",
+        "cycle"
+      ],
+      "stem": "A resource-allocation graph contains a cycle, and some resource types on the cycle have **more than one instance**. What can be concluded?",
+      "options": [
+        "The system is definitely deadlocked",
+        "The system is definitely not deadlocked",
+        "The system may or may not be deadlocked",
+        "Every process on the cycle will starve"
+      ],
+      "answer": "C",
+      "explanation": "With multiple instances, a cycle is **necessary but not sufficient**. A process outside the cycle may hold an instance of a resource on the cycle. When it finishes and releases that instance, the cycle breaks.\n\nTo decide, reduce the graph (or run the detection algorithm): repeatedly remove any process whose requests can be satisfied and return its resources. Deadlock exists only if some processes cannot be removed.",
+      "option_feedback": [
+        "That holds only when every resource on the cycle has a single instance.",
+        "A cycle can still be a real deadlock, for example when all instances are held by processes on the cycle.",
+        "Correct: you must reduce the graph or run the detection algorithm to know.",
+        "Starvation is unrelated, and the processes may in fact finish."
+      ]
+    },
+    {
+      "id": "t06-014",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "wait-for graph"
+      ],
+      "stem": "How is the **wait-for graph** obtained from a resource-allocation graph whose resources all have a single instance?",
+      "options": [
+        "Delete all request edges and keep the assignment edges",
+        "Reverse every edge of the RAG",
+        "Add an edge Rᵢ → Rⱼ whenever some process holds Rᵢ and requests Rⱼ",
+        "Remove the resource nodes and add an edge Pᵢ → Pⱼ whenever Pᵢ requests a resource held by Pⱼ"
+      ],
+      "answer": "D",
+      "explanation": "Remove the resource nodes and collapse the edges. An edge **Pᵢ → Pⱼ** exists in the wait-for graph iff the RAG has Pᵢ → Rq and Rq → Pⱼ for some resource Rq, meaning Pᵢ waits for a resource that Pⱼ holds.\n\nDeadlock exists iff the wait-for graph has a cycle. This holds only for single-instance resources.",
+      "option_feedback": [
+        "Waiting is shown by the request edges, so dropping them loses the information you need.",
+        "Reversing edges keeps resource nodes and does not give a process-to-process graph.",
+        "The wait-for graph has only process nodes.",
+        "Correct: Pᵢ → Rq → Pⱼ collapses to Pᵢ → Pⱼ."
+      ]
+    },
+    {
+      "id": "t06-015",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "single-instance RAG",
+        "deadlocked set"
+      ],
+      "stem": "Every resource below has a single instance. The resource-allocation graph has these edges:\n\n- Assignment edges: R1 → P2, R2 → P4, R3 → P3, R4 → P1\n- Request edges: P1 → R1, P2 → R3, P3 → R1\n\nWhich processes are **deadlocked** (that is, can never proceed, as determined by the deadlock detection algorithm)?",
+      "options": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "Collapse to the wait-for graph (Pᵢ → holder of the resource Pᵢ requests):\n\n| Request | Holder | WFG edge |\n|---|---|---|\n| P1 → R1 | P2 | P1 → P2 |\n| P2 → R3 | P3 | P2 → P3 |\n| P3 → R1 | P2 | P3 → P2 |\n\n- There is a cycle **P2 → P3 → P2**, so P2 and P3 are deadlocked.\n- P1 holds R4 and waits for R1, which only P2 can release. P2 never will, so P1 is stuck forever too. The detection algorithm also leaves P1 unfinished, since its request can never be met.\n- P4 holds R2 and requests nothing. It can run to completion, so it is not deadlocked.\n\nDeadlocked set: **{P1, P2, P3}**.",
+      "option_feedback": [
+        "Deadlocked: P1 is not on the cycle, but it waits for R1, which is held by a deadlocked process and will never be released.",
+        "Deadlocked: P2 is on the cycle P2 → P3 → P2.",
+        "Deadlocked: P3 is on the cycle.",
+        "Not deadlocked: P4 has no outstanding request and will finish."
+      ],
+      "trap": "Marking only the processes on the cycle (P2, P3) and missing P1, which waits on the cycle."
+    },
+    {
+      "id": "t06-016",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "multi-instance RAG",
+        "cycle without deadlock"
+      ],
+      "stem": "Resource R1 has **2 instances** and R2 has **1 instance**. The RAG has:\n\n- Assignment edges: R1 → P1, R1 → P3, R2 → P2\n- Request edges: P1 → R2, P2 → R1\n\nP3 has no outstanding request. Which statement is correct?",
+      "options": [
+        "There is no cycle and no deadlock",
+        "There is a cycle but no deadlock",
+        "There is a cycle, and P1 and P2 are deadlocked",
+        "There is a cycle, and all three processes are deadlocked"
+      ],
+      "answer": "B",
+      "explanation": "**Cycle:** P1 → R2 → P2 → R1 → P1. So there is a cycle.\n\n**Reduce the graph:**\n1. P3 has no request, so it finishes and releases its R1 instance. Free: R1 = 1.\n2. P2's request for R1 can now be granted. P2 finishes and releases R1 and R2.\n3. P1 gets R2 and finishes.\n\nEvery process completes, so there is a **cycle but no deadlock**. This is possible only because R1 has 2 instances and one of them is held by P3, which is outside the cycle.",
+      "option_feedback": [
+        "P1 → R2 → P2 → R1 → P1 is a cycle.",
+        "Correct: P3 releases an R1 instance, which unblocks P2 and then P1.",
+        "This applies the single-instance rule (cycle ⇒ deadlock) to a multi-instance resource.",
+        "P3 has no pending request, so it can never be deadlocked."
+      ],
+      "trap": "Assuming cycle ⇒ deadlock when a resource on the cycle has multiple instances."
+    },
+    {
+      "id": "t06-017",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "wait-for graph",
+        "edge count"
+      ],
+      "stem": "All resources have a single instance. The RAG has:\n\n- Assignment edges: R1 → P1, R2 → P2, R3 → P3, R4 → P4, R5 → P2\n- Request edges: P1 → R2, P1 → R3, P2 → R4, P3 → R5, P4 → R1, P5 → R2, P5 → R5\n\nHow many edges does the corresponding **wait-for graph** have? (A wait-for graph is a simple directed graph, with at most one edge from Pᵢ to Pⱼ.)",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "Map each request edge to the holder of the requested resource:\n\n| Request | Holder | WFG edge |\n|---|---|---|\n| P1 → R2 | P2 | P1 → P2 |\n| P1 → R3 | P3 | P1 → P3 |\n| P2 → R4 | P4 | P2 → P4 |\n| P3 → R5 | P2 | P3 → P2 |\n| P4 → R1 | P1 | P4 → P1 |\n| P5 → R2 | P2 | P5 → P2 |\n| P5 → R5 | P2 | P5 → P2 (duplicate) |\n\nThe 7 request edges give **6 distinct** wait-for edges.\n\n(The graph also has the cycle P1 → P2 → P4 → P1. P3 and P5 wait on P2, which is on that cycle, so they can never proceed either. All five processes are deadlocked.)",
+      "trap": "Counting 7 by forgetting that P5's two requests both point to P2, which gives a single edge."
+    },
+    {
+      "id": "t06-018",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "multi-instance RAG",
+        "graph reduction"
+      ],
+      "stem": "A system has resources R1 (2 instances), R2 (1 instance), R3 (3 instances) and R4 (1 instance). The RAG is:\n\n- Assignment edges: R1 → P1, R1 → P3, R2 → P3, R3 → P2, R3 → P5, R3 → P6, R4 → P4\n- Request edges: P1 → R2, P3 → R1, P2 → R1, P4 → R3, P5 → R4\n\nP6 has no outstanding request. How many processes are **deadlocked**?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Every instance is allocated (R1: P1, P3. R2: P3. R3: P2, P5, P6. R4: P4), so Available = (0, 0, 0, 0).\n\n**Graph reduction:**\n1. P6 has no request. It finishes and releases one R3 instance.\n2. P4's request for R3 is granted. P4 finishes and releases R3 and R4.\n3. P5's request for R4 is granted. P5 finishes and releases R3 and R4.\n4. Remaining: P1 wants R2 (held by P3), P3 wants R1 (both instances held by P1 and P3), and P2 wants R1. No free instance of R1 or R2 will ever appear.\n\n**Deadlocked: P1, P2, P3**, which is **3** processes.\n\nNotes:\n- P1 → R2 → P3 → R1 → P1 is a cycle. Both R1 instances are held by processes on it, so it is a real deadlock.\n- P4 → R3 → P5 → R4 → P4 is also a cycle, but it is **not** a deadlock, because the third R3 instance is held by P6.\n- P2 is not on any cycle, but it is still deadlocked: it waits for R1, which only the deadlocked P1 or P3 could release.",
+      "trap": "Counting every process on a cycle (P1, P3, P4, P5) or only the cycle members (P1, P3)."
+    },
+    {
+      "id": "t06-019",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "claim edge",
+        "RAG avoidance algorithm"
+      ],
+      "stem": "A system uses the **resource-allocation-graph algorithm** for deadlock avoidance. Resources R1 and R2 have one instance each. Claim edges (future requests):\n\n- P1 ⇢ R1, P1 ⇢ R2\n- P2 ⇢ R1, P2 ⇢ R2\n- P3 ⇢ R2\n\nCurrently R1 is assigned to P1 (R1 → P1) and R2 is free. Now **P2 requests R2**. What does the system do?",
+      "also_tests": [
+        "bankers-algorithm"
+      ],
+      "options": [
+        "Grants the request, because R2 is free",
+        "Grants the request, because P2 does not yet hold any resource",
+        "Denies the request and aborts P2",
+        "Makes P2 wait, because the assignment would create a cycle with claim edges, which is an unsafe state"
+      ],
+      "answer": "D",
+      "explanation": "In the RAG avoidance algorithm, a request Pᵢ → Rⱼ is granted only if converting it to the assignment edge Rⱼ → Pᵢ creates **no cycle** in the graph, counting claim edges.\n\nTentatively assign R2 → P2. Then:\n\nP1 ⇢ R2 → P2 ⇢ R1 → P1\n\nThat is a cycle through claim edges. It means an unsafe state: if P1 later requests R2 and P2 requests R1, they deadlock. So P2 must **wait**, even though R2 is free.\n\nP3's claim on R2 plays no part in this cycle.",
+      "option_feedback": [
+        "Being free is not enough under avoidance. The resulting state must also be safe.",
+        "The cycle is formed through P1's claim on R2 and P2's claim on R1, whatever P2 holds now.",
+        "Avoidance delays unsafe requests. It does not abort processes.",
+        "Correct: the cycle P1 ⇢ R2 → P2 ⇢ R1 → P1 would be created."
+      ]
+    },
+    {
+      "id": "t06-020",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "graph reduction",
+        "multiple instances",
+        "recovery"
+      ],
+      "stem": "A system has resources R1 (2 instances), R2 (1 instance), R3 (2 instances) and R4 (1 instance). The resource-allocation graph is:\n\n- Assignment edges: R1 → P1, R1 → P2, R2 → P3, R3 → P2, R3 → P4, R4 → P1\n- Request edges: P1 → R2, P2 → R4, P3 → R1, P4 → R2\n\nEvery instance is allocated. Which of the following, **each applied on its own** to this state, leaves **no process deadlocked**?",
+      "options": [
+        "Aborting P4 and releasing its resources",
+        "Adding one more instance of R1",
+        "Adding one more instance of R3",
+        "Aborting P2 and releasing its resources"
+      ],
+      "answer": [
+        "B",
+        "D"
+      ],
+      "explanation": "**Current state.** Available = (0, 0, 0, 0), and every process has an outstanding request, so no process can be reduced. All four are deadlocked.\n\n- Cycles: P1 → R2 → P3 → R1 → P1, and P2 → R4 → P1 → R2 → P3 → R1 → P2.\n- P4 is on no cycle, but it waits for R2, which only the deadlocked P3 can release.\n\nWho waits for what: P1 and P4 wait for R2, P2 waits for R4, P3 waits for R1. **Nobody waits for R3.**\n\n**A: abort P4.** One R3 instance is freed, but nobody wants R3. P1, P2, P3 stay deadlocked.\n\n**B: one more R1.** P3 gets R1 and finishes, releasing R2 and two R1. P1 gets R2 and finishes, releasing R1, R4 and R2. P2 gets R4 and finishes, and P4 gets R2 and finishes. **Resolved.**\n\n**C: one more R3.** Again nobody waits for R3, so nothing changes. All four stay deadlocked.\n\n**D: abort P2.** One R1 and one R3 are freed. P3 gets R1 and finishes, releasing R2 and R1. P1 gets R2 and finishes. P4 gets R2 and finishes. **Resolved.**",
+      "option_feedback": [
+        "Wrong: P4 is deadlocked but off the cycles. Its R3 instance is wanted by nobody, so P1, P2 and P3 stay stuck.",
+        "Correct: the extra R1 lets P3 finish, and its R2 then unblocks P1, which in turn frees R4 for P2.",
+        "Wrong: no process is waiting for R3, so an extra instance helps nobody.",
+        "Correct: P2's R1 instance lets P3 finish, and the rest follow."
+      ],
+      "also_tests": [
+        "detection-and-recovery"
+      ],
+      "trap": "Assuming that removing any deadlocked process, or adding any resource on the graph, breaks the deadlock. Only changes that satisfy a request on the cycles help."
+    },
+    {
+      "id": "t06-021",
+      "subtopic": "resource-allocation-graph",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "multiple instances",
+        "graph reduction",
+        "cycle vs deadlock"
+      ],
+      "stem": "A system has R1 (2 instances), R2 (1 instance) and R3 (2 instances). The resource-allocation graph is:\n\n- Assignment edges: R1 → P1, R1 → P2, R3 → P1, R3 → P3, R2 → P4\n- Request edges: P1 → R2, P4 → R3\n\nEvery instance is allocated. P2 and P3 are running and have no outstanding request. The graph already contains the cycle P1 → R2 → P4 → R3 → P1, but the system is **not** deadlocked.\n\nNow exactly one of the running processes issues one more request for **one instance** of one resource type, and blocks. The six possibilities are:\n\nP2 → R1, P2 → R2, P2 → R3, P3 → R1, P3 → R2, P3 → R3.\n\nFor how many of these six requests would the system then be **deadlocked**?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "**Why there is no deadlock now.** P4 waits for R3, whose two instances are held by P1 (on the cycle) and P3 (running). When P3 finishes it releases an R3, P4 finishes and releases R2, P1 gets R2 and finishes. So the cycle is harmless **only because P3 can finish**. A new request is dangerous if it stops P3 from finishing with no way out, or blocks P2 on something only the cycle can release.\n\nCheck each request by reducing the graph (Available = (0, 0, 0)):\n\n| Request | Instances held by | Reduction | Deadlock? |\n|---|---|---|---|\n| P2 → R1 | P1, P2 | P3 finishes → P4 → P1 finishes and frees R1 → P2 | No |\n| P2 → R2 | P4 | P3 → P4 finishes and frees R2 → P1 and P2 take turns | No |\n| P2 → R3 | P1, P3 | P3 finishes and frees R3 → P4 or P2, then the other | No |\n| P3 → R1 | P1, P2 | P2 finishes and frees R1 → P3 finishes → P4 → P1 | No |\n| P3 → R2 | P4 | P2 finishes but frees only R1, which nobody needs. P3, P4, P1 all wait | **Yes** |\n| P3 → R3 | P1, P3 | The other R3 is held by P1, which waits for P4, which waits for R3 | **Yes** |\n\nIn the two deadlocked cases P1, P3 and P4 are deadlocked, while P2 still finishes.\n\nNote that P3 → R1 also creates a cycle (P3 → R1 → P1 → R2 → P4 → R3 → P3), but the second R1 instance is held by the running P2, so it is not a deadlock.\n\nAnswer: **2**.",
+      "trap": "Counting every request that closes a new cycle (P3 → R1 does too), or concluding that multi-instance cycles can never deadlock."
+    },
+    {
+      "id": "t06-022",
+      "subtopic": "prevention",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "hold and wait",
+        "prevention"
+      ],
+      "stem": "A protocol requires every process to request and be allocated **all** its resources before it begins execution. Which deadlock condition does this protocol deny?",
+      "options": [
+        "Mutual exclusion",
+        "Hold and wait",
+        "No preemption",
+        "Circular wait"
+      ],
+      "answer": "B",
+      "explanation": "If a process gets everything up front, it never holds some resources while waiting for others. That denies **hold and wait**.\n\nThe cost is low resource utilisation, because resources sit allocated but unused, and possible starvation of processes that need many popular resources.",
+      "option_feedback": [
+        "The resources are still used exclusively.",
+        "Correct: a process never waits while it holds resources.",
+        "Nothing is taken away forcibly.",
+        "Circular wait is ruled out as a side effect, but the condition the protocol targets directly is hold and wait."
+      ]
+    },
+    {
+      "id": "t06-023",
+      "subtopic": "prevention",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "ostrich algorithm"
+      ],
+      "stem": "Most general-purpose operating systems (for example UNIX and Windows) handle deadlock among user processes by:",
+      "options": [
+        "Running the Banker's algorithm on every request",
+        "Requiring a total ordering on all kernel and user resources",
+        "Ignoring the problem and assuming deadlocks never occur",
+        "Running deadlock detection after every resource request"
+      ],
+      "answer": "C",
+      "explanation": "They use the **ostrich approach**: pretend deadlocks never occur and do nothing.\n\nDeadlocks are rare, and prevention, avoidance or detection all cost performance and add restrictions. If a deadlock does happen, the user or administrator deals with it, for example by killing a process or rebooting. Application developers are expected to avoid deadlocks in their own code.",
+      "option_feedback": [
+        "Banker's needs maximum claims declared in advance, which general-purpose systems don't have, and it is expensive.",
+        "Imposing a global order on user resources is impractical.",
+        "Correct: the ostrich approach.",
+        "Running detection on every request costs too much for a rare event."
+      ]
+    },
+    {
+      "id": "t06-024",
+      "subtopic": "prevention",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "resource ordering",
+        "circular wait"
+      ],
+      "stem": "Every resource type is assigned a unique integer, and a process may request resources only in **strictly increasing** order of these numbers. Which condition does this deny?",
+      "options": [
+        "Mutual exclusion",
+        "Hold and wait",
+        "No preemption",
+        "Circular wait"
+      ],
+      "answer": "D",
+      "explanation": "Suppose a cycle P0 → P1 → … → Pₙ → P0 existed, where each Pᵢ holds Rᵢ and waits for Rᵢ₊₁. The ordering rule requires F(R0) < F(R1) < … < F(Rₙ) < F(R0), which is impossible.\n\nSo **circular wait** can never form. This is the most practical prevention technique (lock ordering).",
+      "option_feedback": [
+        "Resources are still non-sharable.",
+        "A process may still hold R3 while waiting for R7.",
+        "Nothing is preempted.",
+        "Correct: a cycle would need F(R0) < … < F(R0)."
+      ]
+    },
+    {
+      "id": "t06-025",
+      "subtopic": "prevention",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "mutual exclusion",
+        "spooling"
+      ],
+      "stem": "Why is denying **mutual exclusion** generally **not** a practical way to prevent deadlock?",
+      "options": [
+        "Some resources, such as mutex locks and printers, are intrinsically non-sharable",
+        "Mutual exclusion is not actually one of the necessary conditions",
+        "Denying mutual exclusion would cause circular wait",
+        "Read-only files can deadlock if mutual exclusion is removed"
+      ],
+      "answer": "A",
+      "explanation": "Some resources are intrinsically non-sharable: a mutex lock, a printer mid-job, a tape drive. They cannot be made sharable without breaking correctness.\n\nSharable resources such as read-only files never cause deadlock anyway. Spooling makes some devices look sharable, but it does not work for every resource, and the spool space can itself become contended.",
+      "option_feedback": [
+        "Correct: you cannot make an intrinsically non-sharable resource sharable.",
+        "It is a necessary condition.",
+        "Removing mutual exclusion would not create circular wait.",
+        "Read-only files are sharable and never need mutual exclusion."
+      ]
+    },
+    {
+      "id": "t06-026",
+      "subtopic": "prevention",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "hold and wait",
+        "resource utilisation"
+      ],
+      "stem": "A job runs for 30 minutes. It needs a tape drive only during minutes 0–10 and a printer only during minutes 25–30. To prevent deadlock, the system requires each job to acquire **all** its resources when it starts and hold them until it finishes.\n\nUnder this protocol, how many **device-minutes** in total (tape drive + printer) are the two devices allocated to this job but idle?",
+      "answer": {
+        "min": 45,
+        "max": 45
+      },
+      "explanation": "Both devices are held for the whole 30 minutes.\n\n| Device | Held | Actually used | Idle while held |\n|---|---|---|---|\n| Tape drive | 30 min | 10 min | 20 min |\n| Printer | 30 min | 5 min | 25 min |\n| **Total** | | | **45** |\n\nThis is the main drawback of denying hold and wait by acquiring everything up front: poor resource utilisation. Other jobs may also starve waiting for popular resources."
+    },
+    {
+      "id": "t06-027",
+      "subtopic": "prevention",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "prevention schemes",
+        "Coffman conditions"
+      ],
+      "stem": "Which of the following pairs **correctly** match a prevention technique with the deadlock condition it denies?",
+      "options": [
+        "Spooling print jobs to disk denies mutual exclusion",
+        "Requesting all resources at once before execution denies hold and wait",
+        "Imposing a total order on resource types denies no preemption",
+        "Taking resources away from a process that must wait, and giving them to the requester, denies circular wait"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "| Technique | Condition denied |\n|---|---|\n| Spooling (only the spooler daemon touches the printer) | Mutual exclusion, since the device becomes effectively sharable |\n| Acquire all resources before starting | Hold and wait |\n| Total ordering of resource types | **Circular wait** (not no-preemption) |\n| Taking resources away from a waiting process | **No preemption** (not circular wait) |",
+      "option_feedback": [
+        "Correct: the printer is effectively shared through the spooler.",
+        "Correct.",
+        "Wrong: ordering denies circular wait.",
+        "Wrong: preempting resources denies no preemption."
+      ]
+    },
+    {
+      "id": "t06-028",
+      "subtopic": "prevention",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "resource ordering",
+        "lock ordering protocol"
+      ],
+      "stem": "A system numbers its resources: F(tape) = 1, F(disk) = 5, F(printer) = 12. A process may request resource Rⱼ only if **F(Rⱼ) > F(Rᵢ) for every resource Rᵢ it currently holds**. A process may release resources at any time.\n\nWhich request sequence by a single process is **permitted**?",
+      "options": [
+        "Request disk; request tape",
+        "Request printer; release printer; request tape; request disk",
+        "Request tape; request printer; request disk",
+        "Request disk; request printer; release disk; request tape"
+      ],
+      "answer": "B",
+      "explanation": "Check what is held at each request:\n\n- **A:** request disk (holds nothing, OK), then request tape while holding disk. 1 < 5, so this is rejected.\n- **B:** request printer (OK), release printer (now holds nothing), request tape (OK), request disk while holding tape. 5 > 1, so OK. **Permitted.**\n- **C:** tape (OK), then printer (12 > 1, OK), then disk while holding printer. 5 < 12, so rejected.\n- **D:** disk (OK), then printer (12 > 5, OK), then release disk while still holding printer, then request tape. 1 < 12, so rejected.\n\nThe rule is checked against **everything currently held**. Releasing a high-numbered resource is what makes a low-numbered request allowed again.",
+      "option_feedback": [
+        "Tape (1) is lower than the held disk (5).",
+        "Correct: after releasing the printer the process holds nothing, so it can start again from a low number.",
+        "Disk (5) is lower than the held printer (12).",
+        "The printer (12) is still held when tape (1) is requested."
+      ],
+      "trap": "Option D: releasing the disk does not help, because the higher-numbered printer is still held."
+    },
+    {
+      "id": "t06-029",
+      "subtopic": "prevention",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "lock ordering",
+        "code"
+      ],
+      "stem": "Two threads share mutexes A and B:\n\n```c\n/* Thread 1 */            /* Thread 2 */\nlock(&A);                 lock(&B);\nlock(&B);                 lock(&A);\n/* critical section */    /* critical section */\nunlock(&B);               unlock(&A);\nunlock(&A);               unlock(&B);\n```\n\nWhich change **guarantees** that these threads can never deadlock, while both still access the critical section with both locks held?",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "options": [
+        "Swap the order of the two unlock() calls in Thread 2",
+        "Insert sleep(1) between the two lock() calls in Thread 1",
+        "Rewrite Thread 2 to call lock(&A) before lock(&B)",
+        "Make A and B recursive (re-entrant) mutexes"
+      ],
+      "answer": "C",
+      "explanation": "The deadlock schedule: T1 locks A and T2 locks B. Then T1 waits for B and T2 waits for A, a circular wait.\n\nIf **both** threads acquire A before B (lock ordering), a thread holding B must already hold A. The cycle cannot form.\n\nThe other options:\n- Swapping only the unlock order changes nothing, because deadlock happens during acquisition.\n- Adding a sleep only changes timing. The bad interleaving is still possible.\n- Making the mutexes recursive lets the **same** thread re-lock a mutex. It does nothing for two different threads.",
+      "option_feedback": [
+        "Release order does not affect deadlock.",
+        "Timing changes reduce or move the window but do not remove it.",
+        "Correct: a single global order, A then B, denies circular wait.",
+        "Recursion only matters when one thread re-acquires a lock it already holds."
+      ]
+    },
+    {
+      "id": "t06-030",
+      "subtopic": "prevention",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "trylock",
+        "hold and wait",
+        "livelock"
+      ],
+      "stem": "Two threads use mutexes A and B as follows. `trylock(&m)` acquires m and returns true if m is free. Otherwise it returns false immediately, without blocking.\n\n```c\n/* Thread 1 */                    /* Thread 2 */\nlock(&A);                         lock(&B);\nwhile (!trylock(&B)) {            while (!trylock(&A)) {\n    unlock(&A);                       unlock(&B);\n    lock(&A);                         lock(&B);\n}                                 }\n/* use A and B */                 /* use A and B */\nunlock(&B); unlock(&A);           unlock(&A); unlock(&B);\n```\n\nWhich statements are **true**?",
+      "options": [
+        "Deadlock cannot occur between these two threads.",
+        "The threads may livelock, repeatedly releasing and re-acquiring their first lock without either making progress.",
+        "The scheme works by imposing a total order on A and B, denying circular wait.",
+        "Mutual exclusion on A and B is violated by this scheme."
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "The only **blocking** calls are `lock(&A)` in Thread 1 and `lock(&B)` in Thread 2, and each happens while the thread holds **nothing**: at the start, or right after the unlock in the loop. The attempt on the second lock never blocks. So a thread never waits while holding a lock. **Hold and wait is denied, and deadlock is impossible (A true).**\n\nThe price is **livelock (B true)**. T1 holds A and T2 holds B, both trylocks fail, both release and re-acquire, and the pattern can repeat indefinitely in lock-step without progress.\n\n- **C false:** the threads take A and B in opposite orders, so there is no global ordering. The scheme works by giving up held locks instead of waiting.\n- **D false:** each mutex is still held by at most one thread at a time.",
+      "option_feedback": [
+        "True: a thread never blocks while holding a lock.",
+        "True: a symmetric back-off can repeat forever.",
+        "False: the two threads acquire the locks in opposite orders.",
+        "False: the locks are still exclusive."
+      ],
+      "trap": "Seeing the opposite lock orders and concluding deadlock is possible."
+    },
+    {
+      "id": "t06-031",
+      "subtopic": "prevention",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 180,
+      "concepts": [
+        "dining philosophers",
+        "circular wait",
+        "hold and wait"
+      ],
+      "stem": "Five philosophers P0–P4 sit at a round table. Chopstick i lies to the **left** of Pᵢ and chopstick (i + 1) mod 5 to its **right**. Each philosopher needs both adjacent chopsticks to eat, and picks them up one at a time unless stated otherwise.\n\nWhich modifications **guarantee** that deadlock cannot occur?",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "options": [
+        "Odd-numbered philosophers pick up their left chopstick first; even-numbered philosophers pick up their right chopstick first.",
+        "At most four philosophers are allowed to sit at the table at the same time.",
+        "A philosopher picks up both chopsticks in one atomic action, and only when both are free.",
+        "Every philosopher picks up the right chopstick first and then the left."
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "Deadlock needs every philosopher to hold exactly one chopstick and wait for the other, with all 5 chopsticks held.\n\n- **A, prevents.** Take P1 (odd) and P2 (even). P1's first pick is chopstick 1 (left) and P2's is chopstick 3 (right). Chopstick 2, which they share, is the *second* choice of both. In a deadlock everyone holds only their first chopstick, so chopstick 2 would be free and one of them could take it and eat. Contradiction, so circular wait is denied.\n- **B, prevents.** With 4 philosophers and 5 chopsticks, some philosopher always gets both (pigeonhole, the 5 = 4 × (2 − 1) + 1 bound).\n- **C, prevents.** Picking up both chopsticks atomically means nobody holds one while waiting for the other. Hold and wait is denied.\n- **D, does not prevent.** Everyone taking the right chopstick first is just as symmetric as everyone taking the left first. All five can hold their right chopstick and wait for the left.",
+      "option_feedback": [
+        "Prevents: the asymmetry breaks circular wait.",
+        "Prevents: 4 × 1 + 1 = 5 chopsticks guarantees one philosopher can eat.",
+        "Prevents: denies hold and wait.",
+        "Does not prevent: still symmetric, and the circular wait remains possible."
+      ]
+    },
+    {
+      "id": "t06-032",
+      "subtopic": "prevention",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "lock ordering",
+        "circular wait",
+        "lock-order graph"
+      ],
+      "stem": "Each account has a unique integer `id` and a non-recursive mutex `m`. Any of these functions may run concurrently in different threads, on any accounts:\n\n```c\nmutex L;                        /* protects the global log */\n\nvoid transfer(Account *x, Account *y, int amt) {   /* x != y */\n    Account *first  = (x->id < y->id) ? x : y;\n    Account *second = (x->id < y->id) ? y : x;\n    lock(&first->m);  lock(&second->m);\n    x->bal -= amt;    y->bal += amt;\n    lock(&L);  log_append(x, y, amt);  unlock(&L);\n    unlock(&second->m);  unlock(&first->m);\n}\n\nvoid audit(Account *a, Account *b) {   /* caller ensures a->id < b->id */\n    lock(&L);\n    lock(&a->m);  log_balance(a);  unlock(&a->m);\n    lock(&b->m);  log_balance(b);  unlock(&b->m);\n    unlock(&L);\n}\n\nvoid sweep(Account *a) {\n    lock(&a->m);\n    if (a->bal < 0) { lock(&L); log_overdraft(a); unlock(&L); }\n    unlock(&a->m);\n}\n```\n\nWhich statements are **true**?",
+      "options": [
+        "Concurrent transfer() calls, any number of them on any accounts, can never deadlock among themselves.",
+        "A transfer() and an audit() running concurrently can deadlock.",
+        "A sweep() and a transfer() running concurrently can deadlock, because each may hold an account mutex while waiting for L.",
+        "Because audit() takes account mutexes in increasing id order and never holds two of them at once, a sweep() and an audit() running concurrently can never deadlock."
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Draw the **lock-order graph**: an edge X → Y whenever some function locks Y while holding X. Deadlock needs a cycle, formed by different threads.\n\n| Function | Edges |\n|---|---|\n| transfer | lower-id account → higher-id account, both accounts → L |\n| audit | L → a, L → b |\n| sweep | account → L |\n\n**A, true.** Among transfers, account edges always go from lower to higher id, and the only other edges go into L. A thread holding L (inside transfer) never waits for anything, so it always releases L. No cycle is possible.\n\n**B, true.** transfer(a1, a2) locks a1 and a2 and waits for L. audit(a1, a2) holds L and waits for a1. Edges a1 → L and L → a1 form a cycle, and this interleaving deadlocks.\n\n**C, false.** Both threads may wait for L while holding an account, but whoever holds L (in transfer or in sweep) only logs and releases it, never waiting while holding L. Waiting for the same free-able lock is not circular wait. Without audit, the edges only point into L, so there is no cycle.\n\n**D, false.** sweep(a) holds a->m and waits for L, while audit(a, b) holds L and waits for a->m. Ordering the accounts among themselves is irrelevant: the cycle goes through L.\n\nFix: make audit() lock its accounts (in id order) **before** L. Then every function respects one global order: accounts by id, then L.",
+      "option_feedback": [
+        "Correct: accounts are always locked in increasing id order, and L is a leaf that is never held while waiting.",
+        "Correct: transfer holds the accounts and waits for L, while audit holds L and waits for an account.",
+        "Wrong: neither function waits for anything while holding L, so L is always released. Two threads queuing for L is not a cycle.",
+        "Wrong: audit holds L while locking an account, and sweep holds the account while locking L. That is a two-lock cycle."
+      ],
+      "trap": "Checking only that each function locks accounts in a consistent order, and missing the cycle through the shared log mutex L."
+    },
+    {
+      "id": "t06-033",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "deadlock avoidance"
+      ],
+      "stem": "The Banker's algorithm is an example of deadlock:",
+      "options": [
+        "Prevention",
+        "Avoidance",
+        "Detection",
+        "Recovery"
+      ],
+      "answer": "B",
+      "explanation": "The Banker's algorithm is **avoidance**. It allows all four conditions to hold, but grants a request only if the resulting state is **safe**, meaning some order exists in which every process can obtain its maximum and finish.\n\nPrevention instead structurally denies one of the four conditions. Detection lets deadlocks happen and then finds them.",
+      "option_feedback": [
+        "Prevention denies one of the four conditions. Banker's does not.",
+        "Correct: it keeps the system in safe states.",
+        "Detection runs after a deadlock may have formed. The detection algorithm is a related but different algorithm.",
+        "Recovery means aborting or preempting processes after detection."
+      ]
+    },
+    {
+      "id": "t06-034",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "need matrix"
+      ],
+      "stem": "In the Banker's algorithm, the **Need** matrix is computed as:",
+      "options": [
+        "Need = Max − Allocation",
+        "Need = Allocation − Max",
+        "Need = Max − Available",
+        "Need = Available − Allocation"
+      ],
+      "answer": "A",
+      "explanation": "**Need[i][j] = Max[i][j] − Allocation[i][j]**: how many more instances of Rⱼ process Pᵢ may still request.\n\nAvailable is a separate vector of free instances.",
+      "option_feedback": [
+        "Correct.",
+        "This has the sign reversed and would be negative.",
+        "Available is system-wide. Need is per process.",
+        "This has no meaning in Banker's."
+      ]
+    },
+    {
+      "id": "t06-035",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "safe state",
+        "unsafe state"
+      ],
+      "stem": "Which statement about safe and unsafe states is correct?",
+      "options": [
+        "Every unsafe state is a deadlocked state.",
+        "A safe state may still contain a deadlock among some processes.",
+        "Every deadlocked state is unsafe, but an unsafe state need not be deadlocked.",
+        "Safe and unsafe describe the same thing as deadlock-free and deadlocked."
+      ],
+      "answer": "C",
+      "explanation": "- A **safe** state is never deadlocked, because a safe sequence exists.\n- An **unsafe** state is **not necessarily** deadlocked. It only means the OS can no longer *guarantee* completion if every process demands its maximum. Processes may release resources early or never ask for their full maximum.\n- Every **deadlocked** state is unsafe.\n\nSo: deadlocked ⊂ unsafe, and safe ∩ deadlocked = ∅.",
+      "option_feedback": [
+        "Unsafe only means a deadlock may become unavoidable. It need not exist yet.",
+        "A safe state lets every process finish, so it contains no deadlock.",
+        "Correct: deadlocked ⊂ unsafe.",
+        "Unsafe is a strictly larger set than deadlocked."
+      ],
+      "trap": "Treating unsafe as deadlocked."
+    },
+    {
+      "id": "t06-036",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "available vector"
+      ],
+      "stem": "A system has three resource types with total instances **A = 9, B = 6, C = 8**. The current allocation is:\n\n| Process | A | B | C |\n|---|---|---|---|\n| P0 | 1 | 2 | 0 |\n| P1 | 2 | 0 | 1 |\n| P2 | 0 | 1 | 3 |\n| P3 | 3 | 1 | 1 |\n\nWhat is the **total** number of free instances, summed over all three types?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "Allocated per type:\n- A: 1 + 2 + 0 + 3 = 6\n- B: 2 + 0 + 1 + 1 = 4\n- C: 0 + 1 + 3 + 1 = 5\n\nAvailable = Total − Allocated = (9 − 6, 6 − 4, 8 − 5) = **(3, 2, 3)**.\n\nSum = 3 + 2 + 3 = **8**."
+    },
+    {
+      "id": "t06-037",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "time complexity",
+        "safety algorithm"
+      ],
+      "stem": "For n processes and m resource types, the worst-case time complexity of the Banker's **safety algorithm** is:",
+      "options": [
+        "O(m · n)",
+        "O(n²)",
+        "O(m² · n)",
+        "O(m · n²)"
+      ],
+      "answer": "D",
+      "explanation": "The algorithm repeatedly scans for an unfinished process with Need ≤ Work.\n\n- A scan visits up to n processes.\n- Each Need ≤ Work comparison costs O(m).\n- Each successful scan finishes one process, so up to n scans are needed.\n\nTotal: n × n × m = **O(m · n²)**.",
+      "option_feedback": [
+        "That is a single pass only. One pass may finish just one process.",
+        "This ignores the O(m) vector comparison.",
+        "The m and n factors are swapped.",
+        "Correct: n rounds × n processes × m comparisons."
+      ]
+    },
+    {
+      "id": "t06-038",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "safe sequence",
+        "single resource type"
+      ],
+      "stem": "A system has **15** identical units of one resource type.\n\n| Process | Max | Allocation |\n|---|---|---|\n| P0 | 9 | 4 |\n| P1 | 5 | 3 |\n| P2 | 11 | 3 |\n| P3 | 7 | 2 |\n\nWhich of the following is a **safe sequence**?",
+      "options": [
+        "P0, P1, P2, P3",
+        "P1, P3, P2, P0",
+        "P1, P2, P0, P3",
+        "P3, P1, P0, P2"
+      ],
+      "answer": "B",
+      "explanation": "Allocated = 4 + 3 + 3 + 2 = 12, so Available = 15 − 12 = **3**.\n\n| Process | Max | Alloc | Need |\n|---|---|---|---|\n| P0 | 9 | 4 | 5 |\n| P1 | 5 | 3 | 2 |\n| P2 | 11 | 3 | 8 |\n| P3 | 7 | 2 | 5 |\n\nCheck option B (P1, P3, P2, P0):\n\n| Step | Process | Need ≤ Work? | Work after release |\n|---|---|---|---|\n| 1 | P1 | 2 ≤ 3 ✓ | 3 + 3 = 6 |\n| 2 | P3 | 5 ≤ 6 ✓ | 6 + 2 = 8 |\n| 3 | P2 | 8 ≤ 8 ✓ | 8 + 3 = 11 |\n| 4 | P0 | 5 ≤ 11 ✓ | 15 |\n\nThe other options fail:\n- A: P0 needs 5 > 3.\n- C: after P1, Work = 6 < 8, the need of P2.\n- D: P3 needs 5 > 3.",
+      "option_feedback": [
+        "P0's need of 5 exceeds the 3 available.",
+        "Correct. Note that P2 needs exactly 8 when Work = 8, which satisfies ≤.",
+        "After P1, Work = 6, but P2 needs 8.",
+        "P3's need of 5 exceeds the 3 available."
+      ],
+      "trap": "Rejecting B because Need = Work for P2 (the test is ≤, not <), or comparing Max instead of Need with Available."
+    },
+    {
+      "id": "t06-039",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "safety algorithm",
+        "safe sequence"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 4 processes. Available = **(1, 1, 2)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 1 0 2 | 4 2 3 |\n| P1 | 2 1 0 | 3 2 2 |\n| P2 | 1 2 1 | 3 3 4 |\n| P3 | 2 0 1 | 4 1 2 |\n\nWhich of the following is a safe sequence?",
+      "options": [
+        "P0, P1, P2, P3",
+        "P1, P2, P0, P3",
+        "P1, P3, P2, P0",
+        "P3, P1, P0, P2"
+      ],
+      "answer": "C",
+      "explanation": "Need = Max − Allocation:\n\n| Process | Need (A B C) |\n|---|---|\n| P0 | 3 2 1 |\n| P1 | 1 1 2 |\n| P2 | 2 1 3 |\n| P3 | 2 1 1 |\n\nOnly P1 fits the initial Work = (1, 1, 2). Check option C (P1, P3, P2, P0):\n\n| Step | Process | Need | Work before | OK? | Work after (+Alloc) |\n|---|---|---|---|---|---|\n| 1 | P1 | (1,1,2) | (1,1,2) | ✓ | (3,2,2) |\n| 2 | P3 | (2,1,1) | (3,2,2) | ✓ | (5,2,3) |\n| 3 | P2 | (2,1,3) | (5,2,3) | ✓ | (6,4,4) |\n| 4 | P0 | (3,2,1) | (6,4,4) | ✓ | (7,4,6) |\n\nThe other options fail:\n- A and D start with P0 or P3, which need A = 3 or 2 but only 1 is available.\n- B: after P1, Work = (3, 2, 2), but P2 needs C = 3.",
+      "option_feedback": [
+        "P0 needs (3,2,1), which exceeds (1,1,2).",
+        "After P1, Work = (3,2,2), and P2 needs 3 of C.",
+        "Correct.",
+        "P3 needs 2 of A, but only 1 is available."
+      ]
+    },
+    {
+      "id": "t06-040",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "safe state",
+        "minimum resources"
+      ],
+      "stem": "A single resource type is shared by three processes:\n\n| Process | Max | Allocation |\n|---|---|---|\n| P0 | 6 | 2 |\n| P1 | 5 | 3 |\n| P2 | 9 | 4 |\n\nWhat is the **minimum total number of units** in the system for which this state is **safe**?",
+      "answer": {
+        "min": 11,
+        "max": 11
+      },
+      "explanation": "Allocated = 2 + 3 + 4 = 9. Needs: P0 = 4, P1 = 2, P2 = 5.\n\nLet Available = a.\n- The first process needs a ≥ 2. Only P1 qualifies at the minimum. After P1 finishes, Work = a + 3.\n- P0 needs 4: a + 3 ≥ 4 holds for a ≥ 1. After P0, Work = a + 5.\n- P2 needs 5: a + 5 ≥ 5 always holds.\n\nSo a = 2 is the minimum. With a = 1 no process can start, since the smallest need is 2.\n\nTotal = 9 + 2 = **11**. Safe sequence: P1, P0, P2.",
+      "trap": "Answering the available count (2) instead of the total, or the sum of maxima (20)."
+    },
+    {
+      "id": "t06-041",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "Banker's assumptions"
+      ],
+      "stem": "Which of the following are **requirements/assumptions** of the Banker's algorithm?",
+      "options": [
+        "Each process declares the maximum number of instances of each resource type it may need",
+        "A process that obtains all its resources returns them within a finite time",
+        "Each process must request all its resources at once when it starts",
+        "The CPU scheduler must be non-preemptive"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "- **A, true:** each process must declare its maximum claim in advance, since Need = Max − Allocation depends on it.\n- **B, true:** a process that gets all its resources must return them in finite time. The safety argument relies on finished processes releasing.\n- **C, false:** that is the hold-and-wait *prevention* protocol. Banker's allows incremental requests.\n- **D, false:** Banker's says nothing about CPU scheduling. It decides only whether a resource request may be granted.",
+      "option_feedback": [
+        "Required: Max is an input to the algorithm.",
+        "Required: the safety argument needs finished processes to release.",
+        "Not required: incremental requests are the whole point of avoidance.",
+        "Not required: CPU scheduling is independent of resource allocation."
+      ]
+    },
+    {
+      "id": "t06-042",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 4,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "resource-request algorithm",
+        "safety check"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 5 processes. Available = **(3, 2, 0)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 0 1 2 | 1 3 2 |\n| P1 | 3 3 2 | 4 3 5 |\n| P2 | 3 1 2 | 6 2 3 |\n| P3 | 1 1 1 | 3 5 1 |\n| P4 | 2 2 0 | 2 4 3 |\n\nProcess **P3 requests (1, 0, 0)**. What does the Banker's algorithm do?",
+      "options": [
+        "Grant it: the current state is safe with sequence P0, P2, P1, P3, P4",
+        "Reject it: the request exceeds P3's remaining need",
+        "Make P3 wait: Available is insufficient for the request",
+        "Make P3 wait: pretending to grant it leads to an unsafe state"
+      ],
+      "answer": "D",
+      "explanation": "**Need = Max − Allocation:**\n\n| Process | Need (A B C) |\n|---|---|\n| P0 | 1 2 0 |\n| P1 | 1 0 3 |\n| P2 | 3 1 1 |\n| P3 | 2 4 0 |\n| P4 | 0 2 3 |\n\nThe current state is safe: P0 → (3,3,2), P2 → (6,4,4), P1 → (9,7,6), P3 → (10,8,7), P4 → (12,10,7).\n\n**Request (1,0,0) by P3:**\n1. Is Request ≤ Need(P3) = (2,4,0)? ✓\n2. Is Request ≤ Available = (3,2,0)? ✓\n3. Pretend to allocate: Available = (2,2,0), Alloc(P3) = (2,1,1), Need(P3) = (1,4,0).\n\n**Safety check on the new state:**\n\n| Step | Work | Candidate | Need | OK? |\n|---|---|---|---|---|\n| 1 | (2,2,0) | P0 | (1,2,0) | ✓ → Work = (2,3,2) |\n| 2 | (2,3,2) | P1 | (1,0,3) | ✗ C |\n| | | P2 | (3,1,1) | ✗ A |\n| | | P3 | (1,4,0) | ✗ B |\n| | | P4 | (0,2,3) | ✗ C |\n\nNo process can continue, so the new state is **unsafe**. The request is **not granted** and P3 waits, even though it passes both of the first checks.",
+      "option_feedback": [
+        "Checking the safety of the current state is not enough. You must check the state after the pretend allocation.",
+        "(1,0,0) ≤ Need(P3) = (2,4,0), so the request is within P3's claim.",
+        "(1,0,0) ≤ Available = (3,2,0), so enough is free.",
+        "Correct: after the allocation, only P0 can finish, and then everyone is stuck."
+      ],
+      "trap": "Running the safety algorithm on the original state instead of the post-request state."
+    },
+    {
+      "id": "t06-043",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 300,
+      "concepts": [
+        "resource-request algorithm",
+        "safety check"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 5 processes. Available = **(3, 0, 2)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 1 1 1 | 2 3 4 |\n| P1 | 0 1 3 | 2 4 4 |\n| P2 | 1 1 2 | 4 1 4 |\n| P3 | 3 3 2 | 5 4 4 |\n| P4 | 1 3 2 | 3 6 5 |\n\nEach request below is considered **on its own**, starting from this state. Which requests are **granted immediately** by the Banker's algorithm?",
+      "options": [
+        "P2 requests (1, 0, 1)",
+        "P0 requests (1, 0, 1)",
+        "P1 requests (0, 1, 0)",
+        "P2 requests (2, 0, 2)"
+      ],
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "**Need = Max − Allocation:**\n\n| Process | Need (A B C) |\n|---|---|\n| P0 | 1 2 3 |\n| P1 | 2 3 1 |\n| P2 | 3 0 2 |\n| P3 | 2 1 2 |\n| P4 | 2 3 3 |\n\nEvery process except P2 needs some B, and Available B = 0. So **P2 must be the first process in any safe sequence**, and a request is safe only if P2 can still finish first.\n\n**A: P2 requests (1,0,1).** Available becomes (2,0,1). P2 holds (2,1,3) and needs (2,0,1).\n- P2 (2,0,1) ≤ (2,0,1) ✓ → Work = (4,1,4)\n- P3 (2,1,2) ✓ → (7,4,6)\n- P0 (1,2,3) ✓ → (8,5,7)\n- P1 (2,3,1) ✓ → (8,6,10)\n- P4 (2,3,3) ✓ → (9,9,12)\n\nSafe, so the request is **granted**.\n\n**B: P0 requests (1,0,1).** Available becomes (2,0,1). P0 needs (0,2,2) and still needs B. P2 needs (3,0,2), but only 2 of A are free. Every other process needs B. No process can finish, so the state is **unsafe** and P0 waits.\n\n**C: P1 requests (0,1,0).** Available B = 0 < 1, so P1 **waits** for lack of resources.\n\n**D: P2 requests (2,0,2).** Available becomes (1,0,0). P2 holds (3,1,4) and needs (1,0,0) ✓ → Work = (4,1,4). The rest of the sequence is the same as in A, so the state is safe and the request is **granted**.",
+      "option_feedback": [
+        "Granted: P2 can still finish first, and the chain P3, P0, P1, P4 follows.",
+        "Unsafe: taking 1 A leaves only 2 A, which blocks P2, the only process that needs no B.",
+        "Not granted immediately: no B is available.",
+        "Granted: P2 needs only (1,0,0) afterwards, which fits in (1,0,0)."
+      ],
+      "trap": "Granting B because the request fits in Available and is within P0's need."
+    },
+    {
+      "id": "t06-044",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 330,
+      "concepts": [
+        "resource-request algorithm",
+        "maximum grantable request"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 4 processes. Available = **(2, 4, 1)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 1 1 1 | 1 2 2 |\n| P1 | 1 1 2 | 2 1 4 |\n| P2 | 1 2 2 | 4 2 5 |\n| P3 | 1 1 1 | 4 5 2 |\n\nP3 issues a request **(0, x, 0)**. What is the **largest** x for which the Banker's algorithm grants the request immediately?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "**Need = Max − Allocation:**\n\n| Process | Need (A B C) |\n|---|---|\n| P0 | 0 1 1 |\n| P1 | 1 0 2 |\n| P2 | 3 0 3 |\n| P3 | 3 4 1 |\n\nThe basic checks allow x ≤ min(Need B = 4, Available B = 4) = 4. Now test safety.\n\n**x = 4:** Available = (2,0,1). P3 needs (3,0,1).\n\n| Candidate | Need | vs (2,0,1) |\n|---|---|---|\n| P0 | (0,1,1) | ✗ B |\n| P1 | (1,0,2) | ✗ C |\n| P2 | (3,0,3) | ✗ A, C |\n| P3 | (3,0,1) | ✗ A |\n\nUnsafe, so x = 4 is rejected.\n\n**x = 3:** Available = (2,1,1). P3 holds (1,4,1) and needs (3,1,1).\n\n| Step | Process | Need | Work after |\n|---|---|---|---|\n| 1 | P0 | (0,1,1) ✓ | (3,2,2) |\n| 2 | P1 | (1,0,2) ✓ | (4,3,4) |\n| 3 | P2 | (3,0,3) ✓ | (5,5,6) |\n| 4 | P3 | (3,1,1) ✓ | (6,9,7) |\n\nSafe. Smaller x leaves even more free, and those states are also safe. The answer is **3**.",
+      "trap": "Answering 4 = min(Need, Available) without running the safety check."
+    },
+    {
+      "id": "t06-045",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "safe sequence",
+        "counting safe sequences"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 4 processes. Available = **(4, 2, 2)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 0 0 2 | 3 3 2 |\n| P1 | 0 0 1 | 0 2 4 |\n| P2 | 3 0 3 | 6 2 3 |\n| P3 | 0 1 0 | 0 2 1 |\n\nHow many **distinct safe sequences** (orderings of all four processes) exist?",
+      "answer": {
+        "min": 7,
+        "max": 7
+      },
+      "explanation": "**Need = Max − Allocation:**\n\n| Process | Need (A B C) | Allocation |\n|---|---|---|\n| P0 | 3 3 0 | 0 0 2 |\n| P1 | 0 2 3 | 0 0 1 |\n| P2 | 3 2 0 | 3 0 3 |\n| P3 | 0 1 1 | 0 1 0 |\n\nFrom Work = (4,2,2): P0 ✗ (B 3 > 2), P1 ✗ (C 3 > 2), **P2 ✓**, **P3 ✓**.\n\n**Branch 1: P2 first.** Work = (7,2,5).\n- P0 ✗ (B), P1 ✓, P3 ✓.\n- P2, P1: Work = (7,2,6). P0 ✗ (B), P3 ✓ → (7,3,6), then P0 ✓. This gives 1 sequence: P2 P1 P3 P0.\n- P2, P3: Work = (7,3,5). P0 ✓ and P1 ✓, and either order then finishes. This gives 2 sequences.\n- Branch total: **3**.\n\n**Branch 2: P3 first.** Work = (4,3,2).\n- P0 ✓, P1 ✗ (C 3 > 2), P2 ✓.\n- P3, P0: Work = (4,3,4). P1 ✓ and P2 ✓, either order. This gives 2 sequences.\n- P3, P2: Work = (7,3,5). P0 ✓ and P1 ✓, either order. This gives 2 sequences.\n- Branch total: **4**.\n\nTotal = 3 + 4 = **7**.\n\nNote that P0 never fits before P3 has released its 1 unit of B.",
+      "trap": "Assuming that once any process finishes everything else is free (counting 2 × 3! = 12), and missing that P0 needs B from P3."
+    },
+    {
+      "id": "t06-046",
+      "subtopic": "bankers-algorithm",
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "safety algorithm",
+        "resource request",
+        "unsafe vs deadlocked"
+      ],
+      "stem": "A system has 3 resource types A, B, C and 4 processes. Available = **(3, 0, 2)**.\n\n| Process | Allocation (A B C) | Max (A B C) |\n|---|---|---|\n| P0 | 2 1 0 | 3 1 1 |\n| P1 | 2 1 1 | 2 2 2 |\n| P2 | 0 2 0 | 4 4 1 |\n| P3 | 5 2 0 | 5 2 3 |\n\nTwo requests are about to arrive: **Q1**, P1 requests (0, 0, 1), and **Q2**, P3 requests (0, 0, 1). Each request is handled by the Banker's algorithm at the moment it arrives, and a request that is not granted waits.\n\nWhich statements are **true**?",
+      "answer": [
+        "A",
+        "D"
+      ],
+      "explanation": "**Need = Max − Allocation:** P0 (1,0,1), P1 (0,1,1), P2 (4,2,1), P3 (0,0,3).\n\n**Current state is safe:** P0 → (5,1,2), P1 → (7,2,3), P3 → (12,4,3), P2 → (12,6,3).\n\n**Q1 alone.** Available (3,0,1), P1 holds (2,1,2) and needs (0,1,0).\n\n| Step | Process | Need | Work after |\n|---|---|---|---|\n| 1 | P0 | (1,0,1) ✓ | (5,1,1) |\n| 2 | P1 | (0,1,0) ✓ | (7,2,3) |\n| 3 | P3 | (0,0,3) ✓ | (12,4,3) |\n| 4 | P2 | (4,2,1) ✓ | (12,6,3) |\n\nSafe, so Q1 alone is granted.\n\n**Q2 alone.** Available (3,0,1), P3 holds (5,2,1) and needs (0,0,2). P0 ✓ → (5,1,1), P1 (0,1,1) ✓ → (7,2,2), P3 (0,0,2) ✓ → (12,4,3), P2 ✓. Safe, so Q2 alone is granted. **D is true.**\n\n**Both granted.** Available (3,0,0). P0 needs C, P1 needs B, P2 needs (4,2,1), P3 needs C. Nobody fits, so the state is **unsafe**.\n\nSo whichever request arrives first is granted, and the second must wait even though Available C = 2 covers both. **A is true, B is false.** Two requests that are each safe are not necessarily safe together.\n\n**C is false.** Unsafe is not deadlocked. In that state no process is blocked on anything, and processes might never ask for their full maximum. Unsafe only means the OS can no longer guarantee completion.",
+      "trap": "Assuming two requests that are each safe and that both fit in Available can both be granted.",
+      "options": [
+        "If Q1 arrives first, Q1 is granted and Q2, arriving next, must wait.",
+        "If Q2 arrives first, Q2 is granted and Q1, arriving next, is also granted.",
+        "If both requests were granted, the system would be deadlocked.",
+        "Each request, evaluated on its own against the current state, would be granted."
+      ],
+      "option_feedback": [
+        "Correct: Q1 leaves a safe state, but Q1 + Q2 together leave Available (3,0,0), where no process can finish.",
+        "Wrong: after Q2 is granted, granting Q1 reaches the same unsafe state, so Q1 waits.",
+        "Wrong: the combined state is unsafe, not deadlocked. No process is blocked in it.",
+        "Correct: each request on its own leads to a safe state, P0 → P1 → P3 → P2."
+      ]
+    },
+    {
+      "id": "t06-047",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "wait-for graph",
+        "detection"
+      ],
+      "stem": "If every resource type has a **single instance**, deadlock detection is usually done by:",
+      "options": [
+        "Searching for a cycle in the wait-for graph",
+        "Running the Banker's safety algorithm with the Max matrix",
+        "Checking whether any process has waited longer than a timeout",
+        "Checking whether the total allocation equals the total number of instances"
+      ],
+      "answer": "A",
+      "explanation": "With single instances, deadlock ⇔ a cycle in the **wait-for graph**. The OS maintains the wait-for graph and periodically runs cycle detection, which costs O(n²) for n processes.\n\nMulti-instance resources need the matrix-based detection algorithm instead.",
+      "option_feedback": [
+        "Correct.",
+        "Detection does not use Max. It uses the current Request matrix.",
+        "A timeout is a heuristic. A long wait does not imply deadlock.",
+        "Full allocation does not imply deadlock."
+      ]
+    },
+    {
+      "id": "t06-048",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "recovery"
+      ],
+      "stem": "Which of the following is a standard way to **recover** from a detected deadlock?",
+      "options": [
+        "Imposing a total order on resource types",
+        "Requiring processes to declare maximum claims",
+        "Requiring processes to request all resources at start",
+        "Preempting resources from a victim process and rolling it back"
+      ],
+      "answer": "D",
+      "explanation": "The two recovery families are:\n1. **Process termination**: abort all deadlocked processes, or abort them one at a time until the cycle breaks.\n2. **Resource preemption**: take resources from a victim and roll it back to a safe point.\n\nThe other options are prevention or avoidance techniques. They act before a deadlock exists and cannot undo one that has already formed.",
+      "option_feedback": [
+        "That is prevention.",
+        "That is a requirement for avoidance (Banker's).",
+        "That is prevention (hold and wait).",
+        "Correct: resource preemption with rollback."
+      ]
+    },
+    {
+      "id": "t06-049",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "detection algorithm vs Banker's"
+      ],
+      "stem": "How does the multi-instance **deadlock detection algorithm** differ from the Banker's safety algorithm?",
+      "options": [
+        "It uses the Max matrix instead of Need",
+        "It uses the current Request matrix instead of Need, and processes holding no resources start as finished",
+        "It has complexity O(m · n), compared with O(m · n²) for Banker's",
+        "It must be run before every allocation, like Banker's"
+      ],
+      "answer": "B",
+      "explanation": "The detection algorithm has the same structure (Work, Finish, repeated scans) but:\n\n- It compares **Request[i] ≤ Work**, using the *current outstanding requests*, instead of Need[i] ≤ Work, which uses future maximum claims.\n- It sets **Finish[i] = true initially if Allocation[i] = 0**. A process that holds nothing cannot be part of a deadlock.\n- Processes with Finish[i] = false at the end are **deadlocked**.\n\nIt is optimistic: it assumes a process whose current request can be met will finish and release everything. If that turns out wrong, a later run of detection will catch it.\n\nIts complexity is the same, O(m · n²).",
+      "option_feedback": [
+        "Detection needs no maximum claims at all.",
+        "Correct.",
+        "Both are O(m · n²).",
+        "Detection can run periodically. It is not a gate on each allocation."
+      ]
+    },
+    {
+      "id": "t06-050",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "wait-for graph",
+        "complexity"
+      ],
+      "stem": "A wait-for graph has n process nodes. What is the time complexity of detecting a cycle in it, in terms of n?",
+      "options": [
+        "O(n)",
+        "O(n log n)",
+        "O(n²)",
+        "O(n³)"
+      ],
+      "answer": "C",
+      "explanation": "Cycle detection by DFS is O(V + E). With V = n and up to E = n² edges, this is **O(n²)**.",
+      "option_feedback": [
+        "You must examine the edges, and there can be up to n² of them.",
+        "There is no sorting step involved.",
+        "Correct: O(V + E) with E up to n².",
+        "This overestimates. A single DFS is enough."
+      ]
+    },
+    {
+      "id": "t06-051",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "victim selection"
+      ],
+      "stem": "When choosing a **victim** process to abort or preempt during deadlock recovery, which factors does the OS normally consider?",
+      "options": [
+        "The priority of the process",
+        "How many resources, and of what type, the process holds",
+        "Whether the CPU scheduler is FCFS or round-robin",
+        "Whether the process is interactive or batch"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "D"
+      ],
+      "explanation": "Standard cost factors (Silberschatz):\n- the priority of the process\n- how long it has computed and how much longer it needs\n- the resources it holds, and how easy they are to preempt\n- how many more resources it needs to finish\n- how many processes will need to be terminated\n- whether it is interactive or batch\n\nThe CPU scheduling algorithm in use (FCFS vs RR) is a system-wide policy. It does not help choose between the deadlocked processes.",
+      "option_feedback": [
+        "Considered.",
+        "Considered: this affects how much is freed and how easily.",
+        "Not considered: it is the same for every candidate.",
+        "Considered: aborting an interactive process is more costly to the user."
+      ]
+    },
+    {
+      "id": "t06-052",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 180,
+      "concepts": [
+        "detection algorithm",
+        "multi-instance resources"
+      ],
+      "stem": "A system has 5 processes and resource types A, B, C. Available = **(1, 0, 0)**.\n\n| Process | Allocation (A B C) | Request (A B C) |\n|---|---|---|\n| P0 | 1 0 1 | 1 0 0 |\n| P1 | 2 1 0 | 0 0 2 |\n| P2 | 0 1 1 | 3 0 0 |\n| P3 | 1 0 2 | 0 3 0 |\n| P4 | 0 2 0 | 0 0 1 |\n\nUsing the deadlock detection algorithm, how many processes are **deadlocked**?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Totals: A = 5, B = 4, C = 4. Start with Work = (1, 0, 0). No process has zero allocation, so all start with Finish = false.\n\n| Step | Work | Process that fits | Request | Work after (+Alloc) |\n|---|---|---|---|---|\n| 1 | (1,0,0) | P0 | (1,0,0) ✓ | (2,0,1) |\n| 2 | (2,0,1) | P4 | (0,0,1) ✓ | (2,2,1) |\n| 3 | (2,2,1) | none | P1 needs C 2, P2 needs A 3, P3 needs B 3 | stop |\n\nFinish = false for **P1, P2, P3**, so **3** processes are deadlocked.\n\nThey form a genuine cycle:\n- P1 waits for C, held by P2 and P3.\n- P2 waits for A, held by P1 and P3.\n- P3 waits for B, held by P1 and P2.",
+      "trap": "Counting the processes blocked at the start (4: P1–P4) instead of running the algorithm. P4 becomes satisfiable after P0 releases."
+    },
+    {
+      "id": "t06-053",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "detection algorithm",
+        "cycle without deadlock"
+      ],
+      "stem": "A system has resource types A and B, each with **2 instances**. Available = **(0, 0)**.\n\n| Process | Allocation (A B) | Request (A B) |\n|---|---|---|\n| P0 | 1 0 | 0 1 |\n| P1 | 0 1 | 1 0 |\n| P2 | 1 1 | 0 0 |\n| P3 | 0 0 | 1 0 |\n\nWhich processes are deadlocked?",
+      "options": [
+        "P0 and P1",
+        "P0, P1 and P3",
+        "No process is deadlocked",
+        "All four processes"
+      ],
+      "answer": "C",
+      "explanation": "P3 holds nothing, so it starts with Finish = true. It cannot be part of a deadlock.\n\n| Step | Work | Process | Request | Work after |\n|---|---|---|---|---|\n| 1 | (0,0) | P2 | (0,0) ✓ | (1,1) |\n| 2 | (1,1) | P0 | (0,1) ✓ | (2,1) |\n| 3 | (2,1) | P1 | (1,0) ✓ | (2,2) |\n\nEvery Finish value becomes true, so there is **no deadlock**. P3's request is met once instances are freed.\n\nP0 → B → P1 → A → P0 is a cycle in the RAG, but each resource has a second instance held by P2, which can finish.",
+      "option_feedback": [
+        "P0 and P1 form a RAG cycle, but P2 frees an instance of each resource.",
+        "P3 holds nothing and is not deadlocked. P0 and P1 are not deadlocked either.",
+        "Correct: P2, P0, P1 all finish, and then P3 can be served.",
+        "P2 has no request and finishes immediately."
+      ]
+    },
+    {
+      "id": "t06-054",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "starvation",
+        "rollback",
+        "victim selection"
+      ],
+      "stem": "A system recovers from deadlock by preempting resources from the lowest-cost victim and rolling it back. Some process is chosen as the victim again and again and never completes. What is the standard fix?",
+      "options": [
+        "Include the number of times a process has been rolled back in the victim-selection cost",
+        "Always choose the process with the lowest priority as the victim",
+        "Switch from resource preemption to total rollback",
+        "Run deadlock detection less frequently"
+      ],
+      "answer": "A",
+      "explanation": "This is **starvation** during recovery. The standard fix is to include the **number of rollbacks** in the cost factor, so a process becomes progressively more expensive to pick and is eventually never picked. That bounds how many times it can be chosen as the victim.",
+      "option_feedback": [
+        "Correct.",
+        "This is exactly what causes repeated selection of the same process.",
+        "Total rollback alone does not change who gets picked.",
+        "Running detection less often does not change who gets picked."
+      ]
+    },
+    {
+      "id": "t06-055",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "detection algorithm",
+        "victim selection",
+        "process termination"
+      ],
+      "stem": "A system has resource types A, B, C with totals **(5, 5, 3)**. Available = **(0, 1, 0)**.\n\n| Process | Allocation (A B C) | Request (A B C) |\n|---|---|---|\n| P0 | 1 1 1 | 1 1 2 |\n| P1 | 1 1 1 | 0 2 2 |\n| P2 | 1 0 1 | 0 2 2 |\n| P3 | 2 0 0 | 0 1 0 |\n| P4 | 0 2 0 | 2 2 0 |\n\nTo recover, the OS terminates deadlocked processes, releasing all their resources. What is the **minimum** number of processes that must be terminated so that every remaining process can complete?",
+      "answer": {
+        "min": 2,
+        "max": 2
+      },
+      "explanation": "**Detection:** Work = (0,1,0). P3 (0,1,0) ✓ → Work = (2,1,0). Then:\n- P0 needs C 2 ✗\n- P1 needs B 2, C 2 ✗\n- P2 needs B 2, C 2 ✗\n- P4 needs B 2 ✗\n\nDeadlocked: **{P0, P1, P2, P4}**, with Work = (2,1,0) after P3 finishes.\n\n**Terminate one** (Work = (2,1,0) + victim's allocation):\n\n| Victim | Work | Who can now finish? | Resolved? |\n|---|---|---|---|\n| P0 | (3,2,1) | P4 → (3,4,1). P1, P2 need C 2 | ✗ |\n| P1 | (3,2,1) | P4 → (3,4,1). P0, P2 need C 2 | ✗ |\n| P2 | (3,1,1) | nothing (all need B 2 or C 2) | ✗ |\n| P4 | (2,3,0) | P0, P1, P2 all need C | ✗ |\n\nNo single victim works.\n\n**Terminate two**, for example P0 and P1: Work = (4,3,2). P2 (0,2,2) ✓ → (5,3,3), then P4 (2,2,0) ✓. Resolved. The pairs {P0, P2} and {P1, P2} also work.\n\nMinimum = **2**.",
+      "trap": "Assuming that killing any one process on a cycle always resolves it. Here C is the bottleneck: 3 instances, held one each by P0, P1, P2."
+    },
+    {
+      "id": "t06-056",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "recovery",
+        "detection frequency"
+      ],
+      "stem": "Which statements about deadlock detection and recovery are **true**?",
+      "options": [
+        "Aborting all deadlocked processes always breaks the deadlock, at a potentially high cost in lost computation.",
+        "When processes are aborted one at a time, the detection algorithm must be re-run after each abort.",
+        "If detection is invoked on every request that cannot be granted immediately, the OS can identify the request that completed the deadlock.",
+        "Resource preemption never needs rollback, because the victim simply continues from where it was."
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "- **A, true:** aborting all deadlocked processes definitely breaks the deadlock, but all their computation is lost.\n- **B, true:** with one-at-a-time abort you must re-run detection after each abort to see whether a deadlock remains. That is considerable overhead.\n- **C, true:** if detection runs every time a request cannot be granted immediately, the request that just blocked is the one that closed the cycle. So the OS can tell which process \"caused\" the deadlock, as well as which processes are in it. Running detection at arbitrary times loses this information.\n- **D, false:** preemption usually requires **rolling back** the victim to a safe state, or restarting it, because it cannot continue without the resource it lost.",
+      "option_feedback": [
+        "True.",
+        "True.",
+        "True: this is the advantage of invoking detection eagerly.",
+        "False: the victim lost resources mid-use, so it must be rolled back."
+      ]
+    },
+    {
+      "id": "t06-057",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "detection algorithm",
+        "victim selection",
+        "minimum-cost recovery"
+      ],
+      "stem": "A system has resource types A, B, C with totals **(8, 5, 4)**. Available = **(1, 1, 0)**.\n\n| Process | Allocation (A B C) | Request (A B C) |\n|---|---|---|\n| P0 | 2 2 1 | 2 2 2 |\n| P1 | 1 0 1 | 2 1 2 |\n| P2 | 2 2 0 | 0 2 0 |\n| P3 | 0 0 2 | 0 2 2 |\n| P4 | 2 0 0 | 1 0 0 |\n\nTo recover, the OS terminates a set of processes, releasing all their resources. The cost of terminating each process (lost work) is P0 = 9, P1 = 2, P2 = 6, P3 = 3, P4 = 4.\n\nWhat is the **minimum total cost** of a set of terminated processes such that every remaining process can then complete?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "**Detection.** Work = (1,1,0). P4 (1,0,0) ✓ → Work = (3,1,0). Then P0 needs C 2, P1 needs C 2, P2 needs B 2, P3 needs B 2 and C 2. Deadlocked: **{P0, P1, P2, P3}**. P4 always finishes, so terminating it never helps.\n\nTerminating a set S adds S's allocation to Work, then run detection again.\n\n**No single victim works:**\n\n| Kill | Work | Then | Stuck |\n|---|---|---|---|\n| P0 (9) | (3,3,1) | P2, P4 | P1, P3 (need C 2) |\n| P1 (2) | (2,1,1) | P4 | P0, P2, P3 |\n| P2 (6) | (3,3,0) | P4 | P0, P1, P3 (need C) |\n| P3 (3) | (1,1,2) | P4, P1 | P0, P2 (need B 2) |\n\n**Pairs, cheapest first:**\n\n| Kill | Cost | Work | Result |\n|---|---|---|---|\n| P1, P3 | 5 | (2,1,3) | P4 only, P0 and P2 need B 2: **fails** |\n| P1, P2 | 8 | (4,3,1) | P4 only, P0 and P3 need C 2: **fails** |\n| P2, P3 | 9 | (3,3,2) | P0 → (5,5,3), P1 → (6,5,4), P4: **works** |\n\nEvery other pair contains P0 (cost ≥ 11), and every triple costs at least 2 + 3 + 6 = 11. So the minimum is **9**, terminating P2 and P3.\n\nCompare with the greedy policy \"terminate the cheapest deadlocked process, re-run detection, repeat\": it kills P1, then P3, then P2, for a cost of 11.",
+      "trap": "Adding the two cheapest costs (P1 + P3 = 5) without checking that it resolves the deadlock, or following the greedy cheapest-first policy (11)."
+    },
+    {
+      "id": "t06-058",
+      "subtopic": "necessary-conditions",
+      "also_tests": [
+        "prevention"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "minimum resources",
+        "request granularity",
+        "hold and wait"
+      ],
+      "stem": "Processes P1, P2 and P3 share n identical units of one resource type.\n\n- P1 and P2 each need at most 3 units and request them **one unit at a time**.\n- P3 needs at most 6 units and always requests **exactly 2 units in one request**, which is granted only when at least 2 units are free.\n\nEvery process keeps what it holds while waiting and releases everything when it terminates, which it does as soon as it holds its maximum. What is the **minimum** n for which deadlock is **impossible**?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "In a deadlock every unfinished process is blocked.\n\n- P1 or P2 is blocked only when **no** unit is free.\n- P3 is blocked when **at most 1** unit is free.\n\n**P1 or P2 still unfinished.** For it to be blocked, free = 0. Each process must also be short of its maximum: P1 ≤ 2, P2 ≤ 2, and P3 holds 0, 2 or 4 (6 would complete it), so P3 ≤ 4. The most that can be tied up is 2 + 2 + 4 = **8**.\n\n- n = 8: P1 holds 2, P2 holds 2, P3 holds 4. Nothing is free, so P1 and P2 wait, and P3 waits for 2. Deadlock.\n- n = 9: free = 0 would need 9 units held by short processes, but at most 8 can be. Impossible.\n\n**P1 and P2 both finished.** P3 is alone with at most 4 units, so at least n − 4 ≥ 5 are free. It proceeds.\n\nSo the minimum is **9**.\n\nThe plain formula Σ(kᵢ − 1) + 1 = 2 + 2 + 5 + 1 = 10 assumes P3 can sit holding 5 units, which its pairwise requests never allow. Using a \"pairs\" bound for everyone (free ≤ 1 blocks all) gives 8, but P1 and P2 are **not** blocked when one unit is free.",
+      "trap": "Answering 10 from Σ(kᵢ − 1) + 1, or 8 by assuming one free unit blocks every process."
+    },
+    {
+      "id": "t06-059",
+      "subtopic": "resource-allocation-graph",
+      "also_tests": [
+        "bankers-algorithm"
+      ],
+      "difficulty": 5,
+      "type": "mcq",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "claim edges",
+        "RAG avoidance algorithm",
+        "trace"
+      ],
+      "stem": "A system uses the **resource-allocation-graph (claim-edge) algorithm** for deadlock avoidance. Resources R1–R4 have one instance each. The claims are:\n\n| Process | Claims |\n|---|---|\n| P1 | R1, R2 |\n| P2 | R2, R3 |\n| P3 | R3, R1 |\n| P4 | R2, R4 |\n\nRules:\n- A request is granted only if the resource is free **and** converting the request edge into an assignment edge creates no cycle in the graph, counting claim, request and assignment edges. Otherwise the process waits.\n- A process that holds every resource it claimed finishes at once and releases all of them.\n- Whenever resources are released, waiting requests are re-examined in the order they were made, each with the same test.\n- A waiting process issues no further requests until its request is granted.\n\nThe requests are issued in this order:\n\n1. P4 → R4\n2. P3 → R1\n3. P1 → R2\n4. P2 → R3\n5. P3 → R3\n6. P2 → R2\n7. P4 → R2\n8. P1 → R1\n\nIn what order do the processes finish?",
+      "options": [
+        "P3, P1, P4, P2",
+        "No process finishes: all four processes end up deadlocked",
+        "P3, P1, P2, P4",
+        "P3, P2, P1, P4"
+      ],
+      "answer": "C",
+      "explanation": "Track assignments (R → P) and check each grant for a cycle, remembering the remaining claim edges.\n\n| # | Request | State before | Cycle test | Result |\n|---|---|---|---|---|\n| 1 | P4 → R4 | all free | R4 → P4 ⇢ R2 (free) | granted |\n| 2 | P3 → R1 | | R1 → P3 ⇢ R3 (free) | granted |\n| 3 | P1 → R2 | | R2 → P1 ⇢ R1 → P3 ⇢ R3 (free) | granted |\n| 4 | P2 → R3 | R3 free | R3 → P2 ⇢ R2 → P1 ⇢ R1 → P3 ⇢ R3: **cycle** | **P2 waits, R3 stays free** |\n| 5 | P3 → R3 | R3 free | P3 then holds R1, R3 and has no outgoing edge | granted, **P3 finishes**, frees R1, R3 |\n| | re-examine P2 → R3 | | R3 → P2 ⇢ R2 → P1 ⇢ R1 (free) | granted |\n| 6 | P2 → R2 | R2 held by P1 | | P2 waits |\n| 7 | P4 → R2 | R2 held by P1 | | P4 waits |\n| 8 | P1 → R1 | R1 free | P1 then holds R1, R2 | granted, **P1 finishes**, frees R1, R2 |\n| | re-examine P2 → R2 (made first) | | P2 then holds R2, R3 | granted, **P2 finishes** |\n| | re-examine P4 → R2 | | P4 then holds R2, R4 | granted, **P4 finishes** |\n\nFinish order: **P3, P1, P2, P4**.\n\nWithout avoidance, event 4 would be granted (R3 is free). Then P3 waits for R3 (P2), P2 and P4 wait for R2 (P1), and P1 waits for R1 (P3): the cycle P1 → P3 → P2 → P1 deadlocks everyone. Refusing a **free** resource at event 4 is exactly what prevents it.",
+      "option_feedback": [
+        "Wrong: when P1 releases R2, the waiting requests are re-examined in the order they were made, and P2's request (event 6) comes before P4's (event 7).",
+        "Wrong: that is what happens if event 4 is granted just because R3 is free. The claim edges make P2 wait instead.",
+        "Correct: P2's request at event 4 is deferred, P3 then finishes, and the rest complete in FIFO order.",
+        "Wrong: P2 needs R2, which P1 holds until P1 finishes at event 8."
+      ],
+      "trap": "Granting a request because the resource is free. In the claim-edge algorithm a free resource is still refused if the assignment would close a cycle with claim edges."
+    },
+    {
+      "id": "t06-060",
+      "subtopic": "prevention",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "resource ordering",
+        "circular wait",
+        "counting orders"
+      ],
+      "stem": "A system prevents deadlock by resource ordering. Each of the five mutexes A, B, C, D, E gets a distinct rank, and the rule is: a thread may lock mutex m only if rank(m) is **greater than the rank of every mutex it currently holds**.\n\nThe threads below must run unchanged:\n\n```c\n/* T1 */ lock(A); lock(C); unlock(C); lock(B); unlock(B); unlock(A);\n/* T2 */ lock(B); lock(D); unlock(D); unlock(B);\n/* T3 */ lock(C); lock(E); unlock(E); unlock(C);\n/* T4 */ lock(E); unlock(E); lock(D); unlock(D); lock(A); unlock(A);\n```\n\nHow many of the 5! = 120 possible rank assignments let all four threads run without ever breaking the rule?",
+      "answer": {
+        "min": 6,
+        "max": 6
+      },
+      "explanation": "A constraint X < Y arises **only** when a thread locks Y while still holding X. Releases matter.\n\n| Thread | Held when locking | Constraints |\n|---|---|---|\n| T1 | C while holding A. B while holding A (C already released) | A < C, A < B |\n| T2 | D while holding B | B < D |\n| T3 | E while holding C | C < E |\n| T4 | Each lock is taken while holding nothing | none |\n\nSo the ranks must satisfy A < B < D and A < C < E, with no other restrictions.\n\n- A is below everything else, so A gets the lowest rank.\n- The remaining ranks go to two chains, B < D and C < E, interleaved in any way. Choose which 2 of the 4 remaining positions hold B and D: C(4, 2) = **6**.\n\nThe six orders (lowest rank first): ABCDE, ABCED, ABDCE, ACBDE, ACBED, ACEBD.\n\nCommon mistakes:\n- Reading T1's code order as C < B gives 3.\n- Reading T4 as E < D < A contradicts A < D and gives 0.",
+      "trap": "Treating the order in which a thread mentions locks as a constraint even when the earlier lock has already been released."
+    },
+    {
+      "id": "t06-061",
+      "subtopic": "detection-and-recovery",
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "detection algorithm",
+        "Request matrix",
+        "Available"
+      ],
+      "stem": "A system has resource types A, B, C with totals **(4, 6, 4)**.\n\n| Process | Allocation (A B C) | Request (A B C) |\n|---|---|---|\n| P0 | 1 2 1 | 0 0 0 |\n| P1 | 2 2 0 | 1 1 0 |\n| P2 | 0 0 2 | 0 0 0 |\n| P3 | 0 2 0 | 0 1 0 |\n| P4 | 0 0 1 | 1 0 1 |\n\nIn this state no process is deadlocked. **P0 now requests (0, 2, 0)**, which cannot be granted, so P0 blocks. Running the deadlock detection algorithm on the new state, which processes are **deadlocked**?",
+      "options": [
+        "P0",
+        "P1",
+        "P3",
+        "P4"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "**Available** = Total − Σ Allocation = (4, 6, 4) − (3, 6, 4) = **(1, 0, 0)**.\n\n**Before the request** (for reference): P0 → (2,2,1), P2 → (2,2,3), P1 → (4,4,3), P3 → (4,6,3), P4 → (4,6,4). No deadlock, because P0 and P2 were running and their releases fed everyone else.\n\n**After P0 requests (0, 2, 0):**\n\n| Step | Work | Process that fits | Work after |\n|---|---|---|---|\n| 1 | (1,0,0) | P2 (0,0,0) | (1,0,2) |\n| 2 | (1,0,2) | P4 (1,0,1) | (1,0,3) |\n| 3 | (1,0,3) | none: P0 needs B 2, P1 needs B 1, P3 needs B 1 | stop |\n\nNo B is free and every B instance is held by P0, P1 or P3, each of which is waiting for B. **P0, P1 and P3 are deadlocked.**\n\nP4 was blocked before and is still blocked right now, but its request (1,0,1) is met once P2 finishes, so it is **not** deadlocked.",
+      "option_feedback": [
+        "Correct: P0 waits for 2 B, and all B are held by deadlocked processes.",
+        "Correct: P1 needed P0's release of B, which will now never come.",
+        "Correct: same as P1: it waits for B held by P0 and P1.",
+        "Wrong: P4 is blocked, but P2's release of C lets it finish, so it is not deadlocked."
+      ],
+      "trap": "Marking every blocked process as deadlocked (P4), or forgetting to compute Available from the totals."
+    },
+    {
+      "id": "t06-062",
+      "subtopic": "detection-and-recovery",
+      "also_tests": [
+        "resource-allocation-graph"
+      ],
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "wait-for graph",
+        "victim selection",
+        "recovery cost"
+      ],
+      "stem": "All resources R1–R6 have a single instance. The resource-allocation graph is:\n\n- Assignment edges: R1 → P1, R2 → P2, R3 → P3, R5 → P3, R4 → P4, R6 → P5\n- Request edges: P1 → R2, P2 → R3, P3 → R1, P3 → R4, P4 → R5, P5 → R3\n\nTo recover, the OS terminates processes, releasing all their resources, until no process is deadlocked. Terminating a process loses the CPU time it has used so far: P1 = 40 s, P2 = 25 s, P3 = 70 s, P4 = 30 s, P5 = 5 s.\n\nWhat is the **minimum total CPU time (in seconds)** that must be lost?",
+      "answer": {
+        "min": 55,
+        "max": 55
+      },
+      "explanation": "**Wait-for graph** (Pᵢ → holder of the resource Pᵢ requests):\n\n| Request | Holder | WFG edge |\n|---|---|---|\n| P1 → R2 | P2 | P1 → P2 |\n| P2 → R3 | P3 | P2 → P3 |\n| P3 → R1 | P1 | P3 → P1 |\n| P3 → R4 | P4 | P3 → P4 |\n| P4 → R5 | P3 | P4 → P3 |\n| P5 → R3 | P3 | P5 → P3 |\n\nTwo cycles: **P1 → P2 → P3 → P1** and **P3 → P4 → P3**. P5 is not on a cycle but waits for P3, so all five processes are deadlocked.\n\nThe victim set must break both cycles. P5 is on neither, so killing it never helps. So the set either contains P3, or contains P4 plus one of P1, P2:\n\n| Victims | Cost |\n|---|---|\n| P3 | 70 |\n| P1, P4 | 40 + 30 = 70 |\n| **P2, P4** | 25 + 30 = **55** |\n\nCheck {P2, P4}: P2 frees R2, so P1 finishes and frees R1 and R2. P4 frees R4. P3 now gets R1 and R4, finishes and frees R3 and R5. P5 gets R3 and finishes. No deadlock remains.\n\nMinimum lost CPU time = **55** s.",
+      "trap": "Killing the single process shared by both cycles (P3, 70 s), which minimises the number of victims but not the cost, or starting with the cheap P5, which is not on any cycle."
+    },
+    {
+      "id": "t06-063",
+      "subtopic": "prevention",
+      "also_tests": [
+        "necessary-conditions"
+      ],
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "resource ordering",
+        "dining philosophers",
+        "circular wait"
+      ],
+      "stem": "Five philosophers P0–P4 sit at a round table. Chopstick i lies to the **left** of Pᵢ and chopstick (i + 1) mod 5 to its **right**. To prevent deadlock, every philosopher picks up the **lower-numbered** of its two chopsticks first, then the higher-numbered one. A philosopher who finds a chopstick taken blocks until it is free.\n\nAll five become hungry at the same moment. First, each philosopher in the order P0, P1, P2, P3, P4 attempts its **first** pick-up. Then, in the same order, each philosopher that is not blocked attempts its **second** pick-up. Nobody puts a chopstick down during this round.\n\nWhich statement describes the state at the end of this round?",
+      "options": [
+        "Every philosopher holds exactly one chopstick, and the system is deadlocked",
+        "P4 holds chopstick 4 and waits for chopstick 0, and P0 is the only philosopher eating",
+        "P4 holds no chopstick, and P3 holds chopsticks 3 and 4 and eats",
+        "P4 holds no chopstick, and P4 eats next because chopstick 4 is still free"
+      ],
+      "answer": "C",
+      "explanation": "Each philosopher's chopsticks, lower one first:\n\n| Philosopher | Chopsticks | First | Second |\n|---|---|---|---|\n| P0 | 0, 1 | 0 | 1 |\n| P1 | 1, 2 | 1 | 2 |\n| P2 | 2, 3 | 2 | 3 |\n| P3 | 3, 4 | 3 | 4 |\n| P4 | 4, 0 | **0** | 4 |\n\n**First pick-ups:** P0 takes 0, P1 takes 1, P2 takes 2, P3 takes 3. P4's first chopstick is 0, which P0 holds, so P4 **blocks holding nothing**. Chopstick 4 stays on the table.\n\n**Second pick-ups:** P0 wants 1 (held by P1), P1 wants 2 (P2), P2 wants 3 (P3): all block. P3 wants 4, which is free, so **P3 eats**.\n\nWhen P3 finishes and releases 3 and 4, P2 can eat, then P1, then P0, and finally P4. The chain of waits P0 → P1 → P2 → P3 cannot close into a cycle, because P4 asks for 0 before 4. That is exactly how resource ordering denies circular wait.",
+      "option_feedback": [
+        "This is the naive left-first protocol. Here P4 asks for chopstick 0 first and gets nothing, so chopstick 4 stays free.",
+        "P4's lower-numbered chopstick is 0, not 4, so P4 never picks up 4 first. P0 cannot eat either, because P1 holds chopstick 1.",
+        "Correct: P4 blocks on chopstick 0 empty-handed, which leaves chopstick 4 free for P3.",
+        "P4 is blocked on its first chopstick (0). It cannot reach for chopstick 4 until it holds 0."
+      ],
+      "trap": "Assuming P4 picks up its left chopstick (4) first, as in the naive solution. Then every philosopher would hold one chopstick and the system would deadlock."
+    },
+    {
+      "id": "t06-064",
+      "subtopic": "prevention",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "no preemption",
+        "preemption protocol"
+      ],
+      "stem": "A system has four single-instance resources R1–R4 and prevents deadlock by denying **no preemption** with this protocol. When process P requests resource R:\n\n- If R is free, it is allocated to P.\n- Otherwise, if R is held by a process Q that is **itself blocked waiting** for some resource, R is preempted from Q and allocated to P. (Q adds R to the list of resources it is waiting for.)\n- Otherwise P blocks, still holding its resources.\n\nRequests arrive in this order, and each is handled completely before the next:\n\n1. P1 requests R1\n2. P2 requests R2\n3. P2 requests R1\n4. P3 requests R2\n5. P1 requests R3\n6. P3 requests R1\n7. P1 requests R2\n\nHow many resources does **P1** hold after step 7?",
+      "answer": {
+        "min": 3,
+        "max": 3
+      },
+      "explanation": "Track holdings and who is blocked:\n\n| Step | Request | What happens | P1 | P2 | P3 |\n|---|---|---|---|---|---|\n| 1 | P1 → R1 | free, allocate | R1 | – | – |\n| 2 | P2 → R2 | free, allocate | R1 | R2 | – |\n| 3 | P2 → R1 | held by P1, which is running, so P2 blocks | R1 | R2 (blocked) | – |\n| 4 | P3 → R2 | held by P2, which is blocked, so **preempt** | R1 | – (blocked) | R2 |\n| 5 | P1 → R3 | free, allocate | R1, R3 | – (blocked) | R2 |\n| 6 | P3 → R1 | held by P1, which is running, so P3 blocks | R1, R3 | – (blocked) | R2 (blocked) |\n| 7 | P1 → R2 | held by P3, which is blocked, so **preempt** | R1, R2, R3 | – (blocked) | – (blocked) |\n\nP1 holds R1, R2 and R3, so the answer is **3**.\n\nWithout preemption, step 7 would give a cycle: P1 holds R1 and waits for R2, while P3 holds R2 and waits for R1. Preempting R2 from the blocked P3 breaks it.",
+      "trap": "Applying ordinary blocking at step 7. P1 would then wait for R2 while holding 2 resources, and P1 and P3 would be deadlocked."
+    }
+  ]
+}

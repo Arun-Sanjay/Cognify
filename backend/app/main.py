@@ -105,6 +105,17 @@ def create_application() -> FastAPI:
         name="audio",
     )
 
+    # Serve Learn key frames (notes-deck screenshots) from the content directory.
+    from app.services import learn as learn_service
+
+    learn_media = learn_service.media_dir()
+    learn_media.mkdir(parents=True, exist_ok=True)
+    application.mount(
+        learn_service.MEDIA_URL_PREFIX,
+        StaticFiles(directory=str(learn_media)),
+        name="learn-media",
+    )
+
     @application.get("/health", tags=["health"])
     async def health_check() -> dict:
         return {

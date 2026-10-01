@@ -1,0 +1,103 @@
+{
+  "topic_id": "T9",
+  "topic": "Memory Management",
+  "hinglish": [
+    {
+      "video_id": "N3rG_1CEQkQ",
+      "title": "L-5.5: First Fit, Next Fit, Best Fit, Worst fit Memory Allocation | Memory Management | OS",
+      "channel": "Gate Smashers",
+      "duration_sec": 982,
+      "views": 1625616,
+      "likes": 33912,
+      "comments": 609,
+      "upload_date": "20180328",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["fixed/variable partitioning", "first fit/next fit/best fit/worst fit", "internal & external fragmentation basics"],
+      "why": "Part of Gate Smashers' dominant L-5 Memory Management series; 1.6M views and 33.9K likes (2.1% like/view) dwarf every other Hinglish contiguous-allocation video, and comments repeatedly call it clearer than a full semester of college classes.",
+      "comment_highlights": ["4 hrs of useless college class vs 17 mins of useful and awesome lecture", "Content aisa banao 8 saal baad bhi isse acha video na mil paye yt pr"]
+    },
+    {
+      "video_id": "6c-mOFZwP_8",
+      "title": "L-5.9: What is Paging | Memory management | Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 1553,
+      "views": 2617865,
+      "likes": 48009,
+      "comments": 1400,
+      "upload_date": "20180402",
+      "captions": ["en(manual)"],
+      "covers": ["paging concept", "page table", "logical-to-physical address translation", "page size numericals"],
+      "why": "Highest-viewed video found across the entire topic (2.6M views, 48K likes, 1400 comments) in the same trusted series; comments cite it as the single lecture that made paging click after a whole semester failed to.",
+      "comment_highlights": ["What my teacher failed to explain in whole semester, he explained in 26 mins", "Seriously, Operating System's best explanation ever. So clear."]
+    },
+    {
+      "video_id": "Z2T2vnyZl0o",
+      "title": "L-5.20: Translation Lookaside Buffer(TLB) in Operating System in Hindi",
+      "channel": "Gate Smashers",
+      "duration_sec": 743,
+      "views": 689029,
+      "likes": 15607,
+      "comments": 180,
+      "upload_date": "20200219",
+      "captions": ["en(manual)"],
+      "covers": ["TLB hit/miss", "effective memory access time formula & derivation"],
+      "why": "Same series continuity; strong 2.3% like ratio and comments specifically praise the formula derivation ('never knew this formula has a proof also'), which is the exact GATE numerical skill needed for EMAT questions.",
+      "comment_highlights": ["Omg I never knew this formula has a proof also", "Sir ur teaching style so simple that everyone can understand without any doubt"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "pJ6qrCB8pDw",
+      "title": "Paging in Operating Systems with Example & Working - Memory Management",
+      "channel": "Simple Snippets",
+      "duration_sec": 1046,
+      "views": 436171,
+      "likes": 7576,
+      "comments": 279,
+      "upload_date": "20180910",
+      "captions": ["en(auto)"],
+      "covers": ["paging concept", "address translation with worked example", "logical vs physical address split"],
+      "why": "Clear margin over every other English-medium paging video (436K views, 1.7% like ratio, 279 comments) found in the topic; a top comment explicitly ranks it 'the best explanation of Paging I've found on Youtube.'",
+      "comment_highlights": ["This is the best explanation of Paging, I've found on Youtube. Awesome work man.", "exam 1hour from now. watching in 1.25 speed"]
+    },
+    {
+      "video_id": "dFrDy8910j8",
+      "title": "Contiguous Memory Allocation (OS)",
+      "channel": "Casey Cole",
+      "duration_sec": 1422,
+      "views": 43240,
+      "likes": 664,
+      "comments": 25,
+      "upload_date": "20200401",
+      "captions": ["en(auto)"],
+      "covers": ["fixed/variable partitions", "first/best/worst fit", "internal & external fragmentation", "compaction"],
+      "why": "English-medium options for this subtopic were thin; the strongest (University Solutions, 320K views) has captions disabled and was rejected. This 24-min lecture has real captions, positive comments, and a top comment even corrects/clarifies the Worst-Fit definition in detail, signalling an engaged, accuracy-checking audience.",
+      "comment_highlights": ["These videos have been extremely helpful so just wanted to leave a thanks", "Worst Fit always picks the largest free memory block... [detailed correct explanation in comments]"]
+    },
+    {
+      "video_id": "H7cJsF79iew",
+      "title": "segmentation in operating system | segmentation in memory management | non contiguous allocation",
+      "channel": "Sudhakar Atchala",
+      "duration_sec": 530,
+      "views": 228302,
+      "likes": 3581,
+      "comments": 78,
+      "upload_date": "20190919",
+      "captions": ["en(auto)"],
+      "covers": ["segmentation concept", "segment table", "logical address in segmentation"],
+      "why": "Best-performing English segmentation video found (228K views, 1.6% like ratio); comments consistently describe it as the deciding factor the night before an exam after other videos failed to clarify the concept.",
+      "comment_highlights": ["Actually tomorrow is my exam sir I have watched about 3 videos for segmentation ...and finally you are the hero", "You are a life saver. Thank you sir"]
+    }
+  ],
+  "runners_up": [
+    {"video_id": "EYd1f-gfdjQ", "title": "First fit, Best fit, Worst fit dynamic memory allocation algorithm", "channel": "University Solutions", "views": 320406, "reason_rejected": "No captions available (TranscriptsDisabled) despite strong view/like numbers — fails the mandatory-captions rule."},
+    {"video_id": "0bB-KTOHOUc", "title": "Memory Management Techniques part 1 - contiguous memory allocation", "channel": "Easy Learning with Nisha", "views": 48158, "reason_rejected": "No captions available; also weaker engagement than Casey Cole's pick."},
+    {"video_id": "up5MT44owLM", "title": "Operating System 05 | Memory Management & Paging | GATE 2025 Crash Course", "channel": "GATE Wallah CSE & DA", "views": 82819, "reason_rejected": "93-min crash course spans memory management, paging, segmentation AND virtual memory/page replacement (T10 territory) in one video — scope too diluted versus focused Gate Smashers lectures, and far lower views/likes despite being newer."},
+    {"video_id": "d9WyerblWQc", "title": "Main Memory | Chapter-8 | Operating System", "channel": "Neso Academy", "views": 74025, "reason_rejected": "Neso Academy's OS memory-management chapter has only 74K views / 180 likes — much weaker engagement than Simple Snippets/Casey Cole picks for the same ground."},
+    {"video_id": "lxus-whQDnk", "title": "Memory Allocation Techniques | contiguous and non-contiguous", "channel": "Sudhakar Atchala", "views": 167137, "reason_rejected": "Only 3.9 minutes — too shallow on first/best/worst-fit numericals compared to Casey Cole's 24-min treatment, despite higher raw views."},
+    {"video_id": "xAvC-MJ_Sz8", "title": "6.7 What is Paging in Operating System", "channel": "KnowledgeGATE by Sanchit Sir", "views": 921428, "reason_rejected": "Strong alternative Hinglish channel (921K views) but Gate Smashers' equivalent (6c-mOFZwP_8) has nearly 3x the views/likes on the same subtopic; kept as a solid second opinion, not the primary pick."},
+    {"video_id": "PiEq1CoP0ds", "title": "L-5.13: 2-Level Paging in Operating System | Multilevel Paging", "channel": "Gate Smashers", "views": 680974, "reason_rejected": "High quality and same trusted series, but cut to keep the Hinglish set at 3 videos per the brief's preference for fewer picks; see coverage_gaps."},
+    {"video_id": "dz9Tk6KCMlQ", "title": "L-5.17: Segmentation Vs Paging", "channel": "Gate Smashers", "views": 1686658, "reason_rejected": "Very strong (1.69M views) but cut from the 3-video Hinglish cap in favor of TLB/EMAT, which is more numerically GATE-heavy; see coverage_gaps."}
+  ],
+  "coverage_gaps": "Hinglish picks (3-video cap) do not include multilevel paging, inverted page table, or segmentation as standalone videos — all exist as excellent same-series Gate Smashers lectures (L-5.13, L-5.14, L-5.17, each 590K-1.7M views) immediately adjacent in the same playlist, just not selected here to respect the pick limit. English picks are comparatively weak on TLB/effective-access-time numericals and multilevel/inverted paging — no strong, well-captioned, high-engagement English video was found for these; Sudhakar Atchala's 'translation lookaside buffer in operating system' (79,664 views, en auto captions) is the best available supplementary option if TLB needs separate English coverage."
+}

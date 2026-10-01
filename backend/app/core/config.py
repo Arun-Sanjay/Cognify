@@ -1,3 +1,4 @@
+from datetime import date
 from functools import lru_cache
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -61,6 +62,13 @@ class Settings(BaseSettings):
     def active_anthropic_model(self) -> str:
         """Production model only when USE_PRODUCTION_MODEL=True; the cheap dev model otherwise."""
         return self.anthropic_model_prod if self.use_production_model else self.anthropic_model_dev
+
+    # ── Learn (curated video lectures) ──
+    # Directory holding catalog.json + per-unit content. Empty = the repo's
+    # `backend/content/learn` (resolved from this file, so cwd doesn't matter).
+    learn_content_dir: str = ""
+    # GATE exam start — paces the spaced-review schedule for quiz mistakes.
+    gate_exam_date: date = date(2027, 2, 6)
 
     # ── Rate limiting ──
     claude_requests_per_minute: int = 20  # per-user limit to prevent runaway costs

@@ -1,0 +1,130 @@
+{
+  "topic_id": "T3",
+  "topic": "Threads",
+  "hinglish": [
+    {
+      "video_id": "ITc09gOrqZk",
+      "title": "L-1.11: Process Vs Threads in Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 676,
+      "views": 1861511,
+      "likes": 40445,
+      "comments": 558,
+      "upload_date": "20181221",
+      "captions": ["en(manual)"],
+      "covers": ["thread vs process definition", "single-threaded vs multi-threaded process", "real-life analogy for threads", "why threads are needed (basic benefits)"],
+      "why": "Dominant Hinglish video for thread-vs-process with 1.86M views, 40.4K likes (~2.2% like/view) and 558 comments; part of Gate Smashers' most-trusted OS playlist. Comments consistently call it clearer than college professors and 'crystal clear', with no correctness complaints found in top 10 comments.",
+      "comment_highlights": ["just see how much struggle he is taking to make understandable to viewers, no one replaces you sir", "Really Awesome way of Teaching everything I got is crystal clear now"]
+    },
+    {
+      "video_id": "-NONm-Jq34Y",
+      "title": "L-1.12: User Level Vs Kernel Level Thread in Operating System | All Imp Points",
+      "channel": "Gate Smashers",
+      "duration_sec": 508,
+      "views": 1108625,
+      "likes": 21018,
+      "comments": 290,
+      "upload_date": "20181228",
+      "captions": ["en(manual)", "en(auto)"],
+      "covers": ["user-level threads", "kernel-level threads", "ULT vs KLT differences/imp points"],
+      "why": "Best Hinglish video specifically on ULT vs KLT: 1.1M views, 21K likes, directly continues from the L-1.11 process-vs-thread video in the same reputable playlist. Top comments praise the simple, to-the-point explanation and note it beats university professors' teaching.",
+      "comment_highlights": ["Such complex concepts explained in such a simple way. Thank you !", "Neither bulky paragraph nor unusual extra knowledge..just to the point and simple explanation"]
+    },
+    {
+      "video_id": "FaFFGOo5Snk",
+      "title": "Multithreading Models In Operating System Urdu/Hindi",
+      "channel": "CS Concepts",
+      "duration_sec": 254,
+      "views": 29344,
+      "likes": 443,
+      "comments": 16,
+      "upload_date": "20220814",
+      "captions": ["hi(auto)"],
+      "covers": ["many-to-one model", "one-to-one model", "many-to-many model"],
+      "why": "Gate Smashers (the dominant Hinglish channel for this topic) has no dedicated multithreading-models video, so this fills that syllabus gap. It is the best-captioned, most-viewed Hinglish option focused purely on all three models (many-to-one, one-to-one, many-to-many); other Hinglish candidates for this subtopic (Sudhakar Atchala 139K views, Education 4u Part 1) had captions disabled/unavailable and were rejected. Comments are short but uniformly positive.",
+      "comment_highlights": ["Your teaching method is too good", "Top class"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "LOfGJcVnvAk",
+      "title": "Introduction to Threads",
+      "channel": "Neso Academy",
+      "duration_sec": 846,
+      "views": 963161,
+      "likes": 14304,
+      "comments": 176,
+      "upload_date": "20190524",
+      "captions": ["en(auto)"],
+      "covers": ["threads definition", "single-threaded process", "multi-threaded process", "benefits of multi-threaded programming"],
+      "why": "Best English video for thread basics and benefits: 963K views, 14.3K likes, from Neso Academy, the most reputable English GATE/CS channel for OS. Comments repeatedly say it is better than paid courses/professors and directly cite the benefits-of-multithreading content as exam-ready.",
+      "comment_highlights": ["Neso Academy is the best", "my entire operating system lecture is based on your notes... my professor used the same slides"]
+    },
+    {
+      "video_id": "HW2Wcx-ktsc",
+      "title": "Multithreading Models & Hyperthreading",
+      "channel": "Neso Academy",
+      "duration_sec": 1077,
+      "views": 383768,
+      "likes": 6226,
+      "comments": 116,
+      "upload_date": "20190530",
+      "captions": ["en(auto)"],
+      "covers": ["many-to-one model", "one-to-one model", "many-to-many model", "hyperthreading/SMT (extra, beyond syllabus)"],
+      "why": "Companion Neso Academy video that covers all three multithreading models explicitly (confirmed in the description's topic list), with 383K views and 6.2K likes. Top comment explicitly says it was the best resource found after searching many sites/videos for this exact subtopic.",
+      "comment_highlights": ["I searched many websites and videos to learn Threading and thank GOD I found the best one in your channel", "came across this gem. Great video"]
+    },
+    {
+      "video_id": "ncnoPkxogIk",
+      "title": "User Level Vs Kernel Level Thread in Operating System || User Level & Kernel Level Threads || OS",
+      "channel": "Sundeep Saradhi Kanthety",
+      "duration_sec": 969,
+      "views": 13987,
+      "likes": 265,
+      "comments": 10,
+      "upload_date": "20230609",
+      "captions": ["en(auto)"],
+      "covers": ["user-level threads", "kernel-level threads", "ULT vs KLT differences"],
+      "why": "Neso Academy (the top English channel for this topic) has no dedicated user-level-vs-kernel-level-threads video, leaving a syllabus gap after the two Neso picks. This is the most complete standalone English lecture found on ULT vs KLT with captions; other options were either 90-second fragments pulled from a paid Udacity course (too short/thin) or multi-hour crash-course one-shots covering many unrelated topics (excluded as too broad). Views/likes are modest but comments show no correctness complaints beyond one user's (mistaken) question about a standard fact.",
+      "comment_highlights": ["Thank you very important", "Sir can you explain deadlock concept"]
+    }
+  ],
+  "runners_up": [
+    {
+      "video_id": "kCazbHuf-70",
+      "title": "Multi-threading Models in operating system || Many to one || Many to many || one to one",
+      "channel": "Sudhakar Atchala",
+      "views": 139534,
+      "reason_rejected": "Highest-viewed Hinglish multithreading-models video, but subtitles/captions are disabled on YouTube (confirmed via transcript API error), which fails the mandatory captions requirement."
+    },
+    {
+      "video_id": "2ivlNiEByV8",
+      "title": "Multi threading models | Many to One & One to One | Part -1/2 | OS | Lec-45",
+      "channel": "Education 4u (Bhanu Priya)",
+      "views": 73571,
+      "reason_rejected": "No transcript/captions retrievable, and topic is split awkwardly across 2 parts with the required Part 1 lacking captions."
+    },
+    {
+      "video_id": "_5q8ZK6hwzM",
+      "title": "Kernel vs User Level Threads",
+      "channel": "Udacity",
+      "views": 88722,
+      "reason_rejected": "Only a 90-second clip excerpted from a paid Udacity course; too short/thin to count as a complete lecture on the subtopic."
+    },
+    {
+      "video_id": "OrM7nZcxXZU",
+      "title": "Process Management (Processes and Threads)",
+      "channel": "Neso Academy",
+      "views": 955187,
+      "reason_rejected": "High views but overlaps/duplicates content already better covered by 'Introduction to Threads' from the same channel; no unique syllabus coverage added."
+    },
+    {
+      "video_id": "AvsXoy9rstY",
+      "title": "Threads & Multithreading | L 12 | Operating System | GATE 2022",
+      "channel": "Unacademy Computer Science",
+      "views": 112801,
+      "reason_rejected": "Lower views/like-ratio than Gate Smashers and Neso Academy picks, and duration (40 min) mixes broader content with less focused syllabus coverage."
+    }
+  ],
+  "coverage_gaps": "None major. Note that 'benefits of multithreading' is explicitly named and covered as a dedicated segment only in the English pick (Neso Academy - Introduction to Threads); the Hinglish picks (Gate Smashers L-1.11/L-1.12) cover it only implicitly while explaining why threads are used, not as a standalone discussion."
+}

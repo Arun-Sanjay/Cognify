@@ -1,0 +1,191 @@
+{
+  "topic_id": "T1",
+  "topic": "OS Basics & System Calls",
+  "hinglish": [
+    {
+      "video_id": "WJ-UaAaumNA",
+      "title": "L-1.1: Introduction to Operating System and its Functions with English Subtitles",
+      "channel": "Gate Smashers",
+      "duration_sec": 1139,
+      "views": 5366463,
+      "likes": 119632,
+      "comments": 3200,
+      "upload_date": "20180726",
+      "captions": ["en(manual)", "en-en(auto)", "hi-en(auto)"],
+      "covers": ["what an operating system is", "goals/functions of an OS (process, memory, device, file management)"],
+      "why": "By far the most-watched OS lecture in Hindi found (5.37M views, 119.6K likes, 3200 comments) and the natural entry point for the whole GATE OS unit, part of Gate Smashers' dedicated OS roadmap series. Comment sentiment is overwhelmingly positive ('legends watching before exam', many crediting it for passing semesters/interviews) with essentially no coverage or accuracy complaints found in the top 60 comments.",
+      "comment_highlights": [
+        "Legends are watching it one day before the exam.",
+        "Blessed to have teacher like you....huge respect sir...."
+      ]
+    },
+    {
+      "video_id": "tWPa-rZiGM8",
+      "title": "L-1.7: System Calls in Operating system and its types in Hindi",
+      "channel": "Gate Smashers",
+      "duration_sec": 607,
+      "views": 1991822,
+      "likes": 29686,
+      "comments": 413,
+      "upload_date": "20181220",
+      "captions": ["en(manual)", "en-en(auto)", "hi-en(auto)"],
+      "covers": ["what a system call is and how it works", "types of system calls", "user mode -> kernel mode switch (introductory)"],
+      "why": "Near 2M views with a strong like ratio (~1.5%) for a 10-minute lecture, and top comments confirm exact syllabus alignment: one highly-liked comment gives timestamps noting 'System calls shift from user mode to kernel mode' and points viewers to the companion user/kernel-mode video, showing the two topics are taught as a connected pair by this channel. No accuracy complaints surfaced in the top 60 comments, only gratitude for exam/interview prep.",
+      "comment_highlights": [
+        "System calls shift from user mode to kernel mode.",
+        "Thank you for explaining in such easy way, the lecture was very interesting"
+      ]
+    },
+    {
+      "video_id": "ixq5cpdEO2Q",
+      "title": "L-1.8: Fork System call with Example | Fork() system call questions",
+      "channel": "Gate Smashers",
+      "duration_sec": 601,
+      "views": 1323817,
+      "likes": 29163,
+      "comments": 1000,
+      "upload_date": "20190206",
+      "captions": ["en(manual)"],
+      "covers": ["fork() system call semantics", "counting number of processes created by n fork() calls (2^n fork-tree pattern)", "worked GATE-style fork questions"],
+      "why": "Directly targets the classic GATE PYQ pattern named in the syllabus: top comments independently reconstruct the exact 2^n fork-tree counting method taught in the video ('for 4 times a, it will be 2^4=16 times... 15 Child Processes, 1 Parent Process'), confirming both coverage and correctness. 1.32M views with an unusually high 1000 comments (highest engagement-per-view among the Hinglish finalists) and no complaints of errors found.",
+      "comment_highlights": [
+        "Our education system needs more teachers like him!",
+        "Make Fork Tree and count total number of nodes at last level, for 4 times 2^4=16"
+      ]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "vBURTt97EkA",
+      "title": "Introduction to Operating Systems",
+      "channel": "Neso Academy",
+      "duration_sec": 1005,
+      "views": 4146322,
+      "likes": 46475,
+      "comments": 967,
+      "upload_date": "20170802",
+      "captions": ["en(manual)", "en-orig(manual)"],
+      "covers": ["what an operating system is", "why an OS is necessary", "abstract view of a computer system (hardware/OS/programs/users)"],
+      "why": "The most-viewed English OS lecture found for this scope (4.15M views, 46.5K likes) from the most reputable English-medium GATE/CS channel (Neso Academy). Comments consistently praise clarity ('I love that you made us see why the OS is NECESSARY instead of just telling us what it does') with no accuracy complaints in the top 60.",
+      "comment_highlights": [
+        "I love that you made us see why the os is NECESSARY instead of just telling us what it does.",
+        "For every CSE/EC/IT students, NESO academy is there for them!"
+      ]
+    },
+    {
+      "video_id": "lhToWeuWWfw",
+      "title": "System Calls",
+      "channel": "Neso Academy",
+      "duration_sec": 758,
+      "views": 986486,
+      "likes": 15009,
+      "comments": 234,
+      "upload_date": "20180315",
+      "captions": ["en(manual)", "en-orig(manual)"],
+      "captions_note": "also hi(manual)",
+      "covers": ["what a system call is and how it works", "user mode vs kernel mode / mode switching"],
+      "why": "Nearly 1M views with strong per-view engagement, and top comments confirm the video explicitly teaches user-mode/kernel-mode switching ('There are 2 modes of execution... User mode... Kernel mode', 'Switching from kernel to user and vice versa is known as mode shifting'), directly matching the syllabus item. International reach is notable ('easy to understand, many thanks from Ireland') with no error complaints seen; one viewer asked for a follow-up fork()/exec() video, which Neso separately provides.",
+      "comment_highlights": [
+        "Switching from kernel to user and vice versa is known as mode shifting not context switch.",
+        "Very happy to find an explanation in English that is easy to understand. Many thanks from Ireland"
+      ]
+    },
+    {
+      "video_id": "IFEFVXvjiHY",
+      "title": "fork() and exec() System Calls",
+      "channel": "Neso Academy",
+      "duration_sec": 1234,
+      "views": 562221,
+      "likes": 9622,
+      "comments": 205,
+      "upload_date": "20190725",
+      "captions": ["en(manual)", "en-orig(manual)", "hi(manual)"],
+      "covers": ["fork() system call semantics", "exec() system call", "process creation (PID, parent/child output counting for simple examples)"],
+      "why": "Best available English, well-captioned, non-broad lecture specifically on fork()/exec(); comments call it 'The Best Explanation for fork() and exec() I ever saw' with praise from viewers worldwide (Greece, plus others unhappy with their own professors' 3-hour explanations). It does not, however, generalize to the full 2^n counting-for-n-fork()-calls GATE drill the way the Hinglish pick does (see coverage_gaps).",
+      "comment_highlights": [
+        "The Best Explanation for fork() and exec() I ever saw. Hats off Sir!!",
+        "EXCELLENT EXPLANATION (hello from national technical university of Athens - Greece)"
+      ]
+    }
+  ],
+  "runners_up": [
+    {
+      "video_id": "povNcHSasgs",
+      "title": "L-1.2: Batch Operating System | Types of Operating System",
+      "channel": "Gate Smashers",
+      "views": 2298375,
+      "reason_rejected": "Strong candidate for 'types of OS' (names all types, deep-dives Batch) but not selected within the 3-video Hinglish cap; recommended supplementary watch alongside L-1.3/L-1.4 for full types-of-OS coverage."
+    },
+    {
+      "video_id": "3MqyDWDpZoI",
+      "title": "L-1.3: Multiprogramming and Multitasking Operating System in Hindi with real life examples",
+      "channel": "Gate Smashers",
+      "views": 2170140,
+      "reason_rejected": "Excellent, very popular deep-dive on the multiprogramming-vs-multitasking(time-sharing) distinction (a common GATE confusion point) but dropped from the 3-video cap in favor of fork()/system-calls coverage; recommended supplement."
+    },
+    {
+      "video_id": "YQZbIT9FcUk",
+      "title": "L-1.4: Types of OS (Real Time OS, Distributed, Clustered & Embedded OS)",
+      "channel": "Gate Smashers",
+      "views": 1691347,
+      "reason_rejected": "Covers real-time/distributed/clustered/embedded types; not selected due to the 3-video cap, recommended supplement for full types-of-OS coverage."
+    },
+    {
+      "video_id": "8duV1LLHHJU",
+      "title": "L-1.10: User mode and Kernel mode in operating system in hindi",
+      "channel": "Gate Smashers",
+      "views": 1410934,
+      "reason_rejected": "Dedicated deep-dive on user/kernel mode (syllabus item explicitly named); not selected only because of the 3-video cap -- the chosen system-calls video (L-1.7) only briefly touches this. Strongly recommended as a 4th supplementary watch."
+    },
+    {
+      "video_id": "uMMvYLB4cys",
+      "title": "L-1.9: Questions on Fork System Call With Explanation",
+      "channel": "Gate Smashers",
+      "views": 885687,
+      "reason_rejected": "Extra fork() practice questions; largely redundant with L-1.8 which already ends with two worked questions, so skipped to stay within the video cap."
+    },
+    {
+      "video_id": "PY6zEUELn8s",
+      "title": "Types of Operating Systems(Batch, Multiprogramming, Time Sharing, Multiprocessing, Real Time)",
+      "channel": "Jenny's Lectures CS IT",
+      "views": 871781,
+      "reason_rejected": "Would have been an excellent single-video 'types of OS' answer (covers all 5 GATE-named types) but verified via yt-dlp --list-subs to have NO captions at all (manual or automatic) -- fails the hard captions requirement and was excluded."
+    },
+    {
+      "video_id": "Ij71sDmmKpc",
+      "title": "Types of Operating System | Batch, Real-time, Distributed, Network, Time-sharing Operating System",
+      "channel": "Learn Coding",
+      "views": 2478728,
+      "reason_rejected": "High views (2.48M) and Hindi-medium, but transcript check confirmed it never mentions 'multiprogramming' or 'multitasking' -- misses two of the five GATE-named OS types, so rejected in favor of more syllabus-complete picks."
+    },
+    {
+      "video_id": "xw_OuOhjauw",
+      "title": "Complete Operating System in one shot | Semester Exam | Hindi",
+      "channel": "KnowledgeGATE by Sanchit Sir",
+      "views": 3632211,
+      "reason_rejected": "Excluded per rules: a very long, full-syllabus 'one-shot' course video, far broader than the T1 topic scope."
+    },
+    {
+      "video_id": "8XBtAjKwCm4",
+      "title": "Operating System In One Shot by Anuj Bhaiya",
+      "channel": "Coding Shuttle by Anuj Bhaiya",
+      "views": 1510812,
+      "reason_rejected": "Excluded per rules: full-course one-shot video covering the entire OS syllabus, not focused on T1."
+    },
+    {
+      "video_id": "s-tk8el8JoU",
+      "title": "TYPES OF OPERATING SYSTEMS || BATCH, MULTIPROGRAMMED, MULTIPROCESSING, TIME SHARING, REAL TIME etc.",
+      "channel": "Sundeep Saradhi Kanthety",
+      "views": 187131,
+      "reason_rejected": "Good single-video English-medium coverage of all named OS types with manual captions, but much lower views/engagement than the chosen Neso Academy picks and dropped due to the 3-video English cap; recommended supplement for types-of-OS coverage in English."
+    },
+    {
+      "video_id": "PwxTbksJ2fo",
+      "title": "Understanding fork() system call for new process creation",
+      "channel": "Edredo for Learners (Techtud)",
+      "views": 350992,
+      "reason_rejected": "Well-regarded English fork() explainer (350K views, very positive international comments) but does not clearly teach the generalized 2^n counting-for-n-fork()-calls GATE pattern the way Neso's or Gate Smashers' picks do; Neso Academy's fork()/exec() video was preferred for higher views and channel reputation."
+    }
+  ],
+  "coverage_gaps": "Neither language's 3-video pick set fully covers 'types of OS' (batch, multiprogramming, multitasking, time-sharing, real-time) since the best channels split this into separate videos and the 3-video cap forced prioritizing OS-definition + system-calls + fork()/counting instead. For Hinglish, supplement with Gate Smashers L-1.2 (povNcHSasgs), L-1.3 (3MqyDWDpZoI), L-1.4 (YQZbIT9FcUk) for types, and L-1.10 (8duV1LLHHJU) for a full dedicated user-mode-vs-kernel-mode treatment (the chosen L-1.7 only briefly touches mode-switching). For English, supplement with Sundeep Saradhi Kanthety's 'Types of Operating Systems' (s-tk8el8JoU) for types; user/kernel mode is reasonably covered inside the chosen Neso 'System Calls' video per verified comments. Additionally, the English fork() pick (Neso's fork()/exec()) teaches fork() semantics well but does not explicitly generalize to the 2^n process-counting formula for n fork() calls the way the Hinglish pick (Gate Smashers L-1.8) does -- students relying only on the English pick may need extra practice problems for that specific GATE pattern."
+}

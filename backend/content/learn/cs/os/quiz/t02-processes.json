@@ -1,0 +1,1803 @@
+{
+ "topic_id": "t02-processes",
+ "questions": [
+  {
+   "id": "t02-001",
+   "subtopic": "process-states",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "state transitions",
+    "timer interrupt"
+   ],
+   "stem": "In the standard five-state process model (New, Ready, Running, Blocked, Exit), a **timer interrupt** that ends a running process's time quantum causes which transition for that process?",
+   "options": [
+    "Running → Blocked",
+    "Running → Ready",
+    "Ready → Running",
+    "Blocked → Ready"
+   ],
+   "answer": "B",
+   "explanation": "The process has not asked for any event; it simply used up its time slice. The OS preempts it and puts it back in the ready queue: **Running → Ready**. Running → Blocked happens only when the process itself waits for an event (I/O, semaphore, sleep).",
+   "option_feedback": [
+    "Blocked means waiting for an event; quantum expiry is not an event the process waits for.",
+    "Correct: preemption by the timer returns the process to the ready queue.",
+    "This is the dispatch of some process, not what happens to the preempted one.",
+    "Blocked → Ready happens when an awaited event (e.g. I/O completion) occurs."
+   ],
+   "trap": "Confusing preemption (Running → Ready) with blocking (Running → Blocked)."
+  },
+  {
+   "id": "t02-002",
+   "subtopic": "process-states",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "new state",
+    "admission"
+   ],
+   "stem": "When the OS **admits** a newly created process (moves it out of the New state) in the five-state model, the process enters the:",
+   "options": [
+    "Running state",
+    "Blocked state",
+    "Exit state",
+    "Ready state"
+   ],
+   "answer": "D",
+   "explanation": "Admission (by the long-term scheduler) moves a process **New → Ready**. It reaches Running only later, when the short-term scheduler dispatches it. There is no New → Running transition.",
+   "option_feedback": [
+    "There is no direct New → Running transition; the process must first be dispatched from Ready.",
+    "A new process is not waiting for any event.",
+    "Exit is for terminated processes.",
+    "Correct: admitted processes join the ready queue."
+   ]
+  },
+  {
+   "id": "t02-003",
+   "subtopic": "process-states",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 40,
+   "concepts": [
+    "illegal transitions",
+    "five-state model"
+   ],
+   "stem": "Which of the following transitions is **not** possible in the five-state process model?",
+   "options": [
+    "Running → Ready",
+    "Blocked → Ready",
+    "Blocked → Running",
+    "Ready → Running"
+   ],
+   "answer": "C",
+   "explanation": "A blocked process whose event has occurred is moved to the **Ready** queue; it must then compete for the CPU and be dispatched by the short-term scheduler. A blocked process is never given the CPU directly, so **Blocked → Running** does not exist.",
+   "option_feedback": [
+    "Legal: preemption (timer or higher-priority arrival).",
+    "Legal: the awaited event (e.g. I/O completion) occurs.",
+    "Correct: there is no direct Blocked → Running edge; the process goes to Ready first.",
+    "Legal: dispatch by the short-term scheduler."
+   ],
+   "trap": "Assuming a process whose I/O just finished resumes running immediately."
+  },
+  {
+   "id": "t02-004",
+   "subtopic": "process-states",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "running to blocked",
+    "events"
+   ],
+   "stem": "On a uniprocessor, which of the following events cause the **currently running** process P to make the transition Running → Blocked?",
+   "options": [
+    "P issues a read() on a disk block that is not in the buffer cache",
+    "P executes wait(S) on a counting semaphore S whose value is 0",
+    "P's time quantum expires",
+    "A higher-priority process becomes ready under preemptive priority scheduling"
+   ],
+   "answer": [
+    "A",
+    "B"
+   ],
+   "explanation": "A process blocks only when **it** must wait for some event:\n\n- (A) the disk read must complete → Blocked.\n- (B) wait(S) with S = 0 cannot proceed → P is put on S's queue → Blocked.\n- (C) quantum expiry → Running → Ready (preemption).\n- (D) being preempted by a higher-priority process → Running → Ready.",
+   "option_feedback": [
+    "Correct: P waits for the disk I/O to complete.",
+    "Correct: P sleeps on the semaphore's waiting queue.",
+    "Wrong: quantum expiry preempts P to Ready; P is not waiting for anything.",
+    "Wrong: preemption moves P to Ready, not Blocked."
+   ],
+   "trap": "Treating every loss of the CPU as blocking."
+  },
+  {
+   "id": "t02-005",
+   "subtopic": "process-states",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 45,
+   "concepts": [
+    "non-preemptive scheduling",
+    "transitions"
+   ],
+   "stem": "A uniprocessor OS uses purely **non-preemptive** CPU scheduling, and processes never voluntarily yield the CPU. Which transition can then **never** occur?",
+   "options": [
+    "Running → Blocked",
+    "Blocked → Ready",
+    "Running → Ready",
+    "Ready → Running"
+   ],
+   "answer": "C",
+   "explanation": "Under non-preemptive scheduling a process keeps the CPU until it blocks or terminates. Running → Ready is exactly the preemption edge (timer expiry, higher-priority arrival, or a voluntary yield), so with no yields it never happens. Blocking, wake-up and dispatch still occur normally.",
+   "option_feedback": [
+    "Still occurs whenever a process requests I/O.",
+    "Still occurs when I/O completes.",
+    "Correct: Running → Ready is the preemption edge.",
+    "Dispatch must occur for any process to run."
+   ]
+  },
+  {
+   "id": "t02-006",
+   "subtopic": "process-states",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "multiprocessor",
+    "state counts"
+   ],
+   "stem": "A system has **4 CPUs** and **10 user processes**. Every process is always in exactly one of Ready, Running or Blocked, and the OS never leaves a CPU idle while some process is Ready. Which statements are **true**?",
+   "options": [
+    "At most 4 processes can be in the Running state at any instant",
+    "At most 6 processes can be in the Ready state at any instant",
+    "The minimum possible number of Running processes is 0",
+    "At most 6 processes can be in the Blocked state at any instant"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "C"
+   ],
+   "explanation": "- Running ≤ number of CPUs = 4 → (A) true.\n- If some process is Ready, no CPU is idle, so all 4 CPUs are busy: Ready ≤ 10 − 4 = 6 → (B) true.\n- If all 10 processes are Blocked (all waiting for I/O), no process runs → minimum Running = 0 → (C) true.\n- All 10 can be Blocked simultaneously → (D) false (the bound is 10, not 6).",
+   "option_feedback": [
+    "True: one running process per CPU.",
+    "True: a Ready process implies all CPUs are busy, so Ready ≤ 10 − 4.",
+    "True: every process may be blocked on I/O at once; CPUs then idle.",
+    "False: nothing stops all 10 processes from being blocked together."
+   ],
+   "trap": "Applying the 'CPUs must be busy' constraint to Blocked processes too."
+  },
+  {
+   "id": "t02-007",
+   "subtopic": "process-states",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 75,
+   "concepts": [
+    "legal state sequence",
+    "five-state model"
+   ],
+   "stem": "Which of the following is a **valid** life history of a single process in the five-state model?",
+   "options": [
+    "New → Ready → Running → Blocked → Running → Exit",
+    "New → Ready → Running → Ready → Running → Blocked → Ready → Running → Exit",
+    "New → Running → Ready → Running → Exit",
+    "New → Ready → Blocked → Ready → Running → Exit"
+   ],
+   "answer": "B",
+   "explanation": "Check every edge against the legal set {New→Ready, Ready→Running, Running→Ready, Running→Blocked, Blocked→Ready, Running→Exit}:\n\n- (A) contains Blocked → Running ✗\n- (B) New→Ready, Ready→Running, Running→Ready (preempted), Ready→Running, Running→Blocked, Blocked→Ready, Ready→Running, Running→Exit ✓\n- (C) contains New → Running ✗\n- (D) contains Ready → Blocked ✗ (only a running process can request I/O)",
+   "option_feedback": [
+    "Invalid: Blocked → Running skips the ready queue.",
+    "Valid: every edge is a legal transition.",
+    "Invalid: a new process must be admitted to Ready before it can run.",
+    "Invalid: a Ready process is not executing, so it cannot issue a request that blocks it."
+   ]
+  },
+  {
+   "id": "t02-008",
+   "subtopic": "process-states",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "seven-state model",
+    "suspend"
+   ],
+   "stem": "In the seven-state model with suspend states, process P is in **Blocked/Suspend** (swapped out to disk and waiting for a disk read). The read completes while P is still swapped out. P now moves to:",
+   "options": [
+    "Ready",
+    "Blocked",
+    "Ready/Suspend",
+    "Running"
+   ],
+   "answer": "C",
+   "explanation": "Completion of the awaited event removes the *blocked* attribute but not the *suspended* one: P is still on disk. So **Blocked/Suspend → Ready/Suspend**. Later the medium-term scheduler may swap it in (Ready/Suspend → Ready), and only then can it be dispatched.",
+   "option_feedback": [
+    "P is still swapped out; becoming Ready needs a swap-in by the medium-term scheduler.",
+    "The event has occurred, so P is no longer waiting; and it was not swapped in.",
+    "Correct: event occurred, process still suspended.",
+    "A swapped-out process cannot run; it must be brought into memory first."
+   ],
+   "trap": "Forgetting that the event and the swap status are independent attributes."
+  },
+  {
+   "id": "t02-009",
+   "subtopic": "process-states",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "state transitions",
+    "flow conservation",
+    "termination edges"
+   ],
+   "stem": "A uniprocessor OS uses the five-state model (New, Ready, Running, Blocked, Exit). In addition, the OS can **kill** a process that is Ready or Blocked (Ready → Exit, Blocked → Exit); every other termination happens from Running. There is no swapping.\n\nAn observation window starts and ends with **no processes in the system**. The kernel's counters for the window are:\n\n| Event | Count |\n|---|---|\n| Processes admitted (New → Ready) | 60 |\n| Dispatches (Ready → Running) | 500 |\n| Running → Blocked | 180 |\n| Processes killed while Blocked | 12 |\n| Processes killed while Ready | 5 |\n\nEvery admitted process terminates within the window. How many **Running → Ready** (preemption) transitions occurred?",
+   "answer": {
+    "min": 277,
+    "max": 277
+   },
+   "explanation": "Use flow conservation: over a window that starts and ends empty, every state is entered exactly as often as it is left.\n\n1. **Exits from Running**: 60 processes terminated, 12 + 5 = 17 of them were killed outside Running, so Running → Exit = 60 − 17 = **43**.\n2. **Running**: entered only by dispatch (500), left by preemption (P), blocking (180) or exit (43):\n   500 = P + 180 + 43 → **P = 277**.\n3. Check with **Blocked**: entered 180 times, left by wake-up (W) or kill (12) → W = 168.\n   **Ready**: entered by admission + wake-up + preemption = 60 + 168 + 277 = 505; left by dispatch + kill = 500 + 5 = 505 ✓\n\nAnswer: **277**.",
+   "trap": "Computing 500 − 180 − 60 = 260, i.e. assuming all 60 processes exit from Running."
+  },
+  {
+   "id": "t02-010",
+   "subtopic": "process-states",
+   "difficulty": 4,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "seven-state model",
+    "suspend states",
+    "multiprocessor state bounds"
+   ],
+   "stem": "A system has **2 CPUs** and **10 processes**. Main memory can hold at most **5** processes; a process is in memory exactly when it is Running, Ready or Blocked, and on disk when it is Ready/Suspend or Blocked/Suspend. Every process is in one of these five states, and the OS obeys two rules:\n\n- **R1**: a CPU is never idle while some process is **Ready**.\n- **R2**: the medium-term scheduler never leaves a memory slot unused while some process is **Ready/Suspend**.\n\nNo other rule constrains the OS (in particular, it is never forced to swap a Blocked process out). Which of the following snapshots (Running, Ready, Blocked, Ready/Suspend, Blocked/Suspend) can occur?",
+   "options": [
+    "(2, 0, 3, 4, 1)",
+    "(1, 1, 3, 0, 5)",
+    "(0, 0, 5, 3, 2)",
+    "(2, 0, 2, 1, 5)"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "Check each snapshot: total = 10, memory = Running + Ready + Blocked ≤ 5, R1, R2.\n\n| | Total | In memory | R1 (Ready > 0 ⇒ both CPUs busy) | R2 (Ready/Suspend > 0 ⇒ memory full) | Possible? |\n|---|---|---|---|---|---|\n| A (2,0,3,4,1) | 10 | 5 | Ready = 0 ✓ | memory full ✓ | **yes** |\n| B (1,1,3,0,5) | 10 | 5 | 1 Ready but a CPU idle ✗ | — | no |\n| C (0,0,5,3,2) | 10 | 5 | Ready = 0 ✓ | memory full ✓ | **yes** |\n| D (2,0,2,1,5) | 10 | 4 | ✓ | a free slot while 1 is Ready/Suspend ✗ | no |\n\n(A) and (C) look wrong at first sight — ready work waits on disk while memory is full of blocked processes, and in (C) both CPUs are idle — but nothing *forces* the OS to swap a Blocked process out, and a Ready/Suspend process cannot be dispatched until it is swapped in. So both are legal.",
+   "option_feedback": [
+    "Possible: memory is full (2 + 0 + 3), no in-memory Ready process, so R1 and R2 both hold; nothing forces Blocked processes out.",
+    "Impossible: a Ready process exists while one CPU is idle, violating R1.",
+    "Possible: both CPUs idle is fine because no process is Ready in memory; Ready/Suspend processes cannot be dispatched, and memory is full so R2 holds.",
+    "Impossible: only 4 processes are in memory while one is Ready/Suspend, violating R2."
+   ],
+   "trap": "Assuming a CPU can never idle while ready work exists anywhere, or that the OS must swap blocked processes out to make room for ready ones."
+  },
+  {
+   "id": "t02-011",
+   "subtopic": "process-states",
+   "also_tests": [
+    "priority"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "preemptive priority",
+    "shared I/O device",
+    "time in blocked state"
+   ],
+   "stem": "A uniprocessor uses **preemptive priority** scheduling (larger number = higher priority); context-switch time is zero. There is **one I/O device**, shared by all processes and served **FCFS without preemption**. A process is in the **Blocked** state from the instant it requests I/O until its own I/O operation completes (this includes time spent queued for the device). A process whose I/O completes enters Ready at that instant.\n\n| Process | Arrival | Priority | Behaviour |\n|---|---|---|---|\n| P1 | 0 | 1 | CPU 3, I/O 3, CPU 2, exit |\n| P2 | 1 | 2 | CPU 2, I/O 4, CPU 2, exit |\n| P3 | 2 | 3 | CPU 1, I/O 2, CPU 1, exit |\n\nWhat is the **total time P1 spends in the Blocked state**?",
+   "answer": {
+    "min": 5,
+    "max": 5
+   },
+   "explanation": "Trace CPU and device together:\n\n| Interval | CPU | Device | Notes |\n|---|---|---|---|\n| 0–1 | P1 | — | P1 rem 2 |\n| 1–2 | P2 | — | P2 arrives, preempts P1 |\n| 2–3 | P3 | — | P3 preempts P2; burst done → I/O |\n| 3–4 | P2 | P3 (3–5) | P2 burst done at 4 → queued for device |\n| 4–5 | P1 | P3 | P1 rem 1 |\n| 5–6 | P3 | P2 (5–9) | P3 back, preempts P1; P3 exits at 6 |\n| 6–7 | P1 | P2 | P1 burst done at 7 → **requests I/O, device busy** |\n| 7–9 | idle | P2 | P1 Blocked, waiting in device queue |\n| 9–11 | P2 | **P1 (9–12)** | P2 back, runs, exits at 11 |\n| 11–12 | idle | P1 | |\n| 12–14 | P1 | — | P1 exits at 14 |\n\nP1 is Blocked from t = 7 (request) to t = 12 (its I/O completes): 2 units queued + 3 units of service = **5**.\n\nCheck: P1's turnaround 14 = CPU 5 + Ready 4 (1–4, 5–6) + Blocked 5 ✓",
+   "trap": "Taking P1's Blocked time to be just its I/O burst (3), i.e. ignoring the wait for the shared device while P2's 4-unit I/O is in progress."
+  },
+  {
+   "id": "t02-012",
+   "subtopic": "pcb",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "PCB contents"
+   ],
+   "stem": "Which of the following is **not** stored in a process's Process Control Block (PCB)?",
+   "options": [
+    "The saved program counter",
+    "The list of open files",
+    "The CPU-scheduling priority",
+    "The contents of the process's heap"
+   ],
+   "answer": "D",
+   "explanation": "The PCB holds *bookkeeping* about the process: identifiers, state, saved CPU context (PC, registers), scheduling info, memory-management info (e.g. page-table pointer), accounting and I/O status (open files). The heap's **contents** live in the process's own address space; the PCB at most points to where that memory is mapped.",
+   "option_feedback": [
+    "Stored: needed to resume the process.",
+    "Stored: part of the I/O status information.",
+    "Stored: part of the CPU-scheduling information.",
+    "Correct: the heap data lives in the process's address space, not in the PCB."
+   ]
+  },
+  {
+   "id": "t02-013",
+   "subtopic": "pcb",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "PCB location",
+    "kernel memory"
+   ],
+   "stem": "Where is a process's PCB kept?",
+   "options": [
+    "In kernel memory, not accessible from user mode",
+    "On the process's user-mode stack",
+    "In the process's heap",
+    "In the header of the executable file on disk"
+   ],
+   "answer": "A",
+   "explanation": "The PCB is a kernel data structure (e.g. Linux `task_struct`). It must be protected from the process itself, so it lives in kernel space and is manipulated only in kernel mode.",
+   "option_feedback": [
+    "Correct: the PCB is a protected kernel data structure.",
+    "A user stack is writable by the process; the kernel could not trust it.",
+    "The heap belongs to the process and is writable by it.",
+    "The executable has no runtime state like saved registers or process state."
+   ]
+  },
+  {
+   "id": "t02-014",
+   "subtopic": "pcb",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "PCB contents"
+   ],
+   "stem": "Which of the following are typically part of a PCB?",
+   "options": [
+    "Saved program counter and general-purpose registers",
+    "A pointer to (or base register value of) the process's page table",
+    "Accounting information such as CPU time used",
+    "The current contents of the TLB"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "C"
+   ],
+   "explanation": "A PCB contains process state, saved CPU context (A), CPU-scheduling info, memory-management info such as the page-table base (B), accounting info (C) and I/O status. The **TLB** is a hardware cache; on a switch it is flushed or its entries are tagged with an address-space id, but its contents are not saved into the PCB.",
+   "option_feedback": [
+    "Part of the PCB: the CPU context.",
+    "Part of the PCB: memory-management information.",
+    "Part of the PCB: accounting information.",
+    "Not part of the PCB: TLB entries are rebuilt on demand from the page table."
+   ],
+   "trap": "Thinking all hardware translation state is saved per process."
+  },
+  {
+   "id": "t02-015",
+   "subtopic": "pcb",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "register save area",
+    "PCB size"
+   ],
+   "stem": "A 64-bit CPU has 32 integer registers and 32 floating-point registers (each 8 bytes), plus a program counter, a stack pointer and a status register (each 8 bytes). The PCB stores a full copy of all of these. What is the size, in bytes, of this register-save area in each PCB?",
+   "answer": {
+    "min": 536,
+    "max": 536
+   },
+   "explanation": "Count every register × 8 bytes:\n\n- integer: 32 × 8 = 256\n- floating point: 32 × 8 = 256\n- PC + SP + status: 3 × 8 = 24\n\nTotal = 256 + 256 + 24 = **536 bytes**.",
+   "trap": "Forgetting the PC/SP/status registers (giving 512)."
+  },
+  {
+   "id": "t02-016",
+   "subtopic": "pcb",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 40,
+   "concepts": [
+    "fork",
+    "PCB copy"
+   ],
+   "stem": "Immediately after a successful `fork()`, the child's PCB is created largely as a copy of the parent's. Which PCB field **necessarily** differs between parent and child?",
+   "options": [
+    "The saved program counter",
+    "The process identifier (PID)",
+    "The current working directory",
+    "The nice (scheduling priority) value"
+   ],
+   "answer": "B",
+   "explanation": "Every process needs a unique PID, so the child gets a new one (and its parent-PID field is the parent's PID). Both processes resume at the instruction after `fork()`, so the saved PC is the same; the working directory and nice value are inherited. (The only register that differs is the one holding fork's return value.)",
+   "option_feedback": [
+    "Both parent and child continue right after the fork() call, so the PC is the same.",
+    "Correct: PIDs are unique system-wide.",
+    "Inherited from the parent.",
+    "Inherited from the parent."
+   ]
+  },
+  {
+   "id": "t02-017",
+   "subtopic": "pcb",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 75,
+   "concepts": [
+    "PCB update",
+    "blocking"
+   ],
+   "stem": "The running process P issues a blocking disk read. While moving P to the Blocked state, which fields of **P's PCB** does the kernel update?",
+   "options": [
+    "The process-state field",
+    "The saved CPU context (program counter and registers)",
+    "The process identifier",
+    "The link pointer that places the PCB on a queue (now the disk's wait queue)"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "D"
+   ],
+   "explanation": "Blocking P means: save P's CPU context into its PCB (B), set state = Blocked (A), and unlink the PCB from the running position and link it onto the device wait queue (D). The PID never changes during a process's lifetime (C).",
+   "option_feedback": [
+    "Updated: Running → Blocked.",
+    "Updated: needed so P can later resume where it stopped.",
+    "Never changes during the process's lifetime.",
+    "Updated: the PCB moves onto the disk's wait queue."
+   ]
+  },
+  {
+   "id": "t02-018",
+   "subtopic": "pcb",
+   "also_tests": [
+    "page-faults",
+    "system-calls"
+   ],
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "saved program counter",
+    "interrupt vs fault vs trap",
+    "branch target"
+   ],
+   "stem": "A CPU has fixed-length 4-byte instructions. Asynchronous interrupts are recognised only **after** the current instruction completes; a faulting instruction is **restarted** after the fault is handled; a `syscall` instruction completes before entering the kernel. Each of the following four events makes process P lose the CPU, and the kernel saves P's user PC in its PCB:\n\n1. A timer interrupt arrives while P is executing the `add` at 0x2000.\n2. Later, a timer interrupt arrives while P is executing a **taken** `jmp 0x3000` located at 0x2010.\n3. The `load` at 0x3008 causes a page fault (the page is on disk).\n4. The `syscall` at 0x300C performs a blocking `read()`.\n\nWhich sequence of saved PC values is correct?",
+   "options": [
+    "0x2004, 0x2014, 0x3008, 0x3010",
+    "0x2004, 0x3000, 0x300C, 0x3010",
+    "0x2004, 0x3000, 0x3008, 0x3010",
+    "0x2004, 0x3000, 0x3008, 0x300C"
+   ],
+   "answer": "C",
+   "explanation": "Ask, for each event, *which instruction should run next when P resumes*:\n\n1. Timer during `add` at 0x2000: the `add` completes, then the interrupt is taken → resume at the next instruction **0x2004**.\n2. Timer during the taken `jmp 0x3000`: the jump completes first, so the PC already holds the branch target → **0x3000** (not 0x2014).\n3. Page fault at 0x3008: the `load` did not complete and must be re-executed → **0x3008**.\n4. `syscall` at 0x300C: a trap is a completed instruction; after `read()` returns, execution continues after it → **0x3010**.\n\nSequence: 0x2004, 0x3000, 0x3008, 0x3010.",
+   "option_feedback": [
+    "Wrong: after a completed taken jump the PC is the branch target 0x3000, not the next sequential address.",
+    "Wrong: a page-faulting instruction is restarted, so the saved PC is 0x3008, not 0x300C.",
+    "Correct: next instruction, branch target, restart the faulting instruction, instruction after the trap.",
+    "Wrong: a syscall instruction has completed, so P resumes after it at 0x3010; it is not re-executed."
+   ],
+   "trap": "Assuming the saved PC is always 'current address + 4', ignoring taken branches and restartable faults."
+  },
+  {
+   "id": "t02-019",
+   "subtopic": "pcb",
+   "also_tests": [
+    "system-calls"
+   ],
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "exec",
+    "PCB fields",
+    "file descriptors"
+   ],
+   "stem": "A process with PID 4200 calls `execv(\"/bin/ls\", args)` successfully (POSIX semantics). Which statements about its PCB after the call are **true**?",
+   "options": [
+    "Its PID is still 4200",
+    "Its memory-management information (page table) is unchanged, since only the code is replaced",
+    "File descriptors that were open and not marked close-on-exec remain open",
+    "Signal handlers that the old program had installed remain installed"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "`exec` replaces the **program** running inside the same process:\n\n- (A) Same process → same PID (and parent PID) ✓\n- (B) A brand-new address space is built for `/bin/ls` (text, data, heap, stack), so the page table changes ✗\n- (C) Open descriptors survive unless marked FD_CLOEXEC — this is how shells set up redirection before exec ✓\n- (D) Caught signals are reset to default, because the handler code no longer exists in the new image (ignored signals stay ignored) ✗",
+   "option_feedback": [
+    "True: exec does not create a new process.",
+    "False: the whole address space is replaced, not just the code.",
+    "True: this is the basis of I/O redirection.",
+    "False: handler addresses would point into the discarded image, so caught signals reset to default."
+   ]
+  },
+  {
+   "id": "t02-020",
+   "subtopic": "pcb",
+   "also_tests": [
+    "fork",
+    "system-calls"
+   ],
+   "difficulty": 5,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "open-file table",
+    "dup and fork share offsets",
+    "O_APPEND"
+   ],
+   "stem": "Assume POSIX semantics, that every call succeeds, and that `f.txt` does not exist initially. Writes past the current end extend the file; writes inside it overwrite.\n\n```c\nint fd = open(\"f.txt\", O_WRONLY | O_CREAT | O_TRUNC, 0644);\nwrite(fd, \"ABCDEF\", 6);\nint a = open(\"f.txt\", O_WRONLY | O_APPEND);\nint d = dup(fd);\nlseek(fd, 2, SEEK_SET);\nif (fork() == 0) {\n    write(d, \"xy\", 2);\n    write(a, \"Q\", 1);\n    int g = open(\"f.txt\", O_WRONLY);\n    write(g, \"zz\", 2);\n    lseek(fd, 0, SEEK_END);\n    exit(0);\n}\nwait(NULL);\nwrite(fd, \"M\", 1);\nwrite(a, \"N\", 1);\nwrite(d, \"P\", 1);\n```\n\nWhat are the final contents of `f.txt`?",
+   "options": [
+    "zzxyEFQMNP",
+    "zzMPEFQN",
+    "zzCDEFxyPMN",
+    "zzxyEFQMP"
+   ],
+   "answer": "D",
+   "explanation": "Descriptor tables (in each PCB) point into the system-wide open-file table, which holds the offsets.\n\n- `fd` and `d` (via `dup`) share entry **E1**; `fork()` copies the descriptors, so parent and child also share E1 → **one offset** for fd and d in both processes.\n- `a` is a separate entry **E2** with O_APPEND: every write goes to the current end.\n- `g` (child's fresh `open`) is a separate entry **E3**, offset 0.\n\n| Step | Who | Entry / offset | File |\n|---|---|---|---|\n| write ABCDEF | parent | E1: 0 → 6 | ABCDEF |\n| lseek(fd, 2) | parent | E1 = 2 | |\n| write(d, xy) | child | E1: 2 → 4 | ABxyEF |\n| write(a, Q) | child | E2: append at 6 | ABxyEFQ |\n| write(g, zz) | child | E3: 0 → 2 | zzxyEFQ |\n| lseek(fd, END) | child | E1 = 7 (shared with parent!) | |\n| write(fd, M) | parent | E1: 7 → 8 | zzxyEFQM |\n| write(a, N) | parent | E2: append at 8 | zzxyEFQMN |\n| write(d, P) | parent | E1: **8** → 9 (d shares E1) | zzxyEFQM**P** |\n\nThe last write goes through E1, whose offset is still 8, so P overwrites N. Final: **zzxyEFQMP**.",
+   "option_feedback": [
+    "Wrong: d shares fd's offset (8), it does not follow the O_APPEND descriptor, so P overwrites N instead of being appended.",
+    "Wrong: assumes fork gives the child its own offsets, so the child's lseek and writes don't move the parent's offset.",
+    "Wrong: assumes dup creates an independent offset (6) for d.",
+    "Correct: fd, d and the child's copies share one offset; a appends; g starts at 0."
+   ],
+   "trap": "Thinking dup() or fork() gives an independent file offset, or that a write through d lands at the true end of file."
+  },
+  {
+   "id": "t02-021",
+   "subtopic": "context-switch",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "dispatcher"
+   ],
+   "stem": "Which OS component performs the context switch, switches to user mode and jumps to the proper location in the selected process?",
+   "options": [
+    "Dispatcher",
+    "Long-term scheduler",
+    "Medium-term scheduler",
+    "Interrupt vector table"
+   ],
+   "answer": "A",
+   "explanation": "The short-term scheduler *chooses* a process; the **dispatcher** gives it the CPU: it switches context, switches to user mode and jumps to the saved PC. The time it takes is the *dispatch latency*.",
+   "option_feedback": [
+    "Correct: this is the dispatcher's job.",
+    "The long-term scheduler admits jobs into memory; it does not switch the CPU.",
+    "The medium-term scheduler handles swapping.",
+    "The vector table only maps interrupt numbers to handler addresses."
+   ]
+  },
+  {
+   "id": "t02-022",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "pcb"
+   ],
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "context switch",
+    "PCB"
+   ],
+   "stem": "During a context switch, the kernel saves the CPU state of the outgoing process into:",
+   "options": [
+    "The incoming process's PCB",
+    "The outgoing process's PCB",
+    "The TLB",
+    "The interrupt vector table"
+   ],
+   "answer": "B",
+   "explanation": "Context switch = save the state of the old process in **its own PCB**, then load the saved state of the new process from **its** PCB.",
+   "option_feedback": [
+    "The incoming process's PCB is read from, not written with the old process's state.",
+    "Correct.",
+    "The TLB caches address translations; it is not a save area.",
+    "The vector table holds handler addresses, not process state."
+   ]
+  },
+  {
+   "id": "t02-023",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "user-vs-kernel-mode",
+    "system-calls"
+   ],
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "mode switch",
+    "system call"
+   ],
+   "stem": "A process calls `getpid()`, which the kernel services immediately and returns. Assuming no interrupt or rescheduling occurs during the call, the call involves:",
+   "options": [
+    "A mode switch to kernel mode and back, but no context switch",
+    "Two context switches (to the kernel and back)",
+    "One context switch to a kernel process",
+    "Neither a mode switch nor a context switch"
+   ],
+   "answer": "A",
+   "explanation": "A system call traps into kernel mode (user → kernel → user): that is a **mode switch**. The kernel runs on behalf of the same process, and the same process continues afterwards, so no other process's context is loaded — **no context switch**.",
+   "option_feedback": [
+    "Correct: mode switch only.",
+    "The kernel is not a separate process here; the same process continues.",
+    "System calls run in the calling process's context, not in a separate kernel process.",
+    "A trap into the kernel is always a mode switch."
+   ],
+   "trap": "Equating mode switch with context switch."
+  },
+  {
+   "id": "t02-024",
+   "subtopic": "context-switch",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "CPU efficiency",
+    "quantum",
+    "switch overhead"
+   ],
+   "stem": "Round Robin is used with quantum q = 10 ms and context-switch time s = 2 ms. All processes are CPU-bound, always use their full quantum, and one context switch occurs after every quantum. What percentage of CPU time is spent doing useful work? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 83.33,
+    "max": 83.34
+   },
+   "explanation": "Each cycle = one quantum of useful work + one switch = 10 + 2 = 12 ms.\n\nEfficiency = q / (q + s) = 10 / 12 = 0.8333… → **83.33 %**.",
+   "trap": "Computing 1 − s/q = 80 %."
+  },
+  {
+   "id": "t02-025",
+   "subtopic": "context-switch",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "minimum quantum",
+    "switch overhead"
+   ],
+   "stem": "A Round Robin system has a context-switch time of 1 ms. All processes are CPU-bound, always use their full quantum, and there is exactly one context switch per quantum. What is the **smallest** quantum (in ms) for which context-switch overhead is at most 10 % of total CPU time?",
+   "answer": {
+    "min": 9,
+    "max": 9
+   },
+   "explanation": "Overhead fraction = s / (q + s) ≤ 0.1\n\n1 / (q + 1) ≤ 0.1 → q + 1 ≥ 10 → q ≥ **9 ms**.\n\nCheck: q = 9 → 1/10 = 10 % ✓; q = 8 → 1/9 ≈ 11.1 % ✗.",
+   "trap": "Using s/q ≤ 0.1 (giving 10 ms) instead of s/(q + s)."
+  },
+  {
+   "id": "t02-026",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "pcb"
+   ],
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "context-switch cost",
+    "register save/restore"
+   ],
+   "stem": "On a 64-bit machine, a context switch saves 32 general-purpose registers, the PC, the SP and the status register of the outgoing process (all 8 bytes each) to memory, and restores the same set for the incoming process. Each 8-byte register save or restore takes one memory access of 10 ns. In addition, running the scheduler code takes a fixed 1 µs. Ignore all other costs. What is the total context-switch time in **nanoseconds**?",
+   "answer": {
+    "min": 1700,
+    "max": 1700
+   },
+   "explanation": "Registers per process = 32 + 3 = 35.\n\n- Save outgoing: 35 accesses\n- Restore incoming: 35 accesses\n- Total memory time = 70 × 10 ns = 700 ns\n- Scheduler: 1 µs = 1000 ns\n\nTotal = 700 + 1000 = **1700 ns**.",
+   "trap": "Counting only the save (or only the restore), or forgetting the PC/SP/status registers."
+  },
+  {
+   "id": "t02-027",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "user-vs-kernel-threads"
+   ],
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "reducing switch cost",
+    "TLB",
+    "register sets"
+   ],
+   "stem": "Which of the following reduce the cost of switching the CPU from one execution context to another?",
+   "options": [
+    "Hardware with multiple register sets, so a switch only changes a register-set pointer",
+    "A TLB whose entries are tagged with address-space identifiers (ASIDs), so it need not be flushed on every process switch",
+    "Reducing the time quantum of Round Robin scheduling",
+    "Switching between user-level threads of the same process using a user-space thread library"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "D"
+   ],
+   "explanation": "- (A) Avoids copying registers to/from memory (e.g. SPARC register windows) ✓\n- (B) No TLB flush → fewer TLB misses after the switch ✓\n- (C) A smaller quantum makes switches **more frequent**; it does not make each switch cheaper and raises total overhead ✗\n- (D) A user-level thread switch needs no trap into the kernel and no address-space change ✓",
+   "option_feedback": [
+    "True: saves memory traffic per switch.",
+    "True: preserves translations across switches.",
+    "False: increases how often switching costs are paid.",
+    "True: no mode switch, same address space."
+   ]
+  },
+  {
+   "id": "t02-028",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "round-robin"
+   ],
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "round robin",
+    "quantum bound",
+    "response time"
+   ],
+   "stem": "Ten CPU-bound processes share a CPU under Round Robin; none ever blocks, each always uses its full quantum q, and every switch from one process to the next costs 2 ms. The designer requires that each process gets its **next** quantum no later than 200 ms after its previous quantum ended. What is the **largest** quantum q (in ms) that meets this requirement?",
+   "answer": {
+    "min": 20,
+    "max": 20
+   },
+   "explanation": "After P1's quantum ends, before P1 runs again we see: switch, P2, switch, P3, …, switch, P10, switch → **10 switches** and **9 quanta**.\n\n10 × 2 + 9q ≤ 200 → 9q ≤ 180 → q ≤ **20 ms**.",
+   "trap": "Using n·q + n·s or (n − 1)(q + s) — miscounting the switches or quanta in the cycle."
+  },
+  {
+   "id": "t02-029",
+   "subtopic": "context-switch",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "context-switch overhead",
+    "partial last quantum",
+    "work backwards"
+   ],
+   "stem": "Every process repeatedly runs a CPU burst of exactly **40 ms** and then blocks for I/O. The scheduler is Round Robin with an **integer** quantum q (ms), and a **3 ms** context switch occurs **every time the CPU leaves a process** (quantum expiry or blocking). The ready queue is never empty.\n\nWhat is the **smallest** q for which at least **85 %** of CPU time is useful work?",
+   "answer": {
+    "min": 20,
+    "max": 20
+   },
+   "explanation": "A 40 ms burst is cut into k = ⌈40 / q⌉ pieces, each followed by one switch, so per burst:\n\nefficiency = 40 / (40 + 3k).\n\nNeed 40 / (40 + 3k) ≥ 0.85 → 40 + 3k ≤ 47.06 → 3k ≤ 7.06 → **k ≤ 2**.\n\nk = ⌈40/q⌉ ≤ 2 ⇔ q ≥ 20.\n\nCheck: q = 20 → 2 switches → 40/46 = 86.96 % ✓; q = 19 → ⌈40/19⌉ = 3 switches → 40/49 = 81.63 % ✗.\n\nAnswer **20 ms**. (Efficiency is a step function of q: any q from 20 to 39 gives the same 86.96 %.)",
+   "trap": "Using q/(q + s) ≥ 0.85, which gives q ≥ 17 — but with q = 17 a 40 ms burst still needs 3 switches."
+  },
+  {
+   "id": "t02-030",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "round-robin"
+   ],
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "round robin",
+    "context switch overhead",
+    "turnaround"
+   ],
+   "stem": "Round Robin with quantum 2 is used. A context switch takes **1 time unit** and is incurred every time the CPU is given to a **different** process (no switch is needed for the very first dispatch at t = 0). If a new arrival and a preempted process join the ready queue at the same instant, the new arrival is queued first.\n\n| Process | Arrival | Burst |\n|---|---|---|\n| P1 | 0 | 5 |\n| P2 | 1 | 3 |\n| P3 | 2 | 2 |\n\nWhat is the **average turnaround time**?",
+   "answer": {
+    "min": 11,
+    "max": 11
+   },
+   "explanation": "Gantt chart (CS = context switch):\n\n```\n| P1 | CS | P2 | CS | P3 | CS | P1 | CS | P2 | CS | P1 |\n0    2    3    5    6    8    9    11   12   13   14   15\n```\n\n- t = 2: P3 arrives and P1 is preempted together → queue P2, P3, P1.\n- P2 runs 3–5 (rem 1) → queue P3, P1, P2.\n- P3 runs 6–8, done.\n- P1 runs 9–11 (rem 1) → queue P2, P1.\n- P2 runs 12–13, done; P1 runs 14–15, done.\n\n| Process | Completion | Turnaround |\n|---|---|---|\n| P1 | 15 | 15 |\n| P2 | 13 | 12 |\n| P3 | 8 | 6 |\n\nAverage = 33 / 3 = **11**. (CPU efficiency = 10 / 15 = 66.7 %.)",
+   "trap": "Forgetting the switch after a process completes, or placing preempted P1 ahead of the newly arrived P3."
+  },
+  {
+   "id": "t02-031",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "sjf-srtf"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "SRTF",
+    "context-switch overhead",
+    "arrival during a switch"
+   ],
+   "stem": "Preemptive **SRTF** is used. A context switch takes **2 time units** and is incurred every time the CPU is given to a process different from the one that last ran (including after a completion; no switch at t = 0). Rules:\n\n- On an arrival while a process is running, the running process is preempted if the newcomer's remaining time is **strictly** smaller.\n- A switch, once started, is **never aborted**. When it ends, the scheduler re-checks: if a process that arrived during the switch has strictly smaller remaining time than the incoming process, the incoming process is preempted immediately (without executing) and a new switch begins.\n- Ties go to the lower-numbered process.\n\n| Process | Arrival | Burst |\n|---|---|---|\n| P1 | 0 | 6 |\n| P2 | 1 | 4 |\n| P3 | 2 | 1 |\n| P4 | 6 | 2 |\n\nWhat is the **average turnaround time**? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 11.5,
+    "max": 11.5
+   },
+   "explanation": "Trace (CS = context switch):\n\n| Time | Event / decision | CPU |\n|---|---|---|\n| 0–1 | only P1 | P1 (rem 5) |\n| 1 | P2 (4) < P1 (5) → preempt | CS 1–3 towards P2 |\n| 2 | P3 (1) arrives **during** the switch — switch continues | |\n| 3 | switch ends; P3 (1) < P2 (4) → P2 preempted before running | CS 3–5 towards P3 |\n| 5–6 | | P3 runs, done at 6 |\n| 6 | P4 arrives; P1 5, P2 4, P4 2 → P4 | CS 6–8, P4 8–10, done 10 |\n| 10 | P1 5, P2 4 → P2 | CS 10–12, P2 12–16, done 16 |\n| 16 | P1 | CS 16–18, P1 18–23, done 23 |\n\n```\n| P1 | CS | CS | P3 | CS | P4 | CS | P2 | CS | P1 |\n0    1    3    5    6    8    10   12   16   18   23\n```\n\n| Process | Completion | TAT |\n|---|---|---|\n| P1 | 23 | 23 |\n| P2 | 16 | 15 |\n| P3 | 6 | 4 |\n| P4 | 10 | 4 |\n\nAverage TAT = 46 / 4 = **11.50**. Note the wasted switch 1–3: P2 is switched in but never runs.",
+   "trap": "Redirecting the switch to P3 at t = 2 (aborting it), or letting P2 run at t = 3 because P3's arrival happened during the switch."
+  },
+  {
+   "id": "t02-032",
+   "subtopic": "schedulers",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "long-term scheduler",
+    "degree of multiprogramming"
+   ],
+   "stem": "Which scheduler primarily controls the **degree of multiprogramming**?",
+   "options": [
+    "Short-term (CPU) scheduler",
+    "Dispatcher",
+    "Long-term (job) scheduler",
+    "I/O scheduler"
+   ],
+   "answer": "C",
+   "explanation": "The long-term scheduler decides which jobs are **admitted** into memory, i.e. how many processes compete for the CPU — the degree of multiprogramming. (The medium-term scheduler can also lower it temporarily by swapping out.)",
+   "option_feedback": [
+    "The CPU scheduler picks among processes already in memory; it does not change how many there are.",
+    "The dispatcher only hands the CPU to the chosen process.",
+    "Correct.",
+    "The I/O (disk) scheduler orders device requests."
+   ]
+  },
+  {
+   "id": "t02-033",
+   "subtopic": "schedulers",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "short-term scheduler",
+    "frequency"
+   ],
+   "stem": "Which scheduler runs **most frequently**?",
+   "options": [
+    "Long-term scheduler",
+    "Medium-term scheduler",
+    "Swapper",
+    "Short-term (CPU) scheduler"
+   ],
+   "answer": "D",
+   "explanation": "The short-term scheduler runs at every timer interrupt, block, wake-up and termination — often every few milliseconds — so it must be fast. The long-term scheduler may run only when a process leaves the system, possibly minutes apart.",
+   "option_feedback": [
+    "Runs rarely: only when admitting new jobs.",
+    "Runs occasionally, when memory pressure requires swapping.",
+    "The swapper is the medium-term scheduler; it runs occasionally.",
+    "Correct: it runs on every CPU-scheduling decision."
+   ]
+  },
+  {
+   "id": "t02-034",
+   "subtopic": "schedulers",
+   "also_tests": [
+    "process-states"
+   ],
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 40,
+   "concepts": [
+    "medium-term scheduler",
+    "swapping"
+   ],
+   "stem": "A process is removed from main memory to disk to reduce memory pressure and later brought back to continue from where it stopped. Which scheduler makes these decisions?",
+   "options": [
+    "Medium-term scheduler",
+    "Long-term scheduler",
+    "Short-term scheduler",
+    "Dispatcher"
+   ],
+   "answer": "A",
+   "explanation": "Swapping a partially executed process out and back in is the job of the **medium-term scheduler**. It produces the suspend states (Ready/Suspend, Blocked/Suspend) and can temporarily reduce the degree of multiprogramming.",
+   "option_feedback": [
+    "Correct.",
+    "The long-term scheduler admits new jobs; it does not swap running ones.",
+    "The short-term scheduler picks which in-memory ready process runs next.",
+    "The dispatcher performs the context switch only."
+   ]
+  },
+  {
+   "id": "t02-035",
+   "subtopic": "schedulers",
+   "also_tests": [
+    "process-states"
+   ],
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "scheduler roles",
+    "state transitions"
+   ],
+   "stem": "Which of the following pairings of a transition with the scheduler responsible for it are correct?",
+   "options": [
+    "New → Ready: long-term scheduler",
+    "Ready → Running: short-term scheduler",
+    "Blocked → Blocked/Suspend: medium-term scheduler",
+    "Running → Blocked: long-term scheduler"
+   ],
+   "answer": [
+    "A",
+    "B",
+    "C"
+   ],
+   "explanation": "- Admission (A) — long-term ✓\n- Dispatch choice (B) — short-term ✓\n- Swapping out (C) — medium-term ✓\n- Running → Blocked (D) is caused by the process itself requesting I/O or waiting on an event; no scheduler decides it ✗",
+   "option_feedback": [
+    "Correct: admission is the long-term scheduler's decision.",
+    "Correct: CPU scheduling.",
+    "Correct: suspension is a swap-out decision.",
+    "Wrong: blocking is triggered by the process's own request, not a scheduler."
+   ]
+  },
+  {
+   "id": "t02-036",
+   "subtopic": "schedulers",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "process mix",
+    "I/O-bound",
+    "CPU-bound"
+   ],
+   "stem": "Suppose the long-term scheduler admits **only I/O-bound** processes. What is the most likely result?",
+   "options": [
+    "The CPU is saturated while the I/O devices sit idle",
+    "The system thrashes because of excessive paging",
+    "The ready queue is nearly always empty and the CPU is under-utilised, while device queues are long",
+    "CPU and devices stay well balanced, because I/O-bound processes have short CPU bursts"
+   ],
+   "answer": "C",
+   "explanation": "I/O-bound processes spend most time waiting on devices and need the CPU only for short bursts. With only such processes, device queues fill up while the **ready queue is almost always empty**, so the CPU idles. The long-term scheduler should pick a **good mix** of CPU-bound and I/O-bound jobs.",
+   "option_feedback": [
+    "That is the outcome of admitting only CPU-bound processes.",
+    "Thrashing is caused by too little memory per process, not by the I/O/CPU mix.",
+    "Correct.",
+    "Balance requires a mix; all I/O-bound leaves the CPU idle."
+   ]
+  },
+  {
+   "id": "t02-037",
+   "subtopic": "schedulers",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "time-sharing",
+    "long-term scheduler"
+   ],
+   "stem": "Which statement is **true**?",
+   "options": [
+    "The long-term scheduler must run more often than the short-term scheduler",
+    "The medium-term scheduler chooses which ready process gets the CPU next",
+    "The short-term scheduler can afford to be slow, since it runs only when a job completes",
+    "Time-sharing systems such as UNIX often have no real long-term scheduler; every new process is put in memory, and the degree of multiprogramming is limited by physical resources and user behaviour"
+   ],
+   "answer": "D",
+   "explanation": "In interactive time-sharing systems, a process is created when the user runs a program; there is typically no batch queue for a job scheduler to choose from. Load is self-limiting: when the system gets slow, users stop starting work. Options A–C invert the roles and frequencies of the schedulers.",
+   "option_feedback": [
+    "Reversed: the long-term scheduler runs far less often.",
+    "That is the short-term scheduler's role.",
+    "The short-term scheduler runs every few ms and must be fast.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t02-038",
+   "subtopic": "schedulers",
+   "difficulty": 2,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "CPU utilisation",
+    "degree of multiprogramming",
+    "probabilistic model"
+   ],
+   "stem": "Each process spends 80 % of its time waiting for I/O, and the waits of different processes are independent. With **4** processes in memory, what is the CPU utilisation in percent? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 59.04,
+    "max": 59.04
+   },
+   "explanation": "The CPU is idle only when all n processes are waiting at once: P(idle) = pⁿ.\n\nUtilisation = 1 − 0.8⁴ = 1 − 0.4096 = 0.5904 → **59.04 %**.",
+   "trap": "Computing 4 × 20 % = 80 % (assuming the processes never wait at the same time)."
+  },
+  {
+   "id": "t02-039",
+   "subtopic": "schedulers",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "degree of multiprogramming",
+    "probabilistic model"
+   ],
+   "stem": "Processes spend 80 % of their time waiting for I/O, independently of one another. What is the **minimum** number of processes that must be in memory for CPU utilisation to be **at least 90 %**?",
+   "answer": {
+    "min": 11,
+    "max": 11
+   },
+   "explanation": "Need 1 − 0.8ⁿ ≥ 0.9 → 0.8ⁿ ≤ 0.1.\n\nn ≥ ln 0.1 / ln 0.8 = 2.3026 / 0.2231 = 10.32 → n = **11**.\n\nCheck: 0.8¹⁰ = 0.1074 (util 89.26 % ✗); 0.8¹¹ = 0.0859 (util 91.41 % ✓).",
+   "trap": "Rounding 10.32 down to 10."
+  },
+  {
+   "id": "t02-040",
+   "subtopic": "schedulers",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "CPU utilisation 1 − pⁿ",
+    "heterogeneous processes",
+    "memory-limited multiprogramming"
+   ],
+   "stem": "A machine has **2 GB** of RAM (1 GB = 1024 MB). The OS uses 512 MB, and two system daemons of 64 MB each are always resident; each daemon waits for I/O **50 %** of the time. Every user process needs 256 MB and waits for I/O **75 %** of the time. All waits are independent, the CPU is idle exactly when **every** resident process (daemons included) is waiting, and the long-term scheduler loads as many user processes as memory allows.\n\nRAM can be extended only in whole **1 GB modules**. What is the **minimum number of modules** that must be added so that CPU utilisation is at least **98 %**?",
+   "answer": {
+    "min": 1,
+    "max": 1
+   },
+   "explanation": "With n user processes, P(idle) = 0.5² × 0.75ⁿ = 0.25 × 0.75ⁿ.\n\n1. Need 0.25 × 0.75ⁿ ≤ 0.02 → 0.75ⁿ ≤ 0.08 → n ≥ ln 0.08 / ln 0.75 = 8.78 → **n = 9**.\n2. Memory for 9 users: 512 + 2 × 64 + 9 × 256 = 2944 MB → total RAM must be ≥ 2944 MB → **3 GB** (3072 MB).\n3. The machine has 2 GB → add **1** module.\n\nCheck: now: (2048 − 640)/256 = 5 users → 1 − 0.25 × 0.75⁵ = 94.07 % ✗; with 3 GB: ⌊(3072 − 640)/256⌋ = 9 users → 1 − 0.25 × 0.75⁹ = 98.12 % ✓.",
+   "trap": "Ignoring the daemons' contribution to keeping the CPU busy: 0.75ⁿ ≤ 0.02 needs n = 14 users and would suggest adding 2 modules."
+  },
+  {
+   "id": "t02-041",
+   "subtopic": "schedulers",
+   "also_tests": [
+    "thrashing"
+   ],
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "thrashing",
+    "medium-term scheduler",
+    "degree of multiprogramming"
+   ],
+   "stem": "Measurements on a demand-paged system show: CPU utilisation 15 %, paging disk 97 % busy, other I/O devices 4 % busy. Which actions are likely to **improve CPU utilisation**?",
+   "options": [
+    "Have the long-term scheduler admit more processes",
+    "Have the medium-term scheduler swap out (suspend) some processes",
+    "Install a faster CPU",
+    "Add more physical memory"
+   ],
+   "answer": [
+    "B",
+    "D"
+   ],
+   "explanation": "Low CPU use with a saturated paging disk means **thrashing**: the processes' working sets don't fit in memory.\n\n- (A) More processes → even fewer frames each → worse ✗\n- (B) Lowering the degree of multiprogramming gives the remaining processes enough frames ✓\n- (C) The CPU is idle, waiting on paging; a faster CPU just waits faster ✗\n- (D) More frames per process → fewer page faults ✓",
+   "option_feedback": [
+    "Wrong: increasing multiprogramming worsens thrashing.",
+    "Correct: suspending processes frees frames for the rest.",
+    "Wrong: the CPU is not the bottleneck.",
+    "Correct: more memory lets working sets fit."
+   ],
+   "trap": "Reacting to low CPU utilisation by raising the degree of multiprogramming."
+  },
+  {
+   "id": "t02-042",
+   "subtopic": "schedulers",
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "CPU utilisation 1 − pⁿ",
+    "job mix",
+    "constrained optimisation"
+   ],
+   "stem": "A long-term scheduler picks a mix of jobs to keep in **1200 MB** of user memory. The process table allows at most **5** user processes. Three kinds of job are available in unlimited supply:\n\n| Kind | Memory each | Fraction of time waiting for I/O |\n|---|---|---|\n| A | 400 MB | 0.5 |\n| B | 200 MB | 0.6 |\n| C | 100 MB | 0.75 |\n\nI/O waits are independent and the CPU is idle exactly when every loaded process is waiting. If the mix is chosen to **maximise CPU utilisation**, what is that utilisation in percent? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 93.52,
+    "max": 93.52
+   },
+   "explanation": "With a, b, c jobs of each kind, P(idle) = 0.5ᵃ × 0.6ᵇ × 0.75ᶜ; constraints 400a + 200b + 100c ≤ 1200 and a + b + c ≤ 5. Minimise P(idle).\n\nNeither greedy rule works: per **slot** A is best (3 A's → 0.125), per **MB** C is best (but 5 slots of C → 0.237). Enumerate by a (for each a, use the remaining slots and memory as well as possible):\n\n| a | Memory / slots left | Best (b, c) | P(idle) | Utilisation |\n|---|---|---|---|---|\n| 0 | 1200 / 5 | (5, 0) | 0.6⁵ = 0.0778 | 92.22 % |\n| 1 | 800 / 4 | (4, 0) | 0.5 × 0.6⁴ = 0.0648 | **93.52 %** |\n| 2 | 400 / 3 | (1, 2) | 0.25 × 0.6 × 0.5625 = 0.0844 | 91.56 % |\n| 3 | 0 / 2 | (0, 0) | 0.125 | 87.50 % |\n\n(For a = 1, alternatives (3, 1) → 0.5 × 0.216 × 0.75 = 0.081 and (2, 2) are worse; for a = 2, (2, 0) → 0.09 and (0, 3) → 0.1055 are worse.)\n\nBest mix: 1 A + 4 B, using exactly 1200 MB and 5 slots → **93.52 %**.",
+   "trap": "Filling memory greedily with the job that is best per MB (C) or per slot (A); both constraints bind, so only enumeration finds the mixed optimum."
+  },
+  {
+   "id": "t02-043",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "zombie definition"
+   ],
+   "stem": "A **zombie** process is one that:",
+   "options": [
+    "Has terminated, but whose parent has not yet collected its exit status with wait()",
+    "Is still running after its parent has terminated",
+    "Is blocked forever waiting for an event that never occurs",
+    "Has been swapped out to disk by the medium-term scheduler"
+   ],
+   "answer": "A",
+   "explanation": "When a process exits, the kernel frees most of its resources but keeps its process-table entry (PID, exit status, accounting) so the parent can read it with wait(). Until the parent does so, the process is a **zombie** (`Z`/`<defunct>` in `ps`).",
+   "option_feedback": [
+    "Correct.",
+    "That describes an orphan.",
+    "That is a process in indefinite blocking (or deadlock), not a zombie.",
+    "That is a suspended process."
+   ]
+  },
+  {
+   "id": "t02-044",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 30,
+   "concepts": [
+    "orphan",
+    "init adoption"
+   ],
+   "stem": "On a UNIX-like system with no subreaper configured, what happens to a running child process when its parent terminates?",
+   "options": [
+    "It is adopted by init (PID 1), which will reap it when it exits",
+    "It is killed automatically along with the parent",
+    "It becomes a zombie immediately",
+    "It is suspended until a new parent calls wait() on it"
+   ],
+   "answer": "A",
+   "explanation": "The child becomes an **orphan** and is re-parented to init (PID 1). init periodically calls wait(), so when the orphan eventually exits it is reaped and does not stay a zombie.",
+   "option_feedback": [
+    "Correct.",
+    "Children are not killed when the parent exits (unless a signal is sent explicitly).",
+    "It is still running; it becomes a zombie only after it exits and before it is reaped.",
+    "It keeps running normally under its new parent."
+   ]
+  },
+  {
+   "id": "t02-045",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 1,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 40,
+   "concepts": [
+    "zombie resources"
+   ],
+   "stem": "Which of the following does a **zombie** process still hold?",
+   "options": [
+    "Its address space (code, data, stack)",
+    "Its open file descriptors",
+    "Its process-table entry, including its PID and exit status",
+    "Its share of CPU time in the ready queue"
+   ],
+   "answer": "C",
+   "explanation": "On exit the kernel releases memory, closes files and removes the process from all scheduling queues. Only the small process-table entry (PID, exit status, resource-usage counters) remains for the parent to collect. Zombies therefore waste PIDs and table slots, not memory.",
+   "option_feedback": [
+    "Freed at exit.",
+    "Closed at exit.",
+    "Correct: this is all that remains.",
+    "A zombie never runs again, so it is in no scheduling queue."
+   ]
+  },
+  {
+   "id": "t02-046",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 2,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "preventing zombies",
+    "wait",
+    "SIGCHLD"
+   ],
+   "stem": "Which of the following ensure that a parent's terminated children do **not** remain zombies while the parent keeps running?",
+   "options": [
+    "The parent calls wait()/waitpid() for each child",
+    "The parent sets the disposition of SIGCHLD to SIG_IGN (POSIX/Linux behaviour)",
+    "The parent sends SIGKILL to each zombie child",
+    "The parent sleeps until the children are finished"
+   ],
+   "answer": [
+    "A",
+    "B"
+   ],
+   "explanation": "- (A) wait() reaps the child and frees its table entry ✓\n- (B) With SIGCHLD explicitly ignored, the kernel reaps children automatically ✓\n- (C) A zombie is already dead; signals have no effect on it ✗\n- (D) Sleeping does nothing to collect the exit status ✗",
+   "option_feedback": [
+    "Correct: this is the normal way to reap.",
+    "Correct: children are then auto-reaped.",
+    "Wrong: a zombie cannot be killed.",
+    "Wrong: the children still need to be reaped."
+   ]
+  },
+  {
+   "id": "t02-047",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 60,
+   "concepts": [
+    "zombie",
+    "code trace"
+   ],
+   "stem": "Consider:\n\n```c\nint main(void) {\n    pid_t pid = fork();\n    if (pid == 0) {\n        printf(\"child done\\n\");\n        exit(0);\n    }\n    sleep(60);\n    printf(\"parent done\\n\");\n    return 0;\n}\n```\n\nAssume fork succeeds and the child runs to completion within a second. While the parent is in `sleep(60)`, the child is:",
+   "options": [
+    "An orphan",
+    "A normal blocked process",
+    "Completely removed from the system",
+    "A zombie"
+   ],
+   "answer": "D",
+   "explanation": "The child has exited, but the parent is alive and has not called wait(), so the child's exit status cannot be delivered → **zombie** for the remaining ~59 s. When the parent finally exits, the zombie is re-parented to init, which reaps it.",
+   "option_feedback": [
+    "The parent is still alive, so the child is not an orphan.",
+    "The child has already terminated; it is not waiting for anything.",
+    "Its process-table entry remains until it is reaped.",
+    "Correct."
+   ]
+  },
+  {
+   "id": "t02-048",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 2,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 75,
+   "concepts": [
+    "orphan",
+    "getppid",
+    "code trace"
+   ],
+   "stem": "Assume orphans are adopted by init (PID 1) and no subreaper exists. The parent's PID is 500.\n\n```c\nint main(void) {\n    if (fork() == 0) {\n        printf(\"%d \", getppid());\n        sleep(5);\n        printf(\"%d\\n\", getppid());\n        exit(0);\n    }\n    sleep(1);\n    return 0;          // parent exits at t ≈ 1\n}\n```\n\nWhat does the child print (assuming the child's first printf runs before t = 1)?",
+   "options": [
+    "500 500",
+    "500 1",
+    "1 1",
+    "1 500"
+   ],
+   "answer": "B",
+   "explanation": "At first the parent (PID 500) is alive → `500`. The parent exits at t ≈ 1 while the child sleeps, so the child becomes an **orphan** and is re-parented to init → after the sleep, `getppid()` returns `1`. Output: `500 1`.",
+   "option_feedback": [
+    "Forgets that the parent PID changes after re-parenting.",
+    "Correct.",
+    "The parent is still alive when the first printf runs.",
+    "Reversed order of events."
+   ],
+   "trap": "Assuming getppid() always returns the original parent's PID."
+  },
+  {
+   "id": "t02-049",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 90,
+   "concepts": [
+    "zombie count",
+    "wait",
+    "code trace"
+   ],
+   "stem": "Assume fork() never fails and that fork/exit/printf take negligible time.\n\n```c\nint main(void) {\n    for (int i = 1; i <= 5; i++) {\n        if (fork() == 0) {     // child i\n            sleep(i);         // child i exits at t ≈ i seconds\n            exit(0);\n        }\n    }\n    wait(NULL);\n    wait(NULL);\n    sleep(100);\n    return 0;\n}\n```\n\nHow many **zombie** processes created by this program exist at t = 50 s?",
+   "answer": {
+    "min": 3,
+    "max": 3
+   },
+   "explanation": "The parent creates 5 children at t ≈ 0 (children exit inside the `if`, so they never fork). Child i exits at t ≈ i.\n\n- First wait(NULL) returns at t ≈ 1 → reaps child 1.\n- Second wait(NULL) returns at t ≈ 2 → reaps child 2.\n- The parent then sleeps until t ≈ 102 without further waits.\n\nChildren 3, 4, 5 exit at t ≈ 3, 4, 5 and are never reaped while the parent lives → **3 zombies** at t = 50.",
+   "trap": "Thinking each wait() reaps all terminated children."
+  },
+  {
+   "id": "t02-050",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 180,
+   "concepts": [
+    "wait semantics",
+    "zombie count",
+    "code trace"
+   ],
+   "stem": "Assume fork() never fails and that everything except sleep() takes negligible time.\n\n```c\nint main(void) {\n    for (int i = 0; i < 3; i++) {\n        if (fork() == 0) {\n            sleep(i + 1);     // child i exits at (its start time) + i + 1\n            exit(0);\n        }\n        if (i == 1)\n            wait(NULL);\n    }\n    sleep(10);\n    return 0;\n}\n```\n\nHow many **zombie** processes created by this program exist at t = 6 s?",
+   "answer": {
+    "min": 2,
+    "max": 2
+   },
+   "explanation": "- i = 0 (t ≈ 0): child C0 forked; it exits at t ≈ 1.\n- i = 1 (t ≈ 0): child C1 forked; it exits at t ≈ 2. Then wait(NULL) waits for **any** child: the first to finish is C0 at t ≈ 1 → C0 reaped.\n- i = 2 (t ≈ 1): child C2 forked; it exits at t ≈ 1 + 3 = 4.\n- Parent sleeps until t ≈ 11.\n\nAt t = 6: C1 (exited at 2) and C2 (exited at 4) are unreaped → **2 zombies**.",
+   "trap": "Assuming wait(NULL) at i == 1 reaps the most recently forked child (C1)."
+  },
+  {
+   "id": "t02-051",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "SIGCHLD",
+    "signal coalescing",
+    "wait reaps one child"
+   ],
+   "stem": "A parent installs this SIGCHLD handler and then forks **5** children, which all exit at about the same time while the parent sits in a `pause()` loop:\n\n```c\nvoid on_chld(int sig) {\n    wait(NULL);        // reaps one terminated child\n}\n```\n\nAssume standard (non-queued) signals: while SIGCHLD is pending, further SIGCHLDs are merged into it; SIGCHLD is blocked while the handler runs and a pending one is delivered when the handler returns. Once all children have exited and no SIGCHLD remains pending, how many zombies can remain?",
+   "options": [
+    "Always 0, because each child's exit raises its own SIGCHLD",
+    "Any number from 0 to 4, depending on timing",
+    "Always exactly 4",
+    "Any number from 1 to 5, depending on timing"
+   ],
+   "answer": "B",
+   "explanation": "Each handler invocation calls wait() once and therefore reaps **exactly one** child. The question is how many invocations happen.\n\n- **Best case**: the children exit far enough apart that each SIGCHLD is delivered and handled before the next arrives → 5 invocations → **0 zombies**.\n- **Worst case**: all 5 exit before the first delivery → their signals merge into one pending SIGCHLD → 1 invocation → 1 reaped → **4 zombies**.\n- At least one signal is always delivered, so 5 zombies is impossible.\n\nAny count between 0 and 4 can occur. The fix is to loop inside the handler: `while (waitpid(-1, NULL, WNOHANG) > 0) ;`.",
+   "option_feedback": [
+    "Wrong: standard signals are not queued; SIGCHLDs arriving while one is pending are lost.",
+    "Correct: one wait() per delivered signal, and between 1 and 5 signals are delivered.",
+    "Wrong: that is only the worst case, when all five signals merge into one.",
+    "Wrong: at least one SIGCHLD is always delivered, so at least one child is reaped."
+   ],
+   "trap": "Assuming one SIGCHLD per child, so a single wait() per handler call reaps everyone."
+  },
+  {
+   "id": "t02-052",
+   "subtopic": "zombie-and-orphan",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 5,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "zombie",
+    "orphan re-parenting",
+    "waitpid for a specific child"
+   ],
+   "stem": "Assume orphans are adopted by init (PID 1), which promptly reaps its terminated children, no subreaper exists, and only sleep() takes significant time (fork, exit and waitpid are instantaneous). Times are measured from the start of `main`.\n\n```c\nint main(void) {                 // process P\n    pid_t a = fork();\n    if (a == 0) {                // child A\n        if (fork() == 0) {       // grandchild B (child of A)\n            sleep(2);\n            exit(0);\n        }\n        sleep(4);\n        exit(0);                 // A never calls wait()\n    }\n    if (fork() == 0) {           // child C\n        sleep(1);\n        exit(0);\n    }\n    sleep(3);\n    waitpid(a, NULL, 0);\n    sleep(10);\n    return 0;\n}\n```\n\nWhich statements are **true**?",
+   "options": [
+    "At t = 3 there are exactly 2 zombie processes created by this program",
+    "P's waitpid() returns at about t = 1, because C is the first child to terminate",
+    "At t = 5, B is still a zombie, because its parent A never called wait()",
+    "At t = 5 there is exactly 1 zombie, and its parent is P"
+   ],
+   "answer": [
+    "A",
+    "D"
+   ],
+   "explanation": "Timeline:\n\n| t | Event |\n|---|---|\n| 1 | C exits → zombie (P is sleeping, never waits for C) |\n| 2 | B exits → zombie (its parent A is alive, sleeping, never waits) |\n| 3 | P calls waitpid(a) — blocks until **A** terminates |\n| 4 | A exits → P reaps A at once. When A exited, its zombie child B was re-parented to init, which reaps it |\n| 4–14 | P sleeps; C stays a zombie |\n\n- (A) At t = 3: C and B → 2 zombies ✓\n- (B) waitpid(a, …) waits for that specific child only; C's exit does not satisfy it. It returns at t ≈ 4 ✗\n- (C) Once A dies, B (already a zombie) gets init as its parent and init reaps it ✗\n- (D) At t = 5 only C remains a zombie, child of P ✓\n\n(Verified by running the program with scaled sleeps and inspecting process states.)",
+   "option_feedback": [
+    "True: C (exited at 1) and B (exited at 2) are both unreaped at t = 3.",
+    "False: waitpid(a, …) waits only for A, which exits at t = 4.",
+    "False: when A exits, B is re-parented to init, which reaps it immediately.",
+    "True: A was reaped by P, B by init; C remains a zombie of P."
+   ],
+   "trap": "Treating waitpid(a) like wait(), or thinking a zombie whose parent dies stays a zombie forever."
+  },
+  {
+   "id": "t02-053",
+   "subtopic": "process-states",
+   "difficulty": 5,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "state transitions",
+    "invariants",
+    "counterexamples"
+   ],
+   "stem": "A uniprocessor uses the five-state model. Processes terminate only from Running (no kills), there is no swapping, and the system is empty at boot (t = 0). For any instant T, count from boot to T:\n\n- A = admissions (New → Ready), D = dispatches (Ready → Running)\n- P = preemptions (Running → Ready), B = blocks (Running → Blocked)\n- W = wake-ups (Blocked → Ready), E = exits (Running → Exit)\n\nWhich statements hold at **every** instant T, for every possible execution?",
+   "options": [
+    "D = P + B + E",
+    "A + W + P − D equals the number of processes in the Ready state at T",
+    "W ≤ B",
+    "P ≤ D − A"
+   ],
+   "answer": [
+    "B",
+    "C"
+   ],
+   "explanation": "Write the balance of each state (entries − exits = current population):\n\n- **Running**: D − (P + B + E) = number Running ∈ {0, 1}.\n- **Ready**: (A + W + P) − D = number Ready.\n- **Blocked**: B − W = number Blocked ≥ 0.\n\nNow judge each statement:\n\n- (A) Fails whenever a process is Running at T: then D = P + B + E + 1. E.g. at T = 0.5 after the first dispatch, D = 1 and P = B = E = 0 ✗\n- (B) Exactly the Ready balance: Ready is entered only by admission, wake-up or preemption, and left only by dispatch ✓\n- (C) B − W is the Blocked population, which can't be negative ✓\n- (D) Counterexample: two processes admitted, none dispatched yet → P = 0, D − A = −2 ✗ (in general P − (D − A) = Ready − W, which can be positive).",
+   "option_feedback": [
+    "False: it ignores the process currently Running; the identity holds only at instants when the CPU is idle.",
+    "True: it is the flow balance of the Ready state.",
+    "True: B − W is the number of processes currently Blocked.",
+    "False: just after admissions and before any dispatch, D − A is negative while P = 0."
+   ],
+   "trap": "Treating the end-of-run identity D = P + B + E as true at every instant."
+  },
+  {
+   "id": "t02-054",
+   "subtopic": "pcb",
+   "also_tests": [
+    "fork",
+    "system-calls"
+   ],
+   "difficulty": 4,
+   "type": "mcq",
+   "marks": 2,
+   "est_seconds": 200,
+   "concepts": [
+    "descriptor table",
+    "open-file table",
+    "reference counts"
+   ],
+   "stem": "Assume POSIX semantics, that every call succeeds, and that file `x` exists. A process runs:\n\n```c\nint a = open(\"x\", O_RDONLY);\nint b = dup(a);\nint c = open(\"x\", O_RDONLY);\nif (fork() == 0) {          // child\n    close(a);\n    int d = open(\"x\", O_RDONLY);\n    int e = dup(c);\n    pause();\n}\nclose(c);\npause();\n```\n\nWhen both processes are in `pause()`, how many **system-wide open-file-table entries** refer to `x`, and what is the **reference count** of the entry created by the first `open()`?",
+   "options": [
+    "4 entries; reference count 3",
+    "3 entries; reference count 3",
+    "3 entries; reference count 4",
+    "6 entries; reference count 1"
+   ],
+   "answer": "B",
+   "explanation": "Only `open()` creates an open-file-table entry; `dup()` and `fork()` create new **descriptors** pointing at existing entries (each adds 1 to the reference count); `close()` removes one reference.\n\n- Parent before fork: a, b → **E1**; c → **E2**.\n- fork: child gets copies a, b, c → E1 refs 4, E2 refs 2.\n- Child: close(a) → E1 refs 3; d = open → new **E3** (1); e = dup(c) → E2 refs 3.\n- Parent: close(c) → E2 refs 2.\n\n| Entry | Held by | Refs |\n|---|---|---|\n| E1 | parent a, b; child b | 3 |\n| E2 | child c, e | 2 |\n| E3 | child d | 1 |\n\n**3 entries; E1 has reference count 3.**",
+   "option_feedback": [
+    "Wrong: dup() creates a descriptor, not a new open-file-table entry.",
+    "Correct: only the three open() calls create entries; E1 is held by parent a, b and child b.",
+    "Wrong: forgets that the child closed its copy of a.",
+    "Wrong: treats every descriptor (including fork copies and dups) as its own entry."
+   ],
+   "trap": "Believing dup() or fork() creates new open-file-table entries, or that close() in one process affects the other's descriptors."
+  },
+  {
+   "id": "t02-055",
+   "subtopic": "pcb",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "fork in a loop",
+    "descriptor inheritance",
+    "close in parent branch"
+   ],
+   "stem": "Assume POSIX semantics, that every call succeeds, that file `log` exists, and that no process exits before all reach `pause()`.\n\n```c\nint fd = open(\"log\", O_RDONLY);\nfor (int i = 0; i < 3; i++) {\n    if (fork() == 0)\n        open(\"log\", O_RDONLY);    // result discarded, never closed\n    else if (i == 1)\n        close(fd);\n}\npause();\n```\n\nWhen every process is in `pause()`, what is the **total number of open file descriptors referring to `log`**, summed over all processes of this program (equivalently, the sum of the reference counts of all open-file-table entries for `log`)?",
+   "answer": {
+    "min": 16,
+    "max": 16
+   },
+   "explanation": "Every process runs the whole loop (children do not exit), so there are 2³ = 8 processes. Track each process's descriptors for `log`: a child inherits its parent's descriptors at the moment of fork, then adds one (`open`); a process that is a **parent at i = 1** closes `fd`.\n\nLet R = root; Cxy… name children by the iterations at which they were created along the path.\n\n| Process | Created at | History | Descriptors |\n|---|---|---|---|\n| R | — | fd; closes fd at i = 1 | 0 |\n| C0 | i = 0 | fd + o₀; closes fd at i = 1 | 1 |\n| C1 | i = 1 (child of R) | fd + o₁ (child at i = 1, so keeps fd) | 2 |\n| C01 | i = 1 (child of C0) | fd, o₀ inherited + o₀₁ | 3 |\n| C2 | i = 2 (child of R) | R had nothing → o₂ | 1 |\n| C02 | i = 2 (child of C0) | o₀ + o₀₂ | 2 |\n| C12 | i = 2 (child of C1) | fd, o₁ + o₁₂ | 3 |\n| C012 | i = 2 (child of C01) | fd, o₀, o₀₁ + o₀₁₂ | 4 |\n\nTotal = 0 + 1 + 2 + 3 + 1 + 2 + 3 + 4 = **16**.\n\n(Checked by running the program and counting descriptors per process.)",
+   "trap": "Ignoring the close() in the parent branch (giving 20), or counting only one descriptor per open() call (8 entries) instead of the inherited copies."
+  },
+  {
+   "id": "t02-056",
+   "subtopic": "context-switch",
+   "also_tests": [
+    "round-robin"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "Round Robin",
+    "context-switch overhead",
+    "optimising the quantum"
+   ],
+   "stem": "Three processes arrive at t = 0 and are queued in the order P1, P2, P3 with CPU bursts **10, 2, 3**. Scheduling is Round Robin with a positive **integer** quantum q. A context switch costs **1 time unit** whenever the CPU is given to a process different from the one that last ran (including after a completion); there is no switch at t = 0, and if a quantum expires while no other process is ready, the same process simply continues without a switch.\n\nOver all possible values of q, what is the **minimum average turnaround time**? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 11.33,
+    "max": 11.34
+   },
+   "explanation": "Reason about which q can be best, then compute the candidates.\n\n- If q ≥ 3, both short jobs finish in their first slot. Increasing q beyond 3 only lets P1 run longer before them (delaying P2 and P3) until q ≥ 10, when P1 finishes outright (FCFS).\n- If q ≤ 2, P3 needs a second slot, adding switches and delaying it.\n\nSo compare q = 1, 2, 3, 4 and q ≥ 10:\n\n| q | Schedule (CS = 1) | Completions P1, P2, P3 | Avg TAT |\n|---|---|---|---|\n| 1 | P1 0–1, CS, P2 2–3, CS, P3 4–5, CS, P1 6–7, CS, P2 8–9 ✓, CS, P3 10–11, CS, P1 12–13, CS, P3 14–15 ✓, CS, P1 16–23 | 23, 9, 15 | 47/3 = 15.67 |\n| 2 | P1 0–2, CS, P2 3–5 ✓, CS, P3 6–8, CS, P1 9–11, CS, P3 12–13 ✓, CS, P1 14–20 | 20, 5, 13 | 38/3 = 12.67 |\n| **3** | P1 0–3, CS, P2 4–6 ✓, CS, P3 7–10 ✓, CS, P1 11–18 | 18, 6, 10 | **34/3 = 11.33** |\n| 4 | P1 0–4, CS, P2 5–7 ✓, CS, P3 8–11 ✓, CS, P1 12–18 | 18, 7, 11 | 36/3 = 12.00 |\n| ≥ 10 | P1 0–10, CS, P2 11–13, CS, P3 14–17 | 10, 13, 17 | 40/3 = 13.33 |\n\nLarger q between 5 and 9 is worse still (P2, P3 start later; e.g. q = 9 gives 46/3). Minimum: **q = 3, average TAT = 34/3 ≈ 11.33**.",
+   "trap": "Assuming the smallest quantum (most responsive) or the largest quantum (fewest switches) is optimal; the best q is just large enough for the short jobs to finish in one slot."
+  },
+  {
+   "id": "t02-057",
+   "subtopic": "schedulers",
+   "difficulty": 4,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 240,
+   "concepts": [
+    "CPU utilisation 1 − pⁿ",
+    "marginal gain",
+    "degree of multiprogramming"
+   ],
+   "stem": "Every process waits for I/O **80 %** of the time, independently, and CPU utilisation with n resident processes is 1 − 0.8ⁿ. The long-term scheduler admits another process only if doing so raises the predicted CPU utilisation by **at least 3 percentage points**. Memory is also a limit: 4 GB of RAM (1 GB = 1024 MB), of which the OS uses 1 GB, and every process needs 300 MB.\n\nStarting from an empty system with an unlimited queue of jobs, what CPU utilisation (in percent) does the system settle at? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 86.57,
+    "max": 86.58
+   },
+   "explanation": "1. **Marginal gain** of going from n − 1 to n processes: (1 − 0.8ⁿ) − (1 − 0.8ⁿ⁻¹) = 0.8ⁿ⁻¹ × 0.2.\n   Need 0.2 × 0.8ⁿ⁻¹ ≥ 0.03 → 0.8ⁿ⁻¹ ≥ 0.15 → n − 1 ≤ ln 0.15 / ln 0.8 = 8.50 → **n ≤ 9**.\n   (Check: 8 → 9 adds 0.2 × 0.8⁸ = 3.36 points ✓; 9 → 10 adds 2.68 points ✗.)\n2. **Memory**: ⌊(4096 − 1024) / 300⌋ = ⌊10.24⌋ = 10 processes.\n3. Degree = min(9, 10) = 9 → utilisation = 1 − 0.8⁹ = 1 − 0.1342 = **86.58 %**.",
+   "trap": "Stopping at the memory limit (10 processes → 89.26 %) or applying the 3-point test to total utilisation instead of to the gain from one more process."
+  },
+  {
+   "id": "t02-058",
+   "subtopic": "schedulers",
+   "difficulty": 5,
+   "type": "msq",
+   "marks": 2,
+   "est_seconds": 360,
+   "concepts": [
+    "CPU utilisation 1 − ∏pᵢ",
+    "marginal gain",
+    "counterexamples"
+   ],
+   "stem": "Use the standard multiprogramming model: process i waits for I/O a fraction pᵢ of the time (0 < pᵢ < 1), waits are independent, and CPU utilisation = 1 − ∏ pᵢ over the resident processes. Which statements are **always true**?",
+   "options": [
+    "If admitting one more process with wait fraction p would raise utilisation by less than 1 percentage point, then admitting any number of further such processes raises it by less than 5 percentage points in total",
+    "Replacing every resident process by two processes with the same wait fraction (each needing half the memory) strictly raises utilisation",
+    "Replacing two processes with p = 0.9 by one process with p = 0.8 raises utilisation",
+    "A mix of k processes with different wait fractions gives the same utilisation as k processes that all have the arithmetic mean of those fractions"
+   ],
+   "answer": [
+    "B",
+    "C"
+   ],
+   "explanation": "Let I = current idle probability.\n\n- (A) One more process with fraction p adds I(1 − p); all further ones together can add at most I. From I(1 − p) < 0.01 we get I < 0.01/(1 − p), which exceeds 0.05 when p > 0.8. Counterexample: p = 0.95, n = 32 → marginal gain 0.95³² × 0.05 = 0.97 points, yet the remaining possible gain is 0.95³² = 19.4 points ✗\n- (B) Each factor pᵢ becomes pᵢ², so the product becomes I² < I (since 0 < I < 1) → utilisation strictly rises ✓\n- (C) The two contribute 0.9 × 0.9 = 0.81 to the product; the replacement contributes 0.80 < 0.81 → idle probability falls → utilisation rises ✓ (one process can beat two).\n- (D) The product depends on the **geometric** mean, not the arithmetic mean. By AM ≥ GM the equal-fraction version idles more. Counterexample: 0.5 and 0.9 → 0.45 vs 0.7² = 0.49 ✗",
+   "option_feedback": [
+    "False: the remaining possible gain is I itself, which can be many times the marginal gain when p is close to 1 (p = 0.95 gives 0.97 vs 19.4 points).",
+    "True: every factor is squared, so the idle probability I becomes I² < I.",
+    "True: 0.8 < 0.9 × 0.9 = 0.81, so the single process leaves the CPU idle less often.",
+    "False: utilisation depends on the product (geometric mean); e.g. 0.5 and 0.9 give 0.45, but two processes at 0.7 give 0.49."
+   ],
+   "trap": "Reasoning with intuition ('more processes always beats fewer', 'average the wait fractions') instead of with the product ∏pᵢ."
+  },
+  {
+   "id": "t02-059",
+   "subtopic": "zombie-and-orphan",
+   "also_tests": [
+    "fork"
+   ],
+   "difficulty": 5,
+   "type": "nat",
+   "marks": 2,
+   "est_seconds": 420,
+   "concepts": [
+    "fork in a loop with break",
+    "short-circuit evaluation",
+    "zombie",
+    "orphan re-parenting"
+   ],
+   "stem": "Assume orphans are adopted by init (PID 1), which promptly reaps them, no subreaper exists, and only sleep() takes significant time. Times are measured from the start of `main`.\n\n```c\nint main(void) {\n    int i;\n    for (i = 0; i < 3; i++)\n        if (fork() == 0 && i != 2)\n            break;\n    if (i < 3) {\n        if (i == 1 && fork() == 0) {\n            sleep(6);\n            exit(0);\n        }\n        sleep(i + 1);\n        exit(0);\n    }\n    wait(NULL);\n    sleep(10);\n    return 0;\n}\n```\n\nHow many processes created by this program are **zombies at t = 7**?",
+   "answer": {
+    "min": 1,
+    "max": 1
+   },
+   "explanation": "Trace the loop (R = original process):\n\n- i = 0: R forks C0; in C0 `fork() == 0` is true and i ≠ 2 → **break** with i = 0.\n- i = 1: R forks C1 → C1 breaks with i = 1.\n- i = 2: R forks C2; in C2 `fork() == 0` is true but `i != 2` is false → **no break**: C2 continues, i becomes 3, and C2 leaves the loop like R.\n\nAfter the loop:\n\n| Process | Path | Behaviour |\n|---|---|---|\n| C0 | i = 0 | sleeps 1 → exits at t = 1 |\n| C1 | i = 1 | forks G (`i == 1` true), sleeps 2 → exits at t = 2 |\n| G | child of C1 | sleeps 6 → exits at t = 6 |\n| C2 | i = 3 | wait(NULL): no children → returns −1 at once; sleeps 10 → exits at t = 10 |\n| R | i = 3 | wait(NULL) reaps the first child to exit (C0 at t = 1); sleeps until t = 11 |\n\n- C0: reaped at t = 1.\n- C1: exits at t = 2, R never waits again → **zombie** from t = 2.\n- G: its parent C1 exited at t = 2, so G was re-parented to init then (re-parenting happens when the parent exits, not when it is reaped); G exits at 6 and init reaps it.\n- C2: still alive (sleeping) at t = 7.\n\nZombies at t = 7: only C1 → **1**. (Verified by running the program with scaled sleeps.)",
+   "trap": "Letting C2 break out and exit at t = 3 (it does not, because of `i != 2`), or counting G as a zombie because its original parent C1 never waited."
+  },
+  {
+   "id": "t02-060",
+   "subtopic": "process-states",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "five-state model",
+    "state transitions",
+    "round robin"
+   ],
+   "stem": "A uniprocessor uses the five-state model (New, Ready, Running, Blocked, Exit) and Round Robin with quantum **2 ms**; context-switch time is zero. A process whose I/O completes enters Ready; if the CPU is then idle it is dispatched immediately (both transitions occur at that instant). If an arrival and a preempted process join the ready queue at the same instant, the arrival goes first.\n\n| Process | Arrival (ms) | Behaviour |\n|---|---|---|\n| P1 | 0 | CPU 3 → I/O 4 → CPU 2 → exit |\n| P2 | 1 | CPU 4 → exit |\n\nCounting **New → Ready** and **Running → Exit**, how many state transitions does **P1** make in total?",
+   "answer": {
+    "min": 8,
+    "max": 8
+   },
+   "explanation": "Schedule:\n\n| Time | Event | Ready queue after |\n|---|---|---|\n| 0 | P1 admitted and dispatched | – |\n| 1 | P2 arrives | P2 |\n| 2 | P1's quantum expires (1 ms left) | P2, P1 |\n| 2–4 | P2 runs (2 ms left) | P1 |\n| 4 | P2 preempted, P1 dispatched | P2 |\n| 5 | P1 finishes its CPU burst, starts I/O (ends at 9) | – |\n| 5–7 | P2 runs and exits at 7 | – |\n| 7–9 | CPU idle | – |\n| 9 | P1's I/O completes; CPU idle, so P1 dispatched | – |\n| 11 | P1 exits | – |\n\nP1's transitions:\n\n1. New → Ready (0)\n2. Ready → Running (0)\n3. Running → Ready (2)\n4. Ready → Running (4)\n5. Running → Blocked (5)\n6. Blocked → Ready (9)\n7. Ready → Running (9)\n8. Running → Exit (11)\n\nTotal = **8**.",
+   "trap": "Writing Blocked → Running directly at t = 9 (giving 7). A process leaving Blocked always passes through Ready, even when the CPU is idle."
+  },
+  {
+   "id": "t02-061",
+   "subtopic": "process-states",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "ready queue",
+    "state transitions",
+    "dispatcher"
+   ],
+   "stem": "A uniprocessor uses preemptive Round Robin with a FIFO ready queue; the dispatcher always picks the head of the queue. A process that is preempted, or whose I/O completes, joins the **tail** of the ready queue; an I/O completion never preempts the running process.\n\nInitially **P1** is Running, the ready queue is **P2, P3** (P2 at the head), and **P4** is Blocked waiting for a disk read. Then, in order:\n\n1. The running process requests a disk read.\n2. P4's disk read completes.\n3. The running process's quantum expires.\n4. The running process exits.\n\nWhat is the situation after event 4?",
+   "options": [
+    "Running: P3; Ready: P2; Blocked: P1",
+    "Running: P3; Ready: P4; Blocked: P1",
+    "Running: P4; Ready: P2; Blocked: P1",
+    "Running: P4; Ready: P2, P1; Blocked: none"
+   ],
+   "answer": "C",
+   "explanation": "| After event | Running | Ready queue (head first) | Blocked |\n|---|---|---|---|\n| start | P1 | P2, P3 | P4 |\n| 1. P1 requests disk read | P2 | P3 | P1, P4 |\n| 2. P4's read completes | P2 | P3, P4 | P1 |\n| 3. P2's quantum expires | P3 | P4, P2 | P1 |\n| 4. P3 exits | P4 | P2 | P1 |\n\nAfter event 4: Running **P4**, Ready **P2**, Blocked **P1**.",
+   "option_feedback": [
+    "Wrong: this results from putting the woken P4 at the head of the queue (or letting it preempt P2). It then runs at event 3 and is the one that exits at event 4.",
+    "Wrong: this results from putting the preempted P2 back at the head, so P2 keeps running and is the one that exits at event 4.",
+    "Correct: P1 blocks, P2 runs; P4 joins the tail; P2 is preempted and P3 runs; P3 exits and P4 runs.",
+    "Wrong: a disk request moves the process to Blocked, not Ready. P1 is still waiting for its read."
+   ],
+   "trap": "Placing the woken or preempted process at the head of the ready queue instead of the tail."
+  },
+  {
+   "id": "t02-062",
+   "subtopic": "pcb",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "PCB contents",
+    "process table",
+    "kernel memory"
+   ],
+   "stem": "A kernel reserves a fixed **256 KB** area (1 KB = 1024 bytes) for PCBs; each process needs one PCB, and PCBs cannot be split. Each PCB contains exactly:\n\n- A register-save area: 32 general-purpose registers plus PC, SP and status register, **8 bytes** each\n- Three **8-byte** pointers: page-table base, parent PCB, next PCB in its queue\n- Four **4-byte** integers: PID, parent PID, state, priority\n- A per-process open-file table of **64** entries, each an **8-byte** pointer\n\nThere is no padding. What is the **maximum** number of processes the kernel can support at once?",
+   "answer": {
+    "min": 315,
+    "max": 315
+   },
+   "explanation": "PCB size:\n\n| Part | Bytes |\n|---|---|\n| Registers: (32 + 3) × 8 | 280 |\n| Pointers: 3 × 8 | 24 |\n| Integers: 4 × 4 | 16 |\n| Open-file table: 64 × 8 | 512 |\n| **Total** | **832** |\n\nArea = 256 × 1024 = 262,144 bytes.\n\n262,144 / 832 = 315.08…, so **315** PCBs fit (315 × 832 = 262,080 ≤ 262,144; 316 × 832 = 262,912 is too big).",
+   "trap": "Forgetting PC, SP and status register (32 × 8 = 256 → PCB 808 bytes → 324), or rounding 315.08 up to 316."
+  },
+  {
+   "id": "t02-063",
+   "subtopic": "pcb",
+   "also_tests": [
+    "zombie-and-orphan"
+   ],
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "fork",
+    "PCB fields",
+    "re-parenting"
+   ],
+   "stem": "Process P has PID 300, parent PID 100, nice value 0 and current working directory `/home`. P calls `fork()`, creating child C with PID 301. Then, in order: C calls `chdir(\"/tmp\")` and `nice(5)` (both succeed), P exits without calling `wait()`, and C is adopted by `init` (PID 1). C is still running. Which statements about **C's PCB** are true now?",
+   "options": [
+    "Its parent-PID field is 1",
+    "Its PID field is 300, because C took over P's identity when P exited",
+    "Its current-working-directory field is `/tmp`, while P's was still `/home` when P exited",
+    "Its nice value is back to 0, because scheduling attributes are reset when a process is re-parented"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- `fork()` gives C its own PCB, copied from P's but with a new PID (301) and parent PID 300.\n- `chdir()` and `nice()` change only the **caller's** PCB, so C's cwd becomes `/tmp` and nice becomes 5; P's PCB keeps `/home` and 0.\n- When P exits, C is re-parented: only C's parent-PID field changes, to 1. Its PID stays 301 and its nice value stays 5.\n\nTrue: **A, C**.",
+   "option_feedback": [
+    "True: re-parenting sets C's parent-PID field to init's PID, 1.",
+    "False: a PID never changes during a process's life; C keeps 301.",
+    "True: after fork the two PCBs are independent, so C's chdir does not affect P.",
+    "False: re-parenting changes only the parent link; C's nice value stays 5."
+   ],
+   "trap": "Thinking parent and child share PCB fields after fork, or that adoption by init resets other attributes."
+  },
+  {
+   "id": "t02-064",
+   "subtopic": "context-switch",
+   "difficulty": 3,
+   "type": "nat",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "round robin",
+    "context-switch overhead",
+    "CPU efficiency"
+   ],
+   "stem": "Three processes arrive at t = 0 in the order P1, P2, P3 with CPU bursts **5, 3, 4** (ms) and never block. Round Robin with quantum **2 ms** is used. A context switch costs **1 ms** and occurs every time the CPU is given to a process **different** from the one that last ran (no switch before the first dispatch at t = 0). What percentage of the time from t = 0 until the last process finishes is spent doing useful work? (Give the answer correct to two decimal places.)",
+   "answer": {
+    "min": 66.66,
+    "max": 66.67
+   },
+   "explanation": "Gantt chart (`cs` = context switch):\n\n```\n| P1 | cs | P2 | cs | P3 | cs | P1 | cs | P2 | cs | P3 | cs | P1 |\n0    2    3    5    6    8    9    11   12   13   14   16   17   18\n```\n\n- Remaining after round 1: P1 3, P2 1, P3 2.\n- Round 2: P1 runs 9–11 (1 left), P2 runs 12–13 and finishes, P3 runs 14–16 and finishes.\n- P1 runs its last 1 ms at 17–18.\n\nUseful work = 5 + 3 + 4 = 12 ms; context switches = 6 × 1 = 6 ms; total = 18 ms.\n\nUseful fraction = 12 / 18 = **66.67%**.",
+   "trap": "Counting a context switch before the first dispatch at t = 0 (7 switches → 12/19 = 63.16%), or forgetting the switches after a process completes."
+  },
+  {
+   "id": "t02-065",
+   "subtopic": "context-switch",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 120,
+   "concepts": [
+    "context switch vs mode switch",
+    "interrupts",
+    "preemptive priority"
+   ],
+   "stem": "On a uniprocessor with **preemptive priority** scheduling, process A has higher priority than process B. A **context switch** means the CPU changes from running one process to running a **different** process. Starting with A running, the following happen in order:\n\n1. A issues a blocking disk read; B is dispatched.\n2. B calls `getpid()`, which returns immediately.\n3. A timer interrupt arrives while B runs; B is the only ready process, so the scheduler picks B again.\n4. A's disk read completes; A becomes ready and preempts B.\n5. A exits; B is dispatched.\n\nHow many context switches occur?",
+   "options": [
+    "3",
+    "4",
+    "5",
+    "6"
+   ],
+   "answer": "A",
+   "explanation": "| Event | Context switch? |\n|---|---|\n| 1. A blocks, B dispatched | **Yes** (A → B) |\n| 2. `getpid()` | No: mode switch into the kernel and back to B |\n| 3. Timer interrupt, B picked again | No: the scheduler ran, but the same process continues |\n| 4. A preempts B | **Yes** (B → A) |\n| 5. A exits, B dispatched | **Yes** (A → B) |\n\nTotal = **3**.",
+   "option_feedback": [
+    "Correct: A→B, B→A, A→B. The system call and the timer interrupt that re-selects B are only mode switches.",
+    "Wrong: counts the timer interrupt in event 3, but the same process keeps the CPU, so there is no context switch.",
+    "Wrong: counts the system call and the timer interrupt; both enter the kernel (mode switch) without changing the process.",
+    "Wrong: counts every kernel entry, including the disk interrupt, as a context switch. Interrupt handling alone does not change the running process."
+   ],
+   "trap": "Treating every kernel entry (system call, interrupt) as a context switch."
+  },
+  {
+   "id": "t02-066",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 3,
+   "type": "msq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "zombie",
+    "orphan",
+    "re-parenting to init"
+   ],
+   "stem": "Assume orphans are adopted by `init` (PID 1), which promptly reaps its terminated children; no subreaper exists; only `sleep()` takes significant time. Times are measured from the start of `main`.\n\n```c\nint main(void) {               // P\n    if (fork() == 0) {         // child C\n        if (fork() == 0) {     // grandchild G\n            sleep(5);\n            exit(0);           // G exits at t ≈ 5\n        }\n        exit(0);               // C exits at t ≈ 0\n    }\n    sleep(10);\n    wait(NULL);\n    return 0;\n}\n```\n\nWhich statements are true?",
+   "options": [
+    "At t = 2, C is a zombie",
+    "At t = 2, G is a zombie, because its parent C has terminated",
+    "At t = 7, G no longer has an entry in the process table",
+    "At t = 7, C has been removed from the process table, because its child G has finished"
+   ],
+   "answer": [
+    "A",
+    "C"
+   ],
+   "explanation": "- **C** exits at t ≈ 0. Its parent P is alive but sleeping until t = 10 and has not called `wait()`, so C is a **zombie** from t ≈ 0 until P's `wait()` at t = 10.\n- **G** is still sleeping when C exits, so G becomes an **orphan** (alive) and is adopted by `init`. At t = 5 G exits and `init` reaps it at once, so G has no process-table entry after that.\n\nA: true. B: false (G is alive, an orphan). C: true. D: false (only C's parent P can reap C, at t = 10; G's exit is irrelevant).",
+   "option_feedback": [
+    "True: C has exited and its parent P has not yet waited for it.",
+    "False: G is still running (sleeping); a parent's death makes a child an orphan, not a zombie.",
+    "True: G's new parent init reaps it immediately after it exits at t ≈ 5.",
+    "False: a zombie is removed only when its own parent (P) waits for it; that happens at t = 10."
+   ],
+   "trap": "Confusing zombie (dead child, live parent that hasn't waited) with orphan (live child, dead parent)."
+  },
+  {
+   "id": "t02-067",
+   "subtopic": "zombie-and-orphan",
+   "difficulty": 3,
+   "type": "mcq",
+   "marks": 1,
+   "est_seconds": 150,
+   "concepts": [
+    "zombie",
+    "orphan",
+    "re-parenting to init"
+   ],
+   "stem": "Assume orphans are adopted by `init` (PID 1), which promptly reaps its terminated children (including zombies it inherits); no subreaper exists; only `sleep()` takes significant time.\n\n```c\nint main(void) {                     // P\n    for (int i = 0; i < 4; i++) {\n        if (fork() == 0) {           // child i\n            sleep(2 * i + 1);        // child i exits at t ≈ 2i + 1\n            exit(0);\n        }\n    }\n    sleep(4);\n    return 0;                        // P exits at t ≈ 4\n}\n```\n\nLet Z be the number of **zombie** processes at t = 3.5 and O the number of **orphan** processes (alive, original parent dead) at t = 4.5. What is (Z, O)?",
+   "options": [
+    "(1, 2)",
+    "(2, 4)",
+    "(2, 0)",
+    "(2, 2)"
+   ],
+   "answer": "D",
+   "explanation": "Children exit at t ≈ 1, 3, 5, 7 (i = 0, 1, 2, 3). P never calls `wait()` and exits at t ≈ 4.\n\n**t = 3.5:** children 0 and 1 have exited; P is alive and has not waited → both are zombies. Children 2 and 3 are still alive. **Z = 2**.\n\n**t = 4:** P exits. Its zombie children 0 and 1 are handed to `init`, which reaps them at once. Its live children 2 and 3 are adopted by `init`.\n\n**t = 4.5:** children 2 and 3 are alive and their original parent is dead → **O = 2**.\n\n(Z, O) = **(2, 2)**.",
+   "option_feedback": [
+    "Wrong: child 1 exits at t ≈ 3, before 3.5, so it is also a zombie.",
+    "Wrong: counts the zombie children 0 and 1 as orphans at t = 4.5, but they are already reaped by init once P exits.",
+    "Wrong: children 2 and 3 are still alive at t = 4.5 and P is dead, so they are orphans.",
+    "Correct: two zombies at 3.5 (children 0, 1); two live orphans at 4.5 (children 2, 3)."
+   ],
+   "trap": "Thinking zombies of a dead parent persist (they are inherited and reaped by init), or that children of an exited parent are killed."
+  }
+ ]
+}

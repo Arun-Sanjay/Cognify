@@ -11,6 +11,13 @@ from app.models.notification import (
     NotificationStatus,
     NotificationType,
 )
+from app.models.quiz import (
+    TOPIC_SKILL_PREFIX,
+    LearnerSkill,
+    QuizAttempt,
+    QuizItemStat,
+    QuizResponse,
+)
 from app.models.user import StudentProfile, TeacherProfile, User, UserRole
 
 __all__ = [
@@ -33,4 +40,10 @@ __all__ = [
     "NotificationDelivery",
     "NotificationType",
     "NotificationStatus",
+    # Learn quizzes
+    "QuizAttempt",
+    "QuizResponse",
+    "LearnerSkill",
+    "QuizItemStat",
+    "TOPIC_SKILL_PREFIX",
 ]

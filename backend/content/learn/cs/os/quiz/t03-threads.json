@@ -1,0 +1,1052 @@
+{
+  "topic_id": "t03-threads",
+  "questions": [
+    {
+      "id": "t03-001",
+      "subtopic": "thread-vs-process",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "thread resources",
+        "shared vs private"
+      ],
+      "stem": "Which of the following is **not** shared among the threads of the same process?",
+      "options": [
+        "Code (text) section",
+        "Global variables",
+        "Register set",
+        "Open files"
+      ],
+      "answer": "C",
+      "explanation": "Threads of one process share the address space (code, data/globals, heap) and OS resources such as open files and signal handlers. Each thread has its **own** execution context: thread ID, **program counter, register set** and **stack**. So the register set is the one item not shared.",
+      "option_feedback": [
+        "Shared: all threads execute the same program text.",
+        "Shared: globals live in the data segment of the common address space.",
+        "Correct: every thread has its own registers (saved in its TCB on a switch).",
+        "Shared: the file-descriptor table belongs to the process."
+      ],
+      "trap": "Confusing what a thread owns (execution context) with what the process owns (address space and resources)."
+    },
+    {
+      "id": "t03-002",
+      "subtopic": "thread-vs-process",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 50,
+      "concepts": [
+        "thread resources",
+        "TCB"
+      ],
+      "stem": "Which of the following does **each thread** of a multithreaded process have its own private copy of?",
+      "options": [
+        "Program counter",
+        "Heap",
+        "Stack",
+        "Open file descriptors"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "A thread is a unit of execution: it needs its own **program counter**, register set and **stack** (for its own call chain and local variables). The heap, globals, code and the open-file table are properties of the process and are shared by all its threads.",
+      "option_feedback": [
+        "Private: each thread is at its own point of execution.",
+        "Shared: memory allocated with malloc() by one thread is visible to all threads.",
+        "Private: each thread has its own call stack for locals and return addresses.",
+        "Shared: a file opened by one thread can be read by another through the same descriptor."
+      ]
+    },
+    {
+      "id": "t03-003",
+      "subtopic": "thread-vs-process",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "lightweight process",
+        "creation cost"
+      ],
+      "stem": "Creating a new thread is typically much cheaper than creating a new process with `fork()`. What is the main reason?",
+      "options": [
+        "The new thread shares the creator's address space, so no new page tables or memory image have to be set up",
+        "Threads are created entirely by the hardware without any OS involvement",
+        "A thread does not need a stack of its own",
+        "Threads are never scheduled by the kernel, so no kernel data structure is needed"
+      ],
+      "answer": "A",
+      "explanation": "A process creation must build a new address space (page tables, copy-on-write mappings), a new PCB, a copy of the file table, and so on. A new thread only needs a TCB, a register context and a stack inside the **existing** address space. That is why threads are called *lightweight processes*.",
+      "option_feedback": [
+        "Correct: sharing the address space removes the costliest part of creation.",
+        "Wrong: thread creation is done by a library and/or the kernel, never by hardware alone.",
+        "Wrong: every thread needs its own stack.",
+        "Wrong: kernel-level threads are scheduled by the kernel and have kernel TCBs."
+      ]
+    },
+    {
+      "id": "t03-004",
+      "subtopic": "thread-vs-process",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "shared globals",
+        "pthread_join"
+      ],
+      "stem": "Consider the following POSIX C program (headers omitted).\n\n```c\nint x = 0;\n\nvoid *worker(void *arg) {\n    x = 10;\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t;\n    pthread_create(&t, NULL, worker, NULL);\n    pthread_join(t, NULL);\n    printf(\"%d\\n\", x);\n    return 0;\n}\n```\n\nWhat does the program print?",
+      "options": [
+        "0",
+        "10",
+        "Either 0 or 10, depending on scheduling",
+        "Nothing: the program does not compile because worker cannot access x"
+      ],
+      "answer": "B",
+      "explanation": "`x` is a global, so it lives in the data segment shared by all threads of the process. `pthread_join` makes `main` wait until `worker` has finished, so the write `x = 10` has already happened when `printf` runs. Output: **10**.\n\nContrast with `fork()`: a child process gets its *own copy* of `x`, so a child's write would not be seen by the parent.",
+      "option_feedback": [
+        "This is what you would get if the write were done by a fork()ed child, not a thread.",
+        "Correct: the global is shared and join orders the write before the print.",
+        "The join removes the race: main cannot print until worker returns.",
+        "Globals are visible to every function in the file, including thread functions."
+      ],
+      "trap": "Applying fork()'s copy semantics to threads."
+    },
+    {
+      "id": "t03-005",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "fork in threads",
+        "POSIX semantics"
+      ],
+      "stem": "A process has 4 threads. One of them calls `fork()` (and the child does not call `exec`). Under POSIX semantics, how many threads does the child process have immediately after the call?",
+      "options": [
+        "4",
+        "0 until it calls pthread_create",
+        "3",
+        "1"
+      ],
+      "answer": "D",
+      "explanation": "POSIX specifies that `fork()` in a multithreaded process creates a child containing a **single thread**: a replica of the thread that called `fork()`. The child still gets a copy of the whole address space (including memory belonging to the other threads, such as their stacks and any mutexes), but those threads do not exist in it.",
+      "option_feedback": [
+        "This is the 'duplicate all threads' variant some old systems offered (e.g. Solaris forkall()); it is not POSIX fork().",
+        "A process always has at least one thread; the child resumes execution right after fork().",
+        "The calling thread is the one copied, not the other three.",
+        "Correct: only the calling thread is duplicated."
+      ]
+    },
+    {
+      "id": "t03-006",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "fork vs thread",
+        "address space"
+      ],
+      "stem": "Consider the following POSIX C program (headers omitted; all calls succeed).\n\n```c\nint x = 0;\n\nvoid *add5(void *arg) { x += 5; return NULL; }\n\nint main(void) {\n    if (fork() == 0) {          /* child */\n        x += 1;\n        exit(0);\n    }\n    wait(NULL);                 /* parent waits for child */\n    pthread_t t;\n    pthread_create(&t, NULL, add5, NULL);\n    pthread_join(t, NULL);\n    printf(\"%d\\n\", x);\n    return 0;\n}\n```\n\nWhat does the parent print?",
+      "options": [
+        "5",
+        "6",
+        "1",
+        "Either 5 or 6 depending on scheduling"
+      ],
+      "answer": "A",
+      "explanation": "Trace:\n\n1. `fork()` gives the child its **own copy** of the address space. The child changes *its* `x` to 1 and exits. The parent's `x` is still 0.\n2. `wait` only synchronises; it does not copy anything back.\n3. The parent creates a **thread**. The thread shares the parent's address space, so `x += 5` changes the parent's `x` to 5.\n4. After `pthread_join`, the parent prints **5**.",
+      "option_feedback": [
+        "Correct: the thread's update is shared, the child's is not.",
+        "Assumes the child's x += 1 is visible to the parent; fork gives a separate copy.",
+        "That is the child's x, which the parent never prints.",
+        "wait() and pthread_join() fix the order, and the child's write is invisible anyway."
+      ],
+      "trap": "Treating a fork()ed child as if it shared memory with the parent."
+    },
+    {
+      "id": "t03-007",
+      "subtopic": "thread-vs-process",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "static vs automatic variables",
+        "thread stack"
+      ],
+      "stem": "Consider the following POSIX C program (headers omitted; all calls succeed, `m` is a properly initialised mutex).\n\n```c\nint g = 0;\npthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;\n\nvoid *work(void *arg) {\n    int local = 0;\n    static int s = 0;\n    pthread_mutex_lock(&m);\n    local++;\n    s++;\n    g += local + s;\n    pthread_mutex_unlock(&m);\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t[3];\n    for (int i = 0; i < 3; i++) pthread_create(&t[i], NULL, work, NULL);\n    for (int i = 0; i < 3; i++) pthread_join(t[i], NULL);\n    printf(\"%d\\n\", g);\n    return 0;\n}\n```\n\nWhat value is printed?",
+      "answer": {
+        "min": 9,
+        "max": 9
+      },
+      "explanation": "- `local` is an automatic variable: it lives on **each thread's own stack**, so every thread sees `local = 0` and makes it 1.\n- `s` is `static`: it lives in the data segment, **shared** by all threads, initialised once. The mutex serialises the updates, so the three threads (in whatever order) see `s` = 1, 2, 3.\n\n| critical section # | local | s | added to g |\n|---|---|---|---|\n| 1st | 1 | 1 | 2 |\n| 2nd | 1 | 2 | 3 |\n| 3rd | 1 | 3 | 4 |\n\ng = 2 + 3 + 4 = **9**, regardless of which thread enters first.",
+      "trap": "Treating the static local as per-thread (giving 6) or the automatic local as shared (giving 12)."
+    },
+    {
+      "id": "t03-008",
+      "subtopic": "thread-vs-process",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "Amdahl's law",
+        "speed-up"
+      ],
+      "stem": "A program is to be multithreaded and run on an 8-core machine. Only part of it can be parallelised; the rest is strictly serial. Assume the parallel part scales perfectly over 8 threads (one per core) and threading has no overhead. What is the **largest** serial fraction (as a percentage of the single-threaded run time) for which the speed-up is still at least 4? Give the answer correct to two decimal places.",
+      "answer": {
+        "min": 14.28,
+        "max": 14.29
+      },
+      "explanation": "Amdahl's law with serial fraction s and N = 8 cores:\n\nspeed-up = 1 / (s + (1 − s)/8)\n\nRequire speed-up ≥ 4:\n\ns + (1 − s)/8 ≤ 1/4\n8s + 1 − s ≤ 2\n7s ≤ 1  →  s ≤ 1/7 = 0.142857…\n\nLargest serial fraction ≈ **14.29 %**.\n\nCheck: s = 1/7 → 1/7 + (6/7)/8 = 8/56 + 6/56 = 14/56 = 1/4, speed-up exactly 4.",
+      "trap": "Using 1/4 − 1/8 or dividing the serial part by the core count too."
+    },
+    {
+      "id": "t03-009",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "fork in threads",
+        "exec in threads"
+      ],
+      "stem": "A POSIX process has several threads. Which of the following statements are correct?",
+      "options": [
+        "If one thread calls fork(), the child process contains only a copy of the calling thread",
+        "If one thread calls an exec() function, the whole process image is replaced and all the other threads disappear",
+        "After fork(), every mutex in the child is in the same state (locked or unlocked) as it was in the parent at the moment of the fork",
+        "After fork(), the child and the parent share the same heap, so a malloc() in the child is visible to the parent"
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "- **A** true: POSIX fork() duplicates only the calling thread.\n- **B** true: exec replaces the entire program (all threads, the address space); the new program starts with one thread.\n- **C** true: the child gets a copy of the whole address space, mutex variables included, so a mutex held by some other thread at fork time is copied in the locked state (this is why `pthread_atfork` exists).\n- **D** false: the child gets its own (copy-on-write) copy of the heap; nothing is shared afterwards.",
+      "option_feedback": [
+        "Correct: single-threaded child.",
+        "Correct: exec is process-wide.",
+        "Correct: memory, including lock words, is copied as-is.",
+        "Wrong: parent and child have separate address spaces after fork."
+      ]
+    },
+    {
+      "id": "t03-010",
+      "subtopic": "thread-vs-process",
+      "difficulty": 3,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "shared address space",
+        "TLB",
+        "fault isolation"
+      ],
+      "stem": "Consider a process with several kernel-level threads on a typical paged system. Which of the following statements are correct?",
+      "options": [
+        "If one thread dereferences an invalid pointer and the resulting SIGSEGV is not handled, the entire process (all its threads) is terminated",
+        "Each thread has its own private copy of the global variables",
+        "On a context switch between two threads of the same process, the page-table base register need not be changed and the TLB need not be flushed",
+        "If thread T1 obtains a pointer to a local variable on thread T2's stack, T1 can read and modify that variable"
+      ],
+      "answer": [
+        "A",
+        "C",
+        "D"
+      ],
+      "explanation": "- **A** true: signals such as SIGSEGV are delivered to the process; the default action terminates the whole process. Threads offer no fault isolation, unlike separate processes.\n- **B** false: globals are in the shared data segment.\n- **C** true: both threads use the same address space, so the same page table and the same TLB entries remain valid. This is one reason thread switches are cheaper than process switches.\n- **D** true: stacks are *private by convention*, not protected. All stacks are in the one shared address space, so any thread with the address can access them.",
+      "option_feedback": [
+        "Correct: a crash in one thread brings down the whole process.",
+        "Wrong: only thread-local storage (e.g. __thread) is per thread; ordinary globals are shared.",
+        "Correct: same address space, so no address-space switch.",
+        "Correct: there is no memory protection between threads of a process."
+      ],
+      "trap": "Believing each thread's stack is memory-protected from the other threads."
+    },
+    {
+      "id": "t03-011",
+      "subtopic": "thread-vs-process",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "Amdahl's law",
+        "thread creation overhead",
+        "speed-up bounds"
+      ],
+      "stem": "A job takes 100 s when run with a single thread: 10 s of it is strictly serial and the remaining 90 s of work can be split evenly among n threads that run in parallel. The machine has 32 cores and nothing else is running, so all n threads (1 ≤ n ≤ 32) run truly in parallel. Before the parallel phase, the main thread creates the n worker threads one after another, each creation costing 0.5 s (the workers wait at a barrier until all n exist). This creation cost is **not** part of the 100 s single-threaded time. Ignore all other overheads.\n\nSpeed-up = 100 s ÷ (run time with n threads). For how many integer values of n in the range 1 ≤ n ≤ 32 is the speed-up **at least 4**?",
+      "answer": {
+        "min": 13,
+        "max": 13
+      },
+      "explanation": "Run time with n threads: T(n) = 10 (serial) + 0.5n (creating n threads) + 90/n (parallel part).\n\nSpeed-up ≥ 4 ⇔ T(n) ≤ 25 ⇔ 0.5n + 90/n ≤ 15. Multiply by 2n (> 0):\n\nn² − 30n + 180 ≤ 0\n\nRoots: n = (30 ± √(900 − 720)) / 2 = 15 ± √45 = 15 ± 6.708 → 8.292 and 21.708.\n\nSo the condition holds for 8.292 ≤ n ≤ 21.708, i.e. integers **9 … 21**. Check the edges:\n\n| n | T(n) (s) | speed-up |\n|---|---|---|\n| 8 | 10 + 4 + 11.25 = 25.25 | 3.96 ✗ |\n| 9 | 10 + 4.5 + 10 = 24.5 | 4.08 ✓ |\n| 21 | 10 + 10.5 + 4.286 = 24.79 | 4.03 ✓ |\n| 22 | 10 + 11 + 4.091 = 25.09 | 3.99 ✗ |\n\nCount = 21 − 9 + 1 = **13**.\n\nThe twist: creation overhead grows linearly with n while the parallel saving shrinks like 1/n, so speed-up first rises and then falls; the condition has an **upper** bound as well as a lower one.",
+      "trap": "Assuming more threads is always faster and counting every n from 9 to 32 (24), or dropping the creation cost (n ≥ 6, giving 27)."
+    },
+    {
+      "id": "t03-012",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "fork in threads",
+        "thread termination",
+        "short-circuit fork",
+        "output counting"
+      ],
+      "stem": "Consider the following POSIX C program (headers omitted). Assume all calls succeed, `stdout` is **unbuffered** (every `printf` is written immediately), and `fork()` has standard POSIX semantics.\n\n```c\nvoid *f(void *arg) {\n    if (fork() && fork())\n        printf(\"p\\n\");\n    printf(\"x\\n\");\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t1, t2;\n    fork();\n    pthread_create(&t1, NULL, f, NULL);\n    pthread_create(&t2, NULL, f, NULL);\n    pthread_join(t1, NULL);\n    pthread_join(t2, NULL);\n    printf(\"y\\n\");\n    return 0;\n}\n```\n\nHow many lines are printed in total, counting the output of all processes?",
+      "answer": {
+        "min": 18,
+        "max": 18
+      },
+      "explanation": "Three rules interact:\n\n1. `fork()` in `main` happens **before** any thread is created, so it simply duplicates a single-threaded process: there are **2** top-level processes, each of which creates its own t1 and t2.\n2. `fork()` called by a thread creates a child that contains **only a copy of that thread**. When that copy returns from `f`, it is the last thread of its process, so the process exits; it never runs `main`'s code and never prints `y`.\n3. `fork() && fork()` short-circuits: the second `fork()` is executed only where the first returned non-zero (the parent).\n\n**One thread executing `f`:**\n\n| process | fork #1 | fork #2 | condition | prints |\n|---|---|---|---|---|\n| the thread itself | > 0 | > 0 | true | `p`, `x` |\n| child of fork #2 (copy of the thread) | > 0 | 0 | false | `x` |\n| child of fork #1 (copy of the thread) | 0 | not executed | false | `x` |\n\nSo each call of `f` produces 4 lines (one `p`, three `x`).\n\n**One top-level process:** t1 and t2 each give 4 lines, and `main` prints `y` after the joins: 4 + 4 + 1 = 9 lines.\n\n**Total:** 2 top-level processes × 9 = **18** lines (2 `p`, 12 `x`, 2 `y`).",
+      "trap": "Letting the thread-forked children also run main and print y (26), forgetting the fork in main (9), or ignoring the short-circuit so fork #1's child also forks (22)."
+    },
+    {
+      "id": "t03-013",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork"
+      ],
+      "difficulty": 4,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 200,
+      "concepts": [
+        "fork in threads",
+        "mutex state after fork",
+        "pthread_atfork"
+      ],
+      "stem": "A POSIX process has two threads, T1 and T2, and a default (normal) mutex `m`. At the moment T1 calls `fork()`, T2 holds `m` (it is in the middle of its critical section and will release `m` shortly). Consider the **child** process created by this `fork()`. Which of the following statements are correct?",
+      "options": [
+        "If the child immediately calls execv() to run a new program, the locked state of m has no effect on the new program",
+        "If no pthread_atfork handlers are installed and the child calls pthread_mutex_lock(&m), the call returns as soon as T2 in the parent unlocks m",
+        "If, before forking, the program installed pthread_atfork handlers whose prepare handler locks m and whose parent and child handlers each unlock m, then a later pthread_mutex_lock(&m) in the child succeeds",
+        "If no pthread_atfork handlers are installed, pthread_mutex_trylock(&m) in the child succeeds, because the thread that owns m does not exist in the child"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "Facts used: the child gets a **copy** of the whole address space (so `m`'s memory says *locked*), but only **one thread**, the copy of T1.\n\n- **A true.** `execv()` replaces the entire address space; `m` no longer exists in the new program.\n- **B false.** The parent's unlock changes only the parent's copy of `m`. In the child nobody can ever unlock `m` (there is no T2), so `pthread_mutex_lock` blocks forever.\n- **C true.** This is exactly what `pthread_atfork` is for. The prepare handler runs in T1 *before* the fork: it waits until T2 releases `m` and then T1 holds it. The fork therefore happens with `m` held by the forking thread. In the child, the child handler (run by the child's only thread, the copy of T1) unlocks the child's copy; the parent handler unlocks the parent's copy. A later lock in the child succeeds.\n- **D false.** `trylock` on a locked mutex does not succeed just because the owner is missing; it returns `EBUSY` immediately (the state is simply *locked*).",
+      "option_feedback": [
+        "Correct: exec discards the old address space, mutex included.",
+        "Wrong: the parent and child have separate copies of m; the parent's unlock never reaches the child, which blocks forever.",
+        "Correct: prepare makes the forking thread own m at the fork, and the child handler then releases the child's copy.",
+        "Wrong: the child's m is simply marked locked; trylock fails with EBUSY."
+      ],
+      "trap": "Thinking the parent's unlock propagates to the child, or that a mutex whose owner vanished becomes free."
+    },
+    {
+      "id": "t03-014",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "user-level threads"
+      ],
+      "stem": "User-level threads (ULTs) are created, scheduled and switched by:",
+      "options": [
+        "The kernel's CPU scheduler",
+        "The hardware MMU",
+        "The interrupt handler",
+        "A thread library running in user space, without the kernel knowing about them"
+      ],
+      "answer": "D",
+      "explanation": "ULTs are managed entirely by a user-space thread library (thread table, creation, scheduling, switching). The kernel sees only the single process (one kernel-schedulable entity) and is unaware of the threads inside it.",
+      "option_feedback": [
+        "That describes kernel-level threads.",
+        "The MMU translates addresses; it does not manage threads.",
+        "Interrupt handlers run in the kernel and know nothing about ULTs.",
+        "Correct: ULT management is a user-space library function."
+      ]
+    },
+    {
+      "id": "t03-015",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "ULT advantages"
+      ],
+      "stem": "Which of the following is an advantage of user-level threads over kernel-level threads?",
+      "options": [
+        "A blocking system call by one thread does not block the others",
+        "Thread switching does not require a switch to kernel mode, so it is faster",
+        "Threads of one process can run in parallel on different CPUs",
+        "The kernel can give more CPU time to a process that has more threads"
+      ],
+      "answer": "B",
+      "explanation": "Because the library does the switch with ordinary user-mode code (save/restore registers and stack pointer), a ULT switch needs no trap into the kernel and is much cheaper. The other three options are advantages of **kernel-level** threads.",
+      "option_feedback": [
+        "This is a KLT advantage; with pure ULTs a blocking call blocks the whole process.",
+        "Correct: no mode switch, no kernel involvement.",
+        "This is a KLT advantage; the kernel can place only one entity of a pure-ULT process on a CPU.",
+        "The kernel cannot see ULTs, so it cannot weight by their number."
+      ]
+    },
+    {
+      "id": "t03-016",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "blocking system call",
+        "user-level threads"
+      ],
+      "stem": "A process uses a pure user-level thread package (the kernel knows nothing about its threads) and has 4 threads. One thread issues a blocking `read()` on a file. What happens?",
+      "options": [
+        "Only the calling thread blocks; the library runs one of the other 3 threads",
+        "The kernel creates a new kernel thread to run the other 3 threads",
+        "The entire process blocks until the read completes",
+        "The read() is rejected because ULTs cannot make system calls"
+      ],
+      "answer": "C",
+      "explanation": "The kernel sees one process making a blocking system call, so it moves the **whole process** to the blocked state. The thread library gets no chance to run, so none of the other threads can run until the read completes. This is the classic drawback of ULTs (many-to-one mapping).",
+      "option_feedback": [
+        "That would need the kernel to know about threads, i.e. kernel-level threads.",
+        "A pure-ULT kernel does not create threads for the process.",
+        "Correct: the kernel blocks its only schedulable entity, the process.",
+        "ULTs can make system calls; the problem is only that blocking calls stall all threads."
+      ],
+      "trap": "Assuming the library can switch to another thread during a blocking kernel call."
+    },
+    {
+      "id": "t03-017",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "KLT advantages",
+        "ULT vs KLT"
+      ],
+      "stem": "Which of the following are advantages of kernel-level threads over user-level threads?",
+      "options": [
+        "Threads of the same process can execute in parallel on a multiprocessor",
+        "A blocking system call by one thread does not block the other threads of the process",
+        "Switching between two threads of the same process is cheaper",
+        "The application can use its own thread-scheduling policy without modifying the kernel"
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "The kernel schedules each KLT separately, so it can put them on different CPUs (**A**) and keep running the others when one blocks (**B**). **C** and **D** are advantages of **ULTs**: their switches need no mode switch, and the scheduling policy lives in the user-space library.",
+      "option_feedback": [
+        "Correct: each KLT is a separate schedulable entity.",
+        "Correct: the kernel blocks only the calling thread.",
+        "Wrong: a KLT switch needs a trap into the kernel, so it costs more than a ULT switch.",
+        "Wrong: that flexibility belongs to ULT libraries."
+      ]
+    },
+    {
+      "id": "t03-018",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "parallelism",
+        "user-level threads"
+      ],
+      "stem": "A machine has 4 CPUs and nothing else is running. Process P uses a pure user-level thread library and creates 4 CPU-bound threads. At most how many CPUs can P use at the same time?",
+      "options": [
+        "1",
+        "2",
+        "4",
+        "Depends on how many threads the library creates"
+      ],
+      "answer": "A",
+      "explanation": "The kernel schedules only kernel-visible entities. P has just one (the process itself, i.e. one kernel thread under the many-to-one model), so the kernel places it on **one** CPU at a time. The library then multiplexes the 4 ULTs on that one CPU. Pure ULTs give concurrency but no parallelism.",
+      "option_feedback": [
+        "Correct: one kernel-schedulable entity, so one CPU at a time.",
+        "No mechanism splits a single kernel entity across two CPUs.",
+        "This would need 4 kernel threads (one-to-one or many-to-many with ≥4 LWPs).",
+        "The number of ULTs is irrelevant; the kernel never sees them."
+      ],
+      "trap": "Assuming that multiple threads automatically means multiple CPUs."
+    },
+    {
+      "id": "t03-019",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 2,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "switch cost",
+        "mode switch"
+      ],
+      "stem": "A switch between two user-level threads (done by the thread library) costs 1 µs. A switch between two kernel-level threads of the same process needs a trap into the kernel (2 µs), 4 µs of work in the kernel, and a return to user mode (2 µs). A program performs 50,000 thread switches. How many **milliseconds** of switching time are saved if it uses user-level threads instead of kernel-level threads?",
+      "answer": {
+        "min": 350,
+        "max": 350
+      },
+      "explanation": "KLT switch = 2 (trap) + 4 (kernel work) + 2 (return) = 8 µs.\nULT switch = 1 µs.\nSaving per switch = 8 − 1 = 7 µs.\nTotal saving = 50,000 × 7 µs = 350,000 µs = **350 ms**.",
+      "trap": "Forgetting the return-to-user cost (giving 250) or computing only the KLT total (400)."
+    },
+    {
+      "id": "t03-020",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 75,
+      "concepts": [
+        "preemption",
+        "user-level threads"
+      ],
+      "stem": "A uniprocessor OS schedules processes with preemptive round robin. Process P uses a pure user-level thread library that schedules its threads **non-preemptively** (a thread runs until it blocks, yields or exits). One thread of P enters an infinite loop without ever yielding. Which statement is correct?",
+      "options": [
+        "The whole system hangs, because the kernel cannot preempt a user-level thread",
+        "The kernel detects the loop and switches P to another of its threads",
+        "Other processes keep running, and so do P's other threads, because the timer interrupt also preempts ULTs",
+        "Other processes keep running, but P's other threads never run again"
+      ],
+      "answer": "D",
+      "explanation": "The timer interrupt goes to the kernel, which preempts **P as a whole** and runs other processes. When P is dispatched again, it resumes exactly where it was: inside the looping thread. The kernel does not know about P's threads, and the non-preemptive library never regains control, so P's other threads starve. Other processes are unaffected.",
+      "option_feedback": [
+        "The kernel can still preempt the process P, so the system does not hang.",
+        "The kernel cannot see P's threads, so it cannot switch between them.",
+        "The kernel's preemption is invisible to the library; it does not cause a ULT switch.",
+        "Correct: P is preempted as a unit; inside P the loop never gives up control."
+      ],
+      "trap": "Assuming kernel preemption of a process also gives the ULT library a chance to switch threads."
+    },
+    {
+      "id": "t03-021",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "thread control block",
+        "user-level threads"
+      ],
+      "stem": "A process using a pure user-level thread package has 5 threads. Which of the following describes the bookkeeping correctly?",
+      "options": [
+        "The kernel keeps one PCB plus 5 TCBs for the process",
+        "The kernel keeps 5 PCBs, one per thread",
+        "The kernel keeps one PCB for the process; the 5 thread control blocks are kept by the library in the process's user space",
+        "No PCB is needed because the library manages everything"
+      ],
+      "answer": "C",
+      "explanation": "With ULTs the kernel only knows about the process, so it keeps a single PCB. The library maintains its own thread table (one TCB per thread: saved registers, stack pointer, state) in user memory.",
+      "option_feedback": [
+        "That describes kernel-level threads.",
+        "Threads are not processes; there are never 5 PCBs here.",
+        "Correct: the thread table lives in user space.",
+        "The process itself is still a kernel entity and needs a PCB."
+      ]
+    },
+    {
+      "id": "t03-022",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "blocking system call",
+        "ULT vs KLT timeline"
+      ],
+      "stem": "A uniprocessor runs a single process with 3 threads, T1, T2, T3, all ready at time 0. Each thread does: **10 ms CPU → 20 ms blocking I/O → 10 ms CPU**, then exits. Each thread uses its own device, so I/O operations can overlap with each other and with CPU work. Thread scheduling is non-preemptive: a thread runs until it blocks or exits, and the next ready thread is picked in FIFO order (initially T1, T2, T3). A thread returning from I/O joins the tail of the ready queue. Ignore all switching overheads.\n\nLet T_ULT be the time at which the process finishes if the threads are pure user-level threads (many-to-one), and T_KLT if they are kernel-level threads (one-to-one). What is T_ULT − T_KLT (in ms)?",
+      "answer": {
+        "min": 60,
+        "max": 60
+      },
+      "explanation": "**Kernel-level threads** (only the calling thread blocks):\n\n| time (ms) | CPU | I/O in progress |\n|---|---|---|\n| 0–10 | T1 | – |\n| 10–20 | T2 | T1 (10–30) |\n| 20–30 | T3 | T1, T2 (20–40) |\n| 30–40 | T1 (done at 40) | T2, T3 (30–50) |\n| 40–50 | T2 (done at 50) | T3 |\n| 50–60 | T3 (done at 60) | – |\n\nT_KLT = **60 ms** (the CPU is never idle: 6 × 10 ms of CPU work).\n\n**User-level threads** (a blocking call blocks the whole process, so the CPU sits idle during each I/O):\n\n| time (ms) | activity |\n|---|---|\n| 0–10 | T1 CPU |\n| 10–30 | T1 I/O, whole process blocked |\n| 30–40 | T1 CPU, exits |\n| 40–50 | T2 CPU |\n| 50–70 | T2 I/O, process blocked |\n| 70–80 | T2 CPU, exits |\n| 80–90 | T3 CPU |\n| 90–110 | T3 I/O, process blocked |\n| 110–120 | T3 CPU, exits |\n\nT_ULT = 3 × (10 + 20 + 10) = **120 ms**. (Whatever order the library picks threads in, the CPU is idle during every I/O and no I/O overlaps anything, so the total is always the sum 120 ms.)\n\nT_ULT − T_KLT = 120 − 60 = **60 ms**.",
+      "trap": "Overlapping the I/O in the ULT case too, as if the library could switch threads during a blocking call."
+    },
+    {
+      "id": "t03-023",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 270,
+      "concepts": [
+        "blocking system call",
+        "ULT scheduling points",
+        "starvation",
+        "FIFO kernel scheduling"
+      ],
+      "stem": "A uniprocessor runs a single process with two threads and nothing else. Ignore all switching overheads.\n\n- **T1** repeats forever: compute 1 ms, then a blocking `read()` system call that takes 9 ms to complete.\n- **T2** repeats forever: compute 4 ms, then call `thread_yield()`.\n\n`thread_yield()` moves the caller to the tail of the ready queue of whichever scheduler manages it. T1 runs first at time 0.\n\n- **Case K** (one-to-one): the kernel schedules the two threads non-preemptively in FIFO order: a thread runs until it blocks or yields; a thread that yields, or whose I/O completes, joins the tail of the ready queue.\n- **Case U** (pure user-level threads, many-to-one): the thread library schedules non-preemptively in FIFO order and switches threads **only** when the running thread calls `thread_yield()` or exits. `read()` is issued directly to the kernel (no wrapper/jacket routine).\n\nLet S_K and S_U be the long-run percentage of time during which **T2 is executing** in the two cases. What is S_K − S_U? Give the answer correct to two decimal places.",
+      "answer": {
+        "min": 92.3,
+        "max": 92.31
+      },
+      "explanation": "**Case K.** The kernel sees two threads; when T1 blocks, T2 runs.\n\n| time (ms) | CPU | note |\n|---|---|---|\n| 0–1 | T1 | read() → I/O 1–10 |\n| 1–5, 5–9 | T2 | yields, queue empty → continues |\n| 9–13 | T2 | T1 ready at 10, waits in queue |\n| 13–14 | T1 | read() → I/O 14–23 |\n| 14–18, 18–22, 22–26 | T2 | T1 ready at 23, waits |\n| 26–27 | T1 | … |\n\nFrom 13 onward the pattern repeats every 13 ms: T1 runs 1 ms, T2 runs 12 ms (T1 always waits for the end of T2's current 4 ms burst). S_K = 12/13 = 92.31 %.\n\n**Case U.** The kernel sees one process. T1 runs 0–1 and calls `read()`: the **whole process** blocks for 9 ms, and the library never gets control. When the read returns, the kernel resumes the process exactly where it was: inside T1. T1 never calls `thread_yield()` and never exits, so the library never switches, and **T2 never runs at all**. S_U = 0 % (the CPU is even idle 90 % of the time).\n\nS_K − S_U = 92.31 − 0 = **92.31**.",
+      "trap": "Letting the library switch to T2 while T1 is blocked in read() (that is kernel-thread behaviour); a direct blocking system call never returns control to a ULT library."
+    },
+    {
+      "id": "t03-024",
+      "subtopic": "user-vs-kernel-threads",
+      "also_tests": [
+        "fcfs"
+      ],
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 450,
+      "concepts": [
+        "ULT vs KLT",
+        "blocking",
+        "timeline",
+        "order optimisation"
+      ],
+      "stem": "A uniprocessor kernel schedules kernel-schedulable entities with **non-preemptive FCFS**: an entity runs until it blocks or finishes; an entity whose I/O completes joins the tail of the ready queue.\n\n- Process **P** has two pure user-level threads, U1 and U2 (many-to-one, one kernel entity). P's library runs U1 first; when a ULT finishes, the library immediately runs the next ULT of P. When P resumes after a blocking call, the thread that made the call continues.\n- Process **Q** has two kernel-level threads, K1 and K2 (one-to-one).\n\nEvery one of the four threads does: **4 ms CPU → 6 ms blocking I/O → 2 ms CPU**, then finishes. All I/O operations use separate devices and overlap fully. Ignore switching overheads.\n\nAt time 0 the three entities P, K1, K2 are all ready, and they may be placed in the ready queue in **any** of the 6 possible orders. Over all these orders, what is the **minimum** possible average completion time (in ms) of the four threads U1, U2, K1, K2?",
+      "answer": {
+        "min": 20,
+        "max": 20
+      },
+      "explanation": "K1 and K2 are identical, so only the **position of P** in the queue matters: 3 cases.\n\n**P first (P, K1, K2):**\n\n| time | CPU | event |\n|---|---|---|\n| 0–4 | P (U1) | U1 I/O 4–10, whole P blocks |\n| 4–8 | K1 | I/O 8–14 |\n| 8–12 | K2 | I/O 12–18; P ready at 10 |\n| 12–14 | P (U1) | **U1 = 14** |\n| 14–18 | P (U2) | U2 I/O 18–24; K1 ready at 14 |\n| 18–20 | K1 | **K1 = 20** |\n| 20–22 | K2 | **K2 = 22** |\n| 22–24 | idle | |\n| 24–26 | P (U2) | **U2 = 26** |\n\nAverage = (14 + 20 + 22 + 26)/4 = **20.5**.\n\n**P second (K1, P, K2):**\n\n| time | CPU | event |\n|---|---|---|\n| 0–4 | K1 | I/O 4–10 |\n| 4–8 | P (U1) | U1 I/O 8–14, P blocks |\n| 8–12 | K2 | I/O 12–18; K1 ready at 10 |\n| 12–14 | K1 | **K1 = 14**; P ready at 14 |\n| 14–16 | P (U1) | **U1 = 16** |\n| 16–20 | P (U2) | U2 I/O 20–26; K2 ready at 18 |\n| 20–22 | K2 | **K2 = 22** |\n| 22–26 | idle | |\n| 26–28 | P (U2) | **U2 = 28** |\n\nAverage = (14 + 16 + 22 + 28)/4 = **20.0**.\n\n**P last (K1, K2, P):**\n\n| time | CPU | event |\n|---|---|---|\n| 0–4 | K1 | I/O 4–10 |\n| 4–8 | K2 | I/O 8–14 |\n| 8–12 | P (U1) | U1 I/O 12–18, P blocks; K1 ready at 10 |\n| 12–14 | K1 | **K1 = 14** |\n| 14–16 | K2 | **K2 = 16** |\n| 16–18 | idle | |\n| 18–20 | P (U1) | **U1 = 20** |\n| 20–24 | P (U2) | U2 I/O 24–30 |\n| 24–30 | idle | |\n| 30–32 | P (U2) | **U2 = 32** |\n\nAverage = (14 + 16 + 20 + 32)/4 = **20.5**.\n\nMinimum = **20 ms** (P in the middle). Because a blocking call blocks all of P, U2 cannot start until U1 has finished; putting P in the middle lets K1's and K2's work overlap P's I/O without pushing U2's chain to the very end.",
+      "trap": "Computing only one order (20.5), or assuming that putting P first (or last) must be optimal."
+    },
+    {
+      "id": "t03-025",
+      "subtopic": "multithreading-models",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 25,
+      "concepts": [
+        "many-to-one"
+      ],
+      "stem": "In which multithreading model are many user-level threads mapped onto a single kernel thread?",
+      "options": [
+        "One-to-one",
+        "Many-to-one",
+        "Many-to-many",
+        "One-to-many"
+      ],
+      "answer": "B",
+      "explanation": "**Many-to-one**: all user threads of a process share one kernel thread. Thread management is efficient (done in user space), but one blocking call blocks the whole process and the threads cannot run in parallel. (Solaris Green Threads and early GNU Portable Threads used this model.)",
+      "option_feedback": [
+        "One-to-one maps each user thread to its own kernel thread.",
+        "Correct.",
+        "Many-to-many multiplexes many user threads over a smaller or equal number of kernel threads.",
+        "Not a standard model: one user thread is never split across several kernel threads."
+      ]
+    },
+    {
+      "id": "t03-026",
+      "subtopic": "multithreading-models",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 25,
+      "concepts": [
+        "one-to-one",
+        "Linux threads"
+      ],
+      "stem": "Which multithreading model do modern Linux (NPTL) and Windows use for their standard thread libraries?",
+      "options": [
+        "Many-to-one",
+        "Many-to-many",
+        "One-to-one",
+        "Two-level"
+      ],
+      "answer": "C",
+      "explanation": "Both Linux (NPTL; each pthread is a kernel task created with `clone()`) and Windows map each user thread to its own kernel thread: the **one-to-one** model.",
+      "option_feedback": [
+        "Many-to-one is used by pure user-level libraries, not the standard OS threads.",
+        "Many-to-many was used by older Solaris and some other UNIX systems.",
+        "Correct.",
+        "The two-level model was used by IRIX, HP-UX and Tru64 UNIX."
+      ]
+    },
+    {
+      "id": "t03-027",
+      "subtopic": "multithreading-models",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 45,
+      "concepts": [
+        "many-to-many",
+        "model trade-offs"
+      ],
+      "stem": "A developer wants an application to create a very large number of user threads, without each one costing a kernel thread, while still letting the threads run in parallel on a multiprocessor and not stalling all of them when one blocks. Which model fits best?",
+      "options": [
+        "Many-to-many",
+        "Many-to-one",
+        "One-to-one",
+        "Any model: all four properties hold in every model"
+      ],
+      "answer": "A",
+      "explanation": "**Many-to-many** multiplexes many user threads over a smaller (or equal) number of kernel threads. Creating a user thread is cheap (no kernel thread per user thread), the kernel threads can run in parallel, and when one blocks the kernel can run another kernel thread of the process.",
+      "option_feedback": [
+        "Correct: it combines cheap user threads with kernel-level parallelism.",
+        "No parallelism, and one blocking call stalls all threads.",
+        "Parallel and non-blocking, but every user thread costs a kernel thread, so the number may be limited.",
+        "The models differ exactly on these properties."
+      ]
+    },
+    {
+      "id": "t03-028",
+      "subtopic": "multithreading-models",
+      "difficulty": 2,
+      "type": "msq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "one-to-one",
+        "model trade-offs"
+      ],
+      "stem": "Which of the following are drawbacks of the **one-to-one** multithreading model?",
+      "options": [
+        "Creating a user thread requires creating a corresponding kernel thread, which is more expensive",
+        "A blocking system call made by one thread blocks the entire process",
+        "The system may limit how many threads a process can create, because each consumes kernel resources",
+        "Threads of a process cannot run in parallel on a multiprocessor"
+      ],
+      "answer": [
+        "A",
+        "C"
+      ],
+      "explanation": "In one-to-one, every user thread is backed by its own kernel thread. That gives full concurrency (B and D are not problems), but each thread creation involves the kernel (**A**) and kernel resources (kernel stacks, TCBs) bound the number of threads (**C**).",
+      "option_feedback": [
+        "Correct: each user thread costs a kernel thread.",
+        "Wrong: that is a many-to-one drawback; here only the calling thread blocks.",
+        "Correct: kernel resources cap the thread count.",
+        "Wrong: one-to-one threads can run on different CPUs."
+      ]
+    },
+    {
+      "id": "t03-029",
+      "subtopic": "multithreading-models",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 90,
+      "concepts": [
+        "many-to-many",
+        "LWP",
+        "parallelism"
+      ],
+      "stem": "A process uses the many-to-many model: 10 user-level threads are multiplexed onto 3 kernel threads (LWPs) on a machine with 4 cores. Nothing else is running. At some instant, 2 of the user threads are blocked in blocking system calls, and each blocked thread is holding the LWP it made the call on. The kernel does not create any new LWPs for the process. At most how many of the process's threads can be **executing** at that instant?",
+      "answer": {
+        "min": 1,
+        "max": 1
+      },
+      "explanation": "Only a user thread that is attached to an LWP can execute, and at most one per LWP. Of the 3 LWPs, 2 are tied up in the blocking calls, so only **1** LWP is left to run user threads. The 4th core and the other 7 ready user threads cannot help: parallelism is limited by min(cores, available LWPs) = min(4, 3 − 2) = 1.",
+      "trap": "Answering 3 (number of LWPs) or 4 (number of cores) without removing the LWPs held by blocked threads."
+    },
+    {
+      "id": "t03-030",
+      "subtopic": "multithreading-models",
+      "difficulty": 1,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 30,
+      "concepts": [
+        "two-level model",
+        "bound threads"
+      ],
+      "stem": "How does the **two-level** multithreading model differ from the plain many-to-many model?",
+      "options": [
+        "It maps exactly two user threads onto each kernel thread",
+        "It splits each thread into a user half and a kernel half that run on different CPUs",
+        "It uses two schedulers in the kernel, one for each priority level",
+        "It is many-to-many, but also lets a particular user thread be bound permanently to its own kernel thread"
+      ],
+      "answer": "D",
+      "explanation": "The two-level model multiplexes many user threads over kernel threads (like many-to-many) **and** allows chosen user threads to be *bound* to a dedicated kernel thread (like one-to-one), e.g. for a real-time thread that must never wait behind others for an LWP.",
+      "option_feedback": [
+        "There is no fixed ratio of 2; \"two-level\" refers to combining two mappings.",
+        "Wrong: a thread is not split across CPUs.",
+        "Wrong: the name has nothing to do with kernel scheduling levels.",
+        "Correct: many-to-many plus optional bound (one-to-one) threads."
+      ]
+    },
+    {
+      "id": "t03-031",
+      "subtopic": "multithreading-models",
+      "difficulty": 2,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 60,
+      "concepts": [
+        "scheduler activations",
+        "upcall",
+        "LWP"
+      ],
+      "stem": "In the many-to-many model with **scheduler activations**, what happens when a user thread running on an LWP is about to block in the kernel (e.g. on I/O)?",
+      "options": [
+        "The whole process is blocked until the I/O completes",
+        "The kernel silently moves the blocked user thread to another CPU",
+        "The kernel makes an upcall to the thread library and gives the application a new virtual processor (LWP), so the library can run another user thread",
+        "The thread library is not told anything; it detects the block when its timer expires"
+      ],
+      "answer": "C",
+      "explanation": "Scheduler activations let the kernel and the user-level library cooperate. When a thread is about to block, the kernel **upcalls** the library (an *upcall handler* runs on a new virtual processor/LWP). The library saves the blocking thread's state and schedules another ready user thread on the new LWP. When the I/O completes, another upcall tells the library the thread can run again.",
+      "option_feedback": [
+        "That is the behaviour of many-to-one without kernel help.",
+        "A blocked thread cannot run anywhere; the problem is keeping the CPU busy.",
+        "Correct: upcall + new virtual processor.",
+        "The whole point of upcalls is that the kernel informs the library."
+      ]
+    },
+    {
+      "id": "t03-032",
+      "subtopic": "multithreading-models",
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 150,
+      "concepts": [
+        "CPU share",
+        "many-to-many",
+        "many-to-one",
+        "one-to-one"
+      ],
+      "stem": "A uniprocessor kernel uses round robin with equal time quanta over kernel-schedulable threads (it knows nothing about user-level threads). Three processes run, all their threads are CPU-bound and never block:\n\n- **A**: 4 user threads, many-to-one (1 kernel thread)\n- **B**: 3 threads, one-to-one\n- **C**: 6 user threads, many-to-many over 2 kernel threads (LWPs)\n\nEach user-level thread library shares the time of its kernel threads equally among its user threads. Over a long period, what **percentage** of the CPU time does **one** user thread of process C receive? Give the answer correct to two decimal places.",
+      "answer": {
+        "min": 5.55,
+        "max": 5.56
+      },
+      "explanation": "The kernel sees 1 (A) + 3 (B) + 2 (C) = **6** kernel threads, so each gets 1/6 of the CPU.\n\n| process | kernel threads | process share | user threads | share per thread |\n|---|---|---|---|---|\n| A | 1 | 1/6 | 4 | 1/24 ≈ 4.17 % |\n| B | 3 | 3/6 | 3 | 1/6 ≈ 16.67 % |\n| C | 2 | 2/6 | 6 | 1/18 ≈ **5.56 %** |\n\nOne user thread of C gets (2/6)/6 = 1/18 = 5.555… % ≈ **5.56 %**.\n\nThe point: the CPU share is decided by the number of *kernel* threads; the number of user threads only splits that share further.",
+      "trap": "Dividing 100 % by all 13 threads (7.69 %) as if the kernel saw user threads."
+    },
+    {
+      "id": "t03-033",
+      "subtopic": "multithreading-models",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "many-to-many vs one-to-one",
+        "effective parallelism",
+        "load imbalance"
+      ],
+      "stem": "A program takes 10 s with one thread: 1 s is strictly serial, and 9 s is parallel work split into **8 user threads** of equal work (1.125 s each). The machine has **4 cores** and nothing else runs. Ignore all threading overheads.\n\n- **Configuration X**: one-to-one model (8 kernel threads). The kernel time-slices very finely, so runnable kernel threads share the cores equally (treat it as perfect processor sharing).\n- **Configuration Y**: many-to-many model over **3** kernel threads (LWPs). The user-level library is non-preemptive: it places a waiting user thread on a free LWP and lets it run to completion, then gives that LWP the next waiting user thread.\n\nWhat is (run time of Y) / (run time of X)? Give the answer correct to two decimal places.",
+      "answer": {
+        "min": 1.34,
+        "max": 1.35
+      },
+      "explanation": "**X:** 8 kernel threads on 4 cores with perfect sharing → the 9 s of parallel work is spread over 4 cores: 9/4 = 2.25 s. Total = 1 + 2.25 = **3.25 s**.\n\n**Y:** only 3 LWPs, so at most 3 cores are ever used (the 4th core idles). The library cannot split a user thread, so the 8 threads are handed out whole:\n\n| LWP | user threads | busy time |\n|---|---|---|\n| 1 | U1, U4, U7 | 3 × 1.125 = 3.375 s |\n| 2 | U2, U5, U8 | 3.375 s |\n| 3 | U3, U6 | 2.25 s |\n\nParallel phase = ⌈8/3⌉ × 1.125 = 3.375 s. Total = 1 + 3.375 = **4.375 s**.\n\nRatio = 4.375 / 3.25 = 1.3461… ≈ **1.35** (1.34 if truncated).\n\nTwo limits apply in Y: parallelism ≤ number of LWPs (3, not 4 cores), and non-preemptive whole-thread assignment leaves LWP 3 idle for the last 1.125 s.",
+      "trap": "Treating Y as perfectly balanced over 3 LWPs (9/3 = 3 s, ratio 1.23) or letting Y use all 4 cores."
+    },
+    {
+      "id": "t03-034",
+      "subtopic": "multithreading-models",
+      "difficulty": 4,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 240,
+      "concepts": [
+        "many-to-many",
+        "LWP",
+        "scheduler activations",
+        "timeline"
+      ],
+      "stem": "A process has 4 user threads U1, U2, U3, U4, all ready at time 0. Each does **2 ms CPU → 6 ms blocking I/O → 2 ms CPU**, then exits. The machine has **2 cores** and nothing else runs; I/O operations use separate devices and overlap fully. The user-level library is non-preemptive and starts threads in the order U1, U2, U3, U4. Ignore all overheads.\n\n- **Case N** (many-to-many over 2 LWPs, no scheduler activations): a user thread blocked in the kernel keeps its LWP until the call returns, and the kernel never gives the process more LWPs.\n- **Case S** (scheduler activations): the kernel gives the process 2 virtual processors. Whenever a user thread blocks in the kernel, the kernel immediately upcalls the library with a fresh activation on that virtual processor, so the library can run another ready user thread there. When the I/O completes, the thread becomes ready again and resumes on the next free virtual processor.\n\nLet T_N and T_S be the times (in ms) at which the process finishes in the two cases. What is T_N − T_S?",
+      "answer": {
+        "min": 8,
+        "max": 8
+      },
+      "explanation": "**Case N** (blocked threads hold their LWPs):\n\n| time | LWP 1 | LWP 2 |\n|---|---|---|\n| 0–2 | U1 CPU | U2 CPU |\n| 2–8 | U1 blocked (I/O) | U2 blocked (I/O) |\n| 8–10 | U1 CPU, exits | U2 CPU, exits |\n| 10–12 | U3 CPU | U4 CPU |\n| 12–18 | U3 blocked | U4 blocked |\n| 18–20 | U3 CPU, exits | U4 CPU, exits |\n\nU3 and U4 cannot start until an LWP is released at 10, although both cores are idle from 2 to 8. **T_N = 20**.\n\n**Case S** (a block hands the processor back to the library):\n\n| time | VP 1 | VP 2 | I/O |\n|---|---|---|---|\n| 0–2 | U1 | U2 | – |\n| 2–4 | U3 | U4 | U1, U2 (2–8) |\n| 4–8 | idle | idle | U1, U2; U3, U4 (4–10) |\n| 8–10 | U1, exits | U2, exits | U3, U4 |\n| 10–12 | U3, exits | U4, exits | – |\n\nAt 2 the two blocks trigger upcalls, so U3 and U4 run at once; when U1/U2 return at 8 both processors are free. **T_S = 12**.\n\nT_N − T_S = 20 − 12 = **8 ms**.",
+      "trap": "Letting U3 and U4 run at time 2 in case N (giving T_N = 12 and an answer of 0): without scheduler activations a blocked user thread keeps its LWP."
+    },
+    {
+      "id": "t03-035",
+      "subtopic": "multithreading-models",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 450,
+      "concepts": [
+        "many-to-many",
+        "LWP holding",
+        "cores vs LWPs",
+        "timeline"
+      ],
+      "stem": "A process has 4 user threads U1, U2, U3, U4, all ready at time 0. Each does: **3 ms CPU → 5 ms blocking I/O → 2 ms CPU**, then exits. The machine has **2 cores** and nothing else runs. I/O operations use separate devices and overlap fully. Ignore all overheads.\n\nThe process uses the many-to-many model with **k** kernel threads (LWPs). The user-level library is non-preemptive and FIFO (U1, U2, U3, U4): a user thread is given a free LWP and keeps it until it exits; a user thread blocked in the kernel **keeps its LWP** until the call returns; when a thread exits, its LWP immediately takes the next waiting user thread. The kernel runs ready LWPs on the 2 cores non-preemptively in FIFO order (an LWP whose thread returns from I/O joins the tail). No new LWPs are ever added.\n\nLet T(k) be the time (in ms) at which the process finishes. What is T(2) + T(3) + T(4)?",
+      "answer": {
+        "min": 53,
+        "max": 53
+      },
+      "explanation": "**k = 2:**\n\n| time | LWP 1 | LWP 2 |\n|---|---|---|\n| 0–3 | U1 CPU | U2 CPU |\n| 3–8 | U1 I/O | U2 I/O |\n| 8–10 | U1 CPU, exits | U2 CPU, exits |\n| 10–13 | U3 CPU | U4 CPU |\n| 13–18 | U3 I/O | U4 I/O |\n| 18–20 | U3 CPU, exits | U4 CPU, exits |\n\n**T(2) = 20.**\n\n**k = 3** (U4 has no LWP until one is freed):\n\n| time | core 1 | core 2 | I/O | waiting for an LWP |\n|---|---|---|---|---|\n| 0–3 | U1 | U2 | – | U4 |\n| 3–6 | U3 | idle | U1, U2 (3–8) | U4 |\n| 6–8 | idle | idle | U1, U2; U3 (6–11) | U4 |\n| 8–10 | U1, exits | U2, exits | U3 | U4 gets LWP 1 at 10 |\n| 10–11 | U4 | idle | U3 | |\n| 11–13 | U4 (CPU ends 13) | U3, exits | – | |\n| 13–18 | idle | idle | U4 (13–18) | |\n| 18–20 | U4, exits | idle | – | |\n\n**T(3) = 20**: the third LWP does not help at all, because U4 still has to wait for a thread to *exit* (at 10), exactly as U3 and U4 did with k = 2.\n\n**k = 4** (equivalent to one-to-one):\n\n| time | core 1 | core 2 | I/O |\n|---|---|---|---|\n| 0–3 | U1 | U2 | – |\n| 3–6 | U3 | U4 | U1, U2 (3–8) |\n| 6–8 | idle | idle | U1, U2; U3, U4 (6–11) |\n| 8–10 | U1, exits | U2, exits | U3, U4 |\n| 11–13 | U3, exits | U4, exits | – |\n\n**T(4) = 13.**\n\nT(2) + T(3) + T(4) = 20 + 20 + 13 = **53**.",
+      "trap": "Assuming a third LWP must help (e.g. letting U4 use an LWP while its owner is blocked, giving T(3) = 13 and 46), or forgetting the 2-core limit when k = 4."
+    },
+    {
+      "id": "t03-036",
+      "subtopic": "thread-vs-process",
+      "also_tests": [
+        "fork",
+        "critical-section"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "fork in threads",
+        "address-space snapshot",
+        "race condition"
+      ],
+      "stem": "Consider the following POSIX C program (headers omitted). All calls succeed, `stdout` is unbuffered, and `fork()` has standard POSIX semantics. The statement `x = x + 1` compiles to a separate load of `x` into a register, an add, and a store back to `x`; a thread may be preempted between any two of these steps, and threads may run in any interleaving.\n\n```c\nint x = 0;\n\nvoid *inc(void *arg) {\n    x = x + 1;\n    return NULL;\n}\n\nint main(void) {\n    pthread_t t1, t2;\n    pthread_create(&t1, NULL, inc, NULL);\n    if (fork() == 0) {               /* child */\n        x = x + 10;\n        printf(\"child %d\\n\", x);\n        exit(0);\n    }\n    pthread_create(&t2, NULL, inc, NULL);\n    pthread_join(t1, NULL);\n    pthread_join(t2, NULL);\n    wait(NULL);\n    printf(\"parent %d\\n\", x);\n    return 0;\n}\n```\n\nWhich of the following combinations of the two output lines are possible in some execution?",
+      "options": [
+        "child 11 and parent 1",
+        "child 10 and parent 1",
+        "child 11 and parent 2",
+        "child 10 and parent 11"
+      ],
+      "answer": [
+        "B",
+        "C"
+      ],
+      "explanation": "Three facts decide the outputs:\n\n1. **fork() snapshots memory.** The child's `x` is whatever the parent's `x` held at the moment of the fork: 0 if t1 had not yet *stored* its result, 1 if it had. The child prints 10 or 11.\n2. **The child has only main's thread.** t1 does not exist in the child, so even if t1 had already loaded `x` into its register, its store never happens in the child. Nothing after the fork changes the child's `x` except its own `+ 10`.\n3. **t2 is created after the fork**, so in the parent t2's load happens after the fork. The parent prints 2 normally, or 1 if the two increments overlap (lost update: both load 0, or both load the same value).\n\nLinking them: a lost update needs t1's store to come **after** t2's load, which comes after the fork. So t1 stored after the fork, and the child saw `x = 0` → child prints 10. Hence *child 11 ⇒ parent 2*.\n\n| order of events | child | parent |\n|---|---|---|\n| t1 stores before fork, then t2 | 11 | 2 |\n| fork before t1's store, increments do not overlap | 10 | 2 |\n| t1 loads 0, fork, t2 loads 0, both store 1 | 10 | 1 |\n\nExhaustive enumeration of all interleavings gives exactly the pairs (10, 1), (10, 2), (11, 2).\n\n- **A impossible** (child 11 forces parent 2).\n- **B possible.**\n- **C possible.**\n- **D impossible**: the child's `+ 10` is made to the child's private copy; the parent's `x` never exceeds 2.",
+      "option_feedback": [
+        "Impossible: child 11 means t1 stored before the fork, so t2 (created after the fork) reads 1 and the parent ends with 2.",
+        "Possible: t1 loads 0, fork snapshots x = 0, t2 loads 0, both store 1.",
+        "Possible: t1 finishes before the fork, the child sees 1, t2 then makes the parent's x 2.",
+        "Impossible: the child's update goes to its own copy of x; the parent never sees the +10."
+      ],
+      "trap": "Treating the two outputs independently (ticking A), or thinking t1's pending store also happens in the child."
+    },
+    {
+      "id": "t03-037",
+      "subtopic": "user-vs-kernel-threads",
+      "also_tests": [
+        "test-and-set"
+      ],
+      "difficulty": 5,
+      "type": "msq",
+      "marks": 2,
+      "est_seconds": 360,
+      "concepts": [
+        "spinlock",
+        "preemption",
+        "blocking system call",
+        "ULT vs KLT"
+      ],
+      "stem": "A program has two threads that share a spinlock built on an atomic test-and-set instruction:\n\n```c\nvoid acquire(int *l) { while (test_and_set(l)) ; }   /* busy-waits, never yields */\nvoid release(int *l) { *l = 0; }\n\nT1:  acquire(&lock);  read(fd, buf, n);  release(&lock);   /* then exits */\nT2:  acquire(&lock);  release(&lock);                      /* then exits */\n```\n\n`lock` is initially 0, and the `read()` blocks for 5 ms. The main thread creates T1 and then T2 and waits for both without using the CPU. T1 is the first of the two to get a CPU. Nothing else is running.\n\nIn which of the following configurations does the program **never terminate**?",
+      "options": [
+        "Pure user-level threads (many-to-one) on 1 core; the library is non-preemptive and switches threads only when the running thread exits, blocks on a library primitive, or calls thread_yield()",
+        "One-to-one kernel threads on 1 core; the kernel scheduler is non-preemptive FIFO (a thread runs until it blocks, yields or exits)",
+        "One-to-one kernel threads on 2 cores; the kernel scheduler is non-preemptive FIFO",
+        "Same as A, except that T1 calls thread_yield() instead of read() inside its critical section"
+      ],
+      "answer": [
+        "B",
+        "D"
+      ],
+      "explanation": "What matters is whether some *other* thread can get the CPU while T1 holds the lock, and whether T1 can get the CPU back while T2 spins.\n\n- **A terminates.** T1 acquires the lock and calls `read()`. With ULTs the kernel blocks the **whole process**, so T2 never gets to spin. When the read returns, T1 continues, releases, exits; the library then runs T2, which acquires and releases. The ULT blocking \"drawback\" actually prevents the hang here.\n- **B hangs.** T1 acquires and blocks in `read()`; only T1 blocks, so the kernel runs T2, which spins. When the read completes T1 becomes ready, but the scheduler is non-preemptive and T2 never blocks or yields, so T1 never runs again and never releases the lock.\n- **C terminates.** If T1 gets the lock first, T2 spins on one core; when the read completes, T1 runs on the other (idle) core and releases the lock, and T2 proceeds. (If T2 happened to get the lock first, it releases it immediately.)\n- **D hangs.** `thread_yield()` hands the CPU to T2 while T1 holds the lock; T2 spins forever on the only CPU, and the non-preemptive library never switches back.\n\nSo the program hangs in **B and D**: a busy-waiting lock needs either preemption or a second CPU for the lock holder; ULT vs KLT alone does not decide it.",
+      "option_feedback": [
+        "Terminates: the blocking read() blocks the whole ULT process, so T2 never spins while T1 holds the lock.",
+        "Hangs: T2 spins on the only core and a non-preemptive kernel never gives the CPU back to the ready T1.",
+        "Terminates: T1 resumes on the second core and releases the lock.",
+        "Hangs: the yield lets T2 spin on the only CPU and nothing ever preempts it."
+      ],
+      "trap": "Assuming kernel threads are always safer than user threads (missing B), or that any ULT program with a blocking call must hang (ticking A)."
+    },
+    {
+      "id": "t03-038",
+      "subtopic": "multithreading-models",
+      "difficulty": 5,
+      "type": "nat",
+      "marks": 2,
+      "est_seconds": 420,
+      "concepts": [
+        "many-to-many",
+        "number of LWPs",
+        "processor sharing",
+        "load imbalance"
+      ],
+      "stem": "A process has **12** CPU-bound user threads, each needing exactly W seconds of CPU and never blocking. It runs alone on a machine with **4 cores**, using the many-to-many model with **k** LWPs (1 ≤ k ≤ 12). Ignore all overheads.\n\n- The user-level library is non-preemptive: it gives each idle LWP the next waiting user thread, which then runs on that LWP until it finishes. An LWP with no user thread is idle and not runnable.\n- The kernel time-slices very finely: if r LWPs are runnable, each progresses at rate min(1, 4/r) cores (perfect processor sharing).\n\nThe completion time can never be below 12W/4 = 3W. For how many values of k in 1 ≤ k ≤ 12 is the completion time **exactly 3W**?",
+      "answer": {
+        "min": 5,
+        "max": 5
+      },
+      "explanation": "Completion time is 3W exactly when all 4 cores stay busy until the very end. Since all threads have equal work and runnable LWPs share the cores equally, the threads run in \"rounds\" of min(k, remaining) threads that finish together.\n\n- k ≤ 3: at most 3 cores are ever used → time > 3W (k = 3 gives 4W).\n- k ≥ 4: a round of r threads with r ≥ 4 keeps all cores busy; a final round with fewer than 4 threads leaves cores idle.\n\n| k | rounds (threads per round) | time | = 3W? |\n|---|---|---|---|\n| 1 | 1 × 12 | 12W | no |\n| 2 | 2 × 6 | 6W | no |\n| 3 | 3 × 4 | 4W | no |\n| 4 | 4,4,4 | W + W + W = 3W | **yes** |\n| 5 | 5,5,2 | 1.25W + 1.25W + W = 3.5W | no |\n| 6 | 6,6 | 1.5W + 1.5W = 3W | **yes** |\n| 7 | 7,5 | 1.75W + 1.25W = 3W | **yes** |\n| 8 | 8,4 | 2W + W = 3W | **yes** |\n| 9 | 9,3 | 2.25W + W = 3.25W | no |\n| 10 | 10,2 | 2.5W + W = 3.5W | no |\n| 11 | 11,1 | 2.75W + W = 3.75W | no |\n| 12 | 12 | 3W | **yes** |\n\n(A round of r ≥ 4 threads takes r·W/4; a round of r < 4 threads takes W while 4 − r cores idle.)\n\nk ∈ {4, 6, 7, 8, 12} → **5** values. Note that k = 7 works although 7 does not divide 12, while k = 5, 9, 10, 11 fail because their last round has fewer than 4 threads.",
+      "trap": "Counting only k that divide 12 and are at least 4 (4, 6, 12 → 3), or assuming every k ≥ 4 gives 3W (9)."
+    },
+    {
+      "id": "t03-039",
+      "subtopic": "user-vs-kernel-threads",
+      "also_tests": [
+        "multithreading-models"
+      ],
+      "difficulty": 3,
+      "type": "nat",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "user-level threads",
+        "kernel-level threads",
+        "multiprocessor parallelism"
+      ],
+      "stem": "A machine has **2 CPUs** and runs only process P. P has **3** threads, all ready at time 0; each is purely CPU-bound and needs **12 ms** of CPU, with no I/O. Whichever scheduler handles the threads is **non-preemptive FIFO** (a thread runs until it finishes; ready order T1, T2, T3). Ignore all overheads.\n\nLet T_ULT be the time at which P finishes if the threads are pure user-level threads (many-to-one), and T_KLT if they are kernel-level threads (one-to-one). What is T_ULT − T_KLT, in ms?",
+      "answer": {
+        "min": 12,
+        "max": 12
+      },
+      "explanation": "**ULT (many-to-one):** the kernel sees only one schedulable entity for P, so P can use only **one** CPU at a time. The library runs T1, T2, T3 one after another: T_ULT = 3 × 12 = **36 ms**.\n\n**KLT (one-to-one):** the kernel can place threads on both CPUs.\n\n| CPU | 0–12 | 12–24 |\n|---|---|---|\n| CPU 1 | T1 | T3 |\n| CPU 2 | T2 | idle |\n\nT_KLT = **24 ms**.\n\nT_ULT − T_KLT = 36 − 24 = **12 ms**.",
+      "trap": "Assuming the 36 ms of work is split perfectly over 2 CPUs (T_KLT = 18, difference 18). With non-preemptive scheduling the third thread cannot be divided between the CPUs."
+    },
+    {
+      "id": "t03-040",
+      "subtopic": "user-vs-kernel-threads",
+      "difficulty": 3,
+      "type": "mcq",
+      "marks": 1,
+      "est_seconds": 120,
+      "concepts": [
+        "user-level threads",
+        "jacketing",
+        "page fault"
+      ],
+      "stem": "A process uses a pure user-level thread library (many-to-one) on a uniprocessor. To avoid blocking the whole process, the library wraps every I/O call (**jacketing**): its `read()` wrapper first checks whether data is available and, if not, switches to another ready thread instead of making a blocking system call. The process has 3 ready threads.\n\nThread T1 now accesses an array element whose page is **not in memory** (it must be read from disk). What happens?",
+      "options": [
+        "Only T1 waits; the library's wrapper catches the access and runs T2 while the page is loaded",
+        "The whole process blocks until the page has been loaded, even though T2 and T3 are ready",
+        "The kernel creates a kernel thread to run T2 and T3 while T1's page is loaded",
+        "The library loads the page itself in user space, so no thread blocks"
+      ],
+      "answer": "B",
+      "explanation": "Jacketing works only for calls that go **through the library**. A page fault is not a library call: the hardware traps straight into the kernel on an ordinary memory access.\n\nThe kernel sees just one schedulable entity for the process. While it reads the page from disk, it blocks that entity, so the **whole process** (all 3 user-level threads) waits. The library never gets control, so it cannot switch to T2 or T3.",
+      "option_feedback": [
+        "Wrong: wrappers only intercept library functions such as read(). A memory access that page-faults goes directly to the kernel, so the library cannot intervene.",
+        "Correct: the page fault blocks the process's only kernel entity, so every user-level thread waits.",
+        "Wrong: in a many-to-one model the kernel does not know about the user-level threads, so it cannot run them separately.",
+        "Wrong: page faults are handled by the kernel; user-space code cannot do the disk I/O and update the page table itself."
+      ],
+      "trap": "Assuming jacketing makes every blocking event safe for user-level threads; page faults bypass the library."
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+ "T1": [
+  {
+   "video_id": "uMMvYLB4cys",
+   "language": "hinglish",
+   "order": 25,
+   "why": "Added for GATE: fork() process-counting questions are a recurring GATE favourite, and this follow-up to L-1.8 (same Gate Smashers series) works through exactly those questions."
+  }
+ ],
+ "T2": [
+  {
+   "video_id": "4s2MKuVYKV8",
+   "language": "english",
+   "order": 5,
+   "why": "Added to complete the topic: Neso's dedicated Process Control Block lecture, which the other English picks only mention in passing."
+  }
+ ],
+ "T5": [
+  {
+   "video_id": "gYCiTtgGR5Q",
+   "language": "english",
+   "order": 3,
+   "why": "Added to complete the topic: Peterson's solution (Neso Academy, 619K views) is a staple GATE question and isn't covered by the other English picks."
+  },
+  {
+   "video_id": "p2XDhW5INOo",
+   "language": "english",
+   "order": 15,
+   "why": "Added to complete the topic: the readers–writers problem (Neso Academy), one of the three classic problems in the GATE syllabus scope."
+  }
+ ],
+ "T6": [
+  {
+   "video_id": "2-7JGoy52Qo",
+   "language": "english",
+   "order": 35,
+   "why": "Added to complete the topic: deadlock detection (wait-for graph and the detection algorithm) and recovery, which the main picks don't cover. Jenny's Lec25, 399K views."
+  }
+ ],
+ "T8": [
+  {
+   "video_id": "sveZw_GG_cs",
+   "language": "hinglish",
+   "order": 1,
+   "why": "Gate Smashers L-6.1 (841K views): hard-disk architecture (platters, tracks, sectors, seek time, rotational latency), the foundation for every disk-scheduling numerical."
+  },
+  {
+   "video_id": "dEt7mr9R_Z8",
+   "language": "hinglish",
+   "order": 2,
+   "why": "Last Moment Tuitions (810K views, 22K likes): all six algorithms (FCFS, SSTF, SCAN, C-SCAN, LOOK, C-LOOK) solved on one request queue in under 10 minutes. The most-watched single video covering the full set, and far tighter than a 2-hour one-shot."
+  },
+  {
+   "video_id": "p48PdudrrgU",
+   "language": "english",
+   "order": 21,
+   "why": "Sudhakar Atchala (173K views): FCFS disk scheduling with a worked numerical. His six short per-algorithm videos are the most-watched English set covering the whole topic."
+  },
+  {
+   "video_id": "eME2bckEFQw",
+   "language": "english",
+   "order": 22,
+   "why": "Sudhakar Atchala: SSTF disk scheduling with a worked numerical."
+  },
+  {
+   "video_id": "Ft5o11WJ2Bc",
+   "language": "english",
+   "order": 23,
+   "why": "Sudhakar Atchala: SCAN (elevator) disk scheduling with a worked numerical."
+  },
+  {
+   "video_id": "xxRvJ-ykioo",
+   "language": "english",
+   "order": 24,
+   "why": "Sudhakar Atchala: C-SCAN disk scheduling with a worked numerical."
+  },
+  {
+   "video_id": "0Up1_l8LNXs",
+   "language": "english",
+   "order": 25,
+   "why": "Sudhakar Atchala: LOOK disk scheduling with a worked numerical."
+  },
+  {
+   "video_id": "F2Dno5j1G1M",
+   "language": "english",
+   "order": 26,
+   "why": "Sudhakar Atchala: C-LOOK disk scheduling with a worked numerical."
+  }
+ ],
+ "T9": [
+  {
+   "video_id": "PiEq1CoP0ds",
+   "language": "hinglish",
+   "order": 22,
+   "why": "Added to complete the topic: 2-level/multilevel paging (Gate Smashers L-5.13, 681K views), heavily tested in GATE page-table-size numericals."
+  },
+  {
+   "video_id": "spApKfUa8BI",
+   "language": "hinglish",
+   "order": 24,
+   "why": "Added to complete the topic: inverted page tables (Gate Smashers L-5.14, 591K views)."
+  },
+  {
+   "video_id": "dz9Tk6KCMlQ",
+   "language": "hinglish",
+   "order": 26,
+   "why": "Added to complete the topic: segmentation and how it differs from paging (Gate Smashers L-5.17, 1.7M views)."
+  }
+ ],
+ "T10": [
+  {
+   "video_id": "o2_iCzS9-ZQ",
+   "language": "hinglish",
+   "order": -5,
+   "why": "Added as the entry point: what virtual memory is, page faults and demand paging (Gate Smashers L-5.19, 1.8M views), before the replacement algorithms."
+  },
+  {
+   "video_id": "pR1uhp--COc",
+   "language": "hinglish",
+   "order": 5,
+   "why": "Added to complete the topic: Belady's anomaly in FIFO (Gate Smashers L-5.23), a classic GATE MCQ."
+  },
+  {
+   "video_id": "IyWaK8pbN6A",
+   "language": "hinglish",
+   "order": 25,
+   "why": "Added to complete the topic: thrashing (Gate Smashers L-5.16)."
+  },
+  {
+   "video_id": "DXU7SqsYDvg",
+   "language": "english",
+   "order": 10,
+   "why": "Jenny's Lec29: LRU and Optimal page replacement with worked examples, continuing her Lec28 FIFO lecture. It replaces the originally shortlisted Neso videos, which cover CPU-cache (not page) replacement."
+  }
+ ],
+ "T11": [
+  {
+   "video_id": "J6wVO4pvUCw",
+   "language": "hinglish",
+   "order": 5,
+   "why": "Added to complete the topic: contiguous vs non-contiguous (linked) allocation (Gate Smashers L-7.3, 674K views), before indexed allocation."
+  },
+  {
+   "video_id": "eK_mEHG20PA",
+   "language": "english",
+   "order": 15,
+   "why": "Added to complete the topic: directory structures (single-level, two-level, tree, acyclic graph) from Sudhakar Atchala."
+  },
+  {
+   "video_id": "hDBFSQRHPAU",
+   "language": "english",
+   "order": 20,
+   "why": "Added to complete the topic: free-space management (bit vector, linked list, grouping, counting) from Sudhakar Atchala, 247K views."
+  }
+ ],
+ "T7": [
+  {
+   "video_id": "rFt1hwh-8zU",
+   "language": "english",
+   "order": -10,
+   "why": "Jenny's Lectures: the scheduling criteria and every time you compute in numericals (arrival, burst, completion, turnaround, waiting and response time). It sets up the notation the rest of the track uses."
+  },
+  {
+   "video_id": "WYo1SpUh9FI",
+   "language": "english",
+   "order": -8,
+   "why": "Jenny's Lectures (1.36M views): FCFS with a full Gantt-chart numerical, including why long jobs first cause the convoy effect."
+  },
+  {
+   "video_id": "pYO-FAg-TpQ",
+   "language": "english",
+   "order": -6,
+   "why": "Jenny's Lectures (1.38M views): non-pre-emptive SJF with a worked example."
+  },
+  {
+   "video_id": "_QcX99B-zbU",
+   "language": "english",
+   "order": -4,
+   "why": "Jenny's Lectures (1.06M views): SRTF (pre-emptive SJF) with a worked example, the most commonly tested variant."
+  },
+  {
+   "video_id": "-jFGYDfWkXI",
+   "language": "english",
+   "order": 15,
+   "why": "Jenny's Lectures (1.39M views): Round Robin with a worked example, the most-watched English RR lecture."
+  }
+ ]
+}

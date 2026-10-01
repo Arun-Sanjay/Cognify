@@ -1,0 +1,102 @@
+{
+  "topic_id": "T4",
+  "topic": "Inter-Process Communication",
+  "hinglish": [
+    {
+      "video_id": "fSMVWmGPqlM",
+      "title": "Inter Process Communication | Shared Memory | Message Passing | Operating System | IPC | OS",
+      "channel": "Sudhakar Atchala",
+      "duration_sec": 1498,
+      "views": 193378,
+      "likes": 3230,
+      "comments": 121,
+      "upload_date": "20200327",
+      "captions": ["en(auto)"],
+      "covers": ["definition & advantages of IPC (info sharing, modularity, speedup, convenience)", "shared memory model", "message passing model", "synchronization in message passing (blocking/non-blocking)", "buffering: zero/bounded/unbounded capacity (sets up producer-consumer intuition)"],
+      "why": "Most complete single Hinglish video on the shared-memory-vs-message-passing core of the syllabus: transcript confirms it walks through both models plus buffering capacity (the bridge to producer-consumer), in 25 minutes vs Gate Smashers/Neso which lack a dedicated IPC-models video in Hindi. Like/view ratio 1.67% and comments are uniformly positive with no complaints about errors.",
+      "comment_highlights": ["Hats-off teaching", "It's like learning from the perfect teacher", "This topic was looking so complex but after watching your video it's just looking very easy"]
+    },
+    {
+      "video_id": "iMD1Z3f9ioI",
+      "title": "L-3.2: Producer Consumer Problem | Process Synchronization Problem in Operating System",
+      "channel": "Gate Smashers",
+      "duration_sec": 1596,
+      "views": 1719369,
+      "likes": 26897,
+      "comments": 464,
+      "upload_date": "20180227",
+      "captions": ["en(manual)", "hi(auto)"],
+      "covers": ["producer-consumer problem as the classic motivating example for IPC/process synchronization", "bounded buffer setup", "race condition on shared counter/buffer"],
+      "why": "By far the most-watched Hindi/Hinglish video for this exact GATE syllabus point (1.7M views, 26.9K likes, 1.56% ratio) from the most trusted GATE OS channel, with 464 comments almost entirely praising clarity. It is the canonical treatment of producer-consumer as an IPC/synchronization motivating example that no other Hinglish channel comes close to in reach or polish.",
+      "comment_highlights": ["If you want to crack Gate and don't want to spend money on coaching, become Varun Sir's cameraman", "This is the kind of content i pay my internet bill for", "We are paying high fees in gate coaching for all these knowledge... available free of cost"]
+    },
+    {
+      "video_id": "wQUY2W49xjQ",
+      "title": "Pipes Part-1 Explained in Hindi l InterProcess Communication l ERTOS Course",
+      "channel": "5 Minutes Engineering",
+      "duration_sec": 430,
+      "views": 95691,
+      "likes": 1625,
+      "comments": 24,
+      "upload_date": "20200428",
+      "captions": ["hi(auto)"],
+      "covers": ["pipes as an IPC mechanism", "pipe characteristics/capacity limitations", "sets up named vs unnamed pipe distinction (continued in the channel's Part-2)"],
+      "why": "No dedicated high-view Hinglish GATE-channel video exists specifically for named/unnamed pipes; this is the best-received option covering the pipes portion of the syllabus that Gate Smashers and other top channels skip entirely. Comments confirm clear, energetic delivery with no accuracy complaints (one viewer even asked a sharp follow-up technical question about pipe buffer size, indicating engaged/knowledgeable audience).",
+      "comment_highlights": ["outstanding way of teaching, you expressed what you know in a beautiful and energetic way", "very clearly explained", "thank you sir for explaining in easy language"]
+    }
+  ],
+  "english": [
+    {
+      "video_id": "dJuYKfR8vec",
+      "title": "Interprocess Communication",
+      "channel": "Neso Academy",
+      "duration_sec": 769,
+      "views": 870371,
+      "likes": 14277,
+      "comments": 225,
+      "upload_date": "20180823",
+      "captions": ["en(auto)"],
+      "covers": ["independent vs cooperating processes", "reasons for process cooperation (information sharing, computation speedup, modularity, convenience)", "shared memory communication model (diagram walkthrough)", "message passing communication model (diagram walkthrough, kernel-mediated)"],
+      "why": "Highest-viewed English video specifically on IPC models (870K views, 1.64% like ratio) from the most reputable English GATE/OS channel. Transcript confirms clean coverage of both shared-memory and message-passing models with clear diagrams. Comments repeatedly call it clearer than university lectures, with zero complaints about errors.",
+      "comment_highlights": ["12 min youtube video better than a 2 hour lecture by my prof lmao", "Finally I can understand the fundamentals about IPC. Straightforward explanation and without academic jargons", "Perfect explanation of the topic"]
+    },
+    {
+      "video_id": "Qx3P2wazwI0",
+      "title": "The Bounded Buffer Problem",
+      "channel": "Neso Academy",
+      "duration_sec": 948,
+      "views": 418035,
+      "likes": 7198,
+      "comments": 94,
+      "upload_date": "20210710",
+      "captions": ["en(auto, via auto-translate; native track detected as tr)"],
+      "covers": ["producer-consumer / bounded-buffer problem as IPC/synchronization motivating example", "race condition on shared counter", "semaphore-based solution (empty/full/mutex)"],
+      "why": "Best English-language treatment of the producer-consumer problem from Neso Academy, with strong approval (1.72% like ratio) and comments noting it's used by instructors themselves. Complements the general IPC-models pick to cover the syllabus's producer-consumer requirement, which the IPC overview video does not include.",
+      "comment_highlights": ["our teacher recommends ur channel as she herself learns here", "Explanation level is outstanding. It makes too easy to grasp", "Thanks for saving my semester exam"]
+    },
+    {
+      "video_id": "Mqb2dVRe0uo",
+      "title": "Communicating between processes (using pipes) in C",
+      "channel": "CodeVault",
+      "duration_sec": 839,
+      "views": 350655,
+      "likes": 7556,
+      "comments": 344,
+      "upload_date": "20200429",
+      "captions": ["en(auto)"],
+      "covers": ["unnamed/anonymous pipes as an IPC mechanism", "parent-child process communication via pipe()", "pipe file descriptors and unidirectional data flow"],
+      "why": "Strongest English video on pipes for this syllabus point: highest like/view ratio of any finalist (2.16%) and 344 comments, overwhelmingly praising clarity ('best instructors I've come across'). Covers the (unnamed) pipes portion of the syllabus that Neso Academy does not have a video for at all.",
+      "comment_highlights": ["As a CS student I've watched countless tutorials and you are by far one of (if not) the best instructors I've come across", "Why is channel underrated, I love how you explain", "the most clear and concise coding lessons I have found on youtube"]
+    }
+  ],
+  "runners_up": [
+    {"video_id": "S3mS8MR7bUY", "title": "Message Passing Systems (Part 1/2/3)", "channel": "Neso Academy", "views": 348293, "reason_rejected": "Splits shared-memory/message-passing content across 3 extra separate videos on top of the general IPC video, which combined with a producer-consumer pick and pipes pick would exceed the 3-video cap; the single 'Interprocess Communication' video already covers both models sufficiently for GATE scope."},
+    {"video_id": "uHtzOFwgD74", "title": "Shared Memory Systems", "channel": "Neso Academy", "views": 392315, "reason_rejected": "Redundant with 'Interprocess Communication' overview pick which already covers the shared memory model; adding it would fragment coverage unnecessarily."},
+    {"video_id": "2hba3etpoJg", "title": "Introduction to FIFOs (aka named pipes) in C", "channel": "CodeVault", "views": 108377, "reason_rejected": "Companion video to the picked pipes video covering named pipes specifically; not included to stay within the 3-video cap for English, though it is the natural next watch for named-pipe depth."},
+    {"video_id": "QRKn32A3eeY", "title": "Pipes Part-2 Explained in Hindi", "channel": "5 Minutes Engineering", "views": 41552, "reason_rejected": "Companion to the picked Pipes Part-1 (Hinglish), likely covering named pipes in more depth; not included to stay within the 3-video cap."},
+    {"video_id": "3Eaw1SSIqRg", "title": "L-3.1: Process Synchronization | Process Types | Race Condition", "channel": "Gate Smashers", "views": 2403095, "reason_rejected": "Extremely popular but is about process synchronization/race conditions broadly, not IPC models (shared memory/message passing) or pipes specifically -- belongs to the Process Synchronization topic, not T4."},
+    {"video_id": "QOHyB94zG54", "title": "Inter Process Communication Explained in Hindi l ERTOS Course", "channel": "5 Minutes Engineering", "views": 276103, "reason_rejected": "Lower like ratio (2.66% but far fewer total engagement signals and part of a fragmented multi-video ERTOS series) than the Sudhakar Atchala pick; overlaps content already covered by the chosen Hinglish IPC-models video."},
+    {"video_id": "hyQz97Jym_w", "title": "4.13 Producer Consumer Problem | Semaphores", "channel": "KnowledgeGATE by Sanchit Sir", "views": 438106, "reason_rejected": "Solid alternative for producer-consumer in Hindi but has far fewer views/likes than the Gate Smashers pick (438K vs 1.7M) and mixes in semaphore mechanics more than pure IPC framing."}
+  ],
+  "coverage_gaps": "Named pipes (FIFO) get lighter/indirect treatment: the picked pipes videos (5 Minutes Engineering Part-1 in Hinglish, CodeVault in English) primarily cover unnamed/anonymous pipes; dedicated named-pipe deep dives exist as companion videos from the same channels (5 Minutes Engineering Pipes Part-2; CodeVault's Introduction to FIFOs) but were excluded to respect the 3-video-per-language cap. No single popular GATE-focused channel (Gate Smashers, Knowledge Gate, Neso Academy) has a dedicated named-vs-unnamed-pipes lecture with strong view counts."
+}
